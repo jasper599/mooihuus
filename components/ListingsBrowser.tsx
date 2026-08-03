@@ -1,9 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { Listing } from "@/lib/types";
 import { Locale, t } from "@/lib/i18n";
 import { ListingCard } from "./ListingCard";
+
+const Kaart = dynamic(() => import("./Kaart").then((m) => m.Kaart), {
+  ssr: false,
+  loading: () => <div className="card text-grijs">Kaart laden…</div>,
+});
 
 const PRIJS_RANGES: { label: string; min: number; max: number }[] = [
   { label: "tot € 100.000", min: 0, max: 100000 },
@@ -18,6 +24,7 @@ export function ListingsBrowser({ listings, locale = "nl" }: { listings: Listing
   const [provincie, setProvincie] = useState("");
   const [prijs, setPrijs] = useState("");
   const [sort, setSort] = useState("");
+  const [view, setView] = useState<"lijst" | "kaart">("lijst");
 
   const provincies = useMemo(
     () => Array.from(new Set(listings.map((l) => l.provincie))).sort((a, b) => a.localeCompare(b)),
@@ -79,10 +86,30 @@ export function ListingsBrowser({ listings, locale = "nl" }: { listings: Listing
         </select>
       </div>
 
-      <div className="text-sm text-grijs mb-4">{sorted.length} {t(locale, "home.resultaten")}</div>
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="text-sm text-grijs">{sorted.length} {t(locale, "home.resultaten")}</div>
+        <div className="inline-flex rounded-full border border-lijn overflow-hidden text-sm font-display font-semibold">
+          <button
+            type="button"
+            onClick={() => setView("lijst")}
+            className={`px-3 py-1.5 ${view === "lijst" ? "bg-bosgroen text-white" : "text-bosgroen-dk hover:bg-zand"}`}
+          >
+            ☰ Lijst
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("kaart")}
+            className={`px-3 py-1.5 ${view === "kaart" ? "bg-bosgroen text-white" : "text-bosgroen-dk hover:bg-zand"}`}
+          >
+            🗺️ Kaart
+          </button>
+        </div>
+      </div>
 
       {sorted.length === 0 ? (
         <div className="card text-grijs">{t(locale, "home.geen")}</div>
+      ) : view === "kaart" ? (
+        <Kaart listings={sorted} locale={locale} />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sorted.map((l) => (

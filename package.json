@@ -9,23 +9,25 @@
     "seed": "node scripts/seed-note.mjs"
   },
   "dependencies": {
-    "next": "14.2.35",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "next-auth": "4.24.7",
+    "@mollie/api-client": "3.7.0",
     "bcryptjs": "2.4.3",
+    "leaflet": "^1.9.4",
+    "next": "14.2.35",
+    "next-auth": "4.24.7",
     "nodemailer": "6.9.14",
-    "@mollie/api-client": "3.7.0"
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "typescript": "5.4.5",
+    "@types/bcryptjs": "2.4.6",
+    "@types/leaflet": "^1.9.12",
     "@types/node": "20.12.7",
+    "@types/nodemailer": "6.4.15",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
-    "@types/bcryptjs": "2.4.6",
-    "@types/nodemailer": "6.4.15",
-    "tailwindcss": "3.4.4",
+    "autoprefixer": "10.4.19",
     "postcss": "8.4.38",
-    "autoprefixer": "10.4.19"
+    "tailwindcss": "3.4.4",
+    "typescript": "5.4.5"
   }
 }
