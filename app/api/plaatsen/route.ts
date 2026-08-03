@@ -30,6 +30,8 @@ export async function POST(req: Request) {
     personen: Number(b.personen || 2),
     m2: Number(b.m2 || 50),
     prijs: Number(b.prijs || 0),
+    prijsSuffix: b.prijsSuffix ? String(b.prijsSuffix).slice(0, 24) : undefined,
+    grond: b.grond ? String(b.grond).slice(0, 60) : undefined,
     omschrijving: String(b.omschrijving || ""),
     kleur: getListings().length % 6,
     pakket,

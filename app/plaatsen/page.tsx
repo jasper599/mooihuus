@@ -7,8 +7,13 @@ import { suggestUitjes } from "@/lib/uitjes";
 type Doel = "koop" | "huur";
 const pakketten = [
   { naam: "Basis", prijs: "€ 25", sub: "eenmalig · 1 jaar online", feats: ["Tot 12 foto's", "AI-basistekst", "Leads direct naar jou"] },
-  { naam: "Plus", prijs: "€ 49", sub: "eenmalig · tot verkocht", feats: ["20 foto's + plattegrond", "Volledige AI-assistent", "Hoger in resultaten", "Contracthulp"], feat: true },
-  { naam: "Premium", prijs: "€ 79", sub: "eenmalig", feats: ["Uitgelicht op home", "Social spotlight", "Voorrang Huusmeesters"] },
+  { naam: "Plus", prijs: "€ 49", sub: "eenmalig", feats: ["20 foto's + plattegrond", "Volledige AI-assistent", "Hoger in resultaten", "Contracthulp"], feat: true },
+  { naam: "Premium", prijs: "€ 79", sub: "eenmalig", feats: ["Uitgelicht op de homepage", "Je woning als voorbeeld in onze marketing & ad-banners", "Voorrang bij de Huusmeesters"] },
+];
+
+const PROVINCIES = [
+  "Groningen", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Gelderland",
+  "Utrecht", "Noord-Holland", "Zuid-Holland", "Zeeland", "Noord-Brabant", "Limburg",
 ];
 
 export default function Plaatsen() {
@@ -23,6 +28,8 @@ export default function Plaatsen() {
     personen: "4",
     m2: "65",
     prijs: "89000",
+    prijsSuffix: "",
+    grond: "",
     park: "Park De Veluwe",
     postcode: "",
   });
@@ -69,6 +76,8 @@ export default function Plaatsen() {
         personen: Number(f.personen),
         m2: Number(f.m2),
         prijs: Number(f.prijs),
+        prijsSuffix: f.prijsSuffix,
+        grond: f.grond,
         omschrijving,
         pakket,
         postcode: f.postcode,
@@ -126,12 +135,31 @@ export default function Plaatsen() {
           </Field>
           <Field label="Provincie">
             <select className="field" value={f.provincie} onChange={(e) => setF({ ...f, provincie: e.target.value })}>
-              <option>Drenthe</option><option>Zeeland</option><option>Veluwe</option><option>Friesland</option><option>Twente</option>
+              {PROVINCIES.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
           </Field>
           <Field label="Aantal personen"><input className="field" value={f.personen} onChange={(e) => setF({ ...f, personen: e.target.value })} /></Field>
           <Field label="Woonoppervlak (m²)"><input className="field" value={f.m2} onChange={(e) => setF({ ...f, m2: e.target.value })} /></Field>
           <Field label="Vraagprijs (€)"><input className="field" value={f.prijs} onChange={(e) => setF({ ...f, prijs: e.target.value })} /></Field>
+          <Field label="Prijs-toevoeging">
+            <select className="field" value={f.prijsSuffix} onChange={(e) => setF({ ...f, prijsSuffix: e.target.value })}>
+              <option value="">Automatisch (koop → k.k.)</option>
+              <option value="k.k.">k.k. (kosten koper)</option>
+              <option value="v.o.n.">v.o.n. (vrij op naam)</option>
+              <option value="excl. btw">excl. btw</option>
+              <option value="per week">per week</option>
+              <option value="per maand">per maand</option>
+              <option value="geen">Geen toevoeging</option>
+            </select>
+          </Field>
+          <Field label="Grond">
+            <select className="field" value={f.grond} onChange={(e) => setF({ ...f, grond: e.target.value })}>
+              <option value="">Onbekend / niet tonen</option>
+              <option value="Eigen grond">Eigen grond</option>
+              <option value="Erfpacht">Erfpacht</option>
+              <option value="Huurgrond">Huurgrond</option>
+            </select>
+          </Field>
           <Field label="Recreatiepark"><input className="field" value={f.park} onChange={(e) => setF({ ...f, park: e.target.value })} /></Field>
           <Field label="Postcode"><input className="field" value={f.postcode} onChange={(e) => setF({ ...f, postcode: e.target.value })} placeholder="1234 AB" /></Field>
           <div className="sm:col-span-2 text-right"><button className="btn" onClick={() => setStep(2)}>Volgende →</button></div>
