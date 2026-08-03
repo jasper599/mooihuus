@@ -41,12 +41,10 @@ export default function Inloggen() {
         <input type="password" className="field" value={form.wachtwoord} onChange={(e) => setForm({ ...form, wachtwoord: e.target.value })} required />
         <button className="btn w-full mt-4" disabled={busy}>{busy ? "Bezig…" : "Inloggen"}</button>
       </form>
-      <div className="card mt-4 text-sm text-grijs">
-        <div className="font-semibold text-inkt mb-1">Demo-accounts</div>
-        Eigenaar: <b>anouk@example.nl</b> / welkom123<br />
-        Beheer: <b>beheer@mooihuus.nl</b> / beheer123
-      </div>
       <p className="text-sm text-grijs mt-4 text-center">
+        <Link href="/zoeker" className="text-bosgroen font-semibold">Woning zoeken? Zet een alert</Link>
+      </p>
+      <p className="text-sm text-grijs mt-2 text-center">
         Nog geen account? <Link href="/registreren" className="text-bosgroen font-semibold">Registreren</Link>
       </p>
     </div>
