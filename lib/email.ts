@@ -58,7 +58,7 @@ export function renderWelkom(naam: string): { onderwerp: string; html: string } 
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Welkom bij Mooihuus, ${naam}! 👋</h1>
     <p style="line-height:1.6;">Je account is aangemaakt. Vanaf nu zet je je recreatiewoning zelf in de etalage — met de regie in eigen hand en hulp binnen handbereik.</p>
     <p style="line-height:1.6;">Klaar om te beginnen? Plaats je eerste woning in een paar minuten.</p>
-    <p style="margin:22px 0;">${btn("http://localhost:3000/plaatsen", "Plaats je huus")}</p>
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/plaatsen`, "Plaats je huus")}</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Fijn dat je er bent.<br>Team Mooihuus</p>`;
   return { onderwerp: "Welkom bij Mooihuus 🌲", html: layout("Welkom", inner) };
 }
@@ -83,7 +83,7 @@ export function renderBetalingsbewijs(p: Payment, listing: Listing, naam: string
       <tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};color:${BRAND.grijs};font-size:13px;">Betaald op</td>
           <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;color:${BRAND.grijs};font-size:13px;">${p.betaaldOp ? new Date(p.betaaldOp).toLocaleString("nl-NL") : "-"}</td></tr>
     </table>
-    <p style="margin:22px 0;">${btn("http://localhost:3000/dashboard", "Naar mijn dashboard")}</p>
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/dashboard`, "Naar mijn dashboard")}</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bewaar deze mail als bewijs van betaling. Klopt er iets niet? Mail info@mooihuus.nl.</p>`;
   return { onderwerp: `Betalingsbewijs ${p.factuurnummer} — je huus staat online`, html: layout("Betalingsbewijs", inner) };
 }
@@ -106,7 +106,7 @@ export function renderOpvallerBewijs(p: Payment, listing: Listing, naam: string)
       <tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};color:${BRAND.grijs};font-size:13px;">Betaald op</td>
           <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;color:${BRAND.grijs};font-size:13px;">${p.betaaldOp ? new Date(p.betaaldOp).toLocaleString("nl-NL") : "-"}</td></tr>
     </table>
-    <p style="margin:22px 0;">${btn("http://localhost:3000/dashboard", "Naar mijn dashboard")}</p>
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/dashboard`, "Naar mijn dashboard")}</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bewaar deze mail als bewijs van betaling. Klopt er iets niet? Mail info@mooihuus.nl.</p>`;
   return { onderwerp: `Betalingsbewijs ${p.factuurnummer} — opvaller ${opv}`, html: layout("Betalingsbewijs opvaller", inner) };
 }
