@@ -107,6 +107,12 @@ export interface Enquete {
   datum: string;
 }
 
+export interface PostcodeGeo {
+  pc: string; // genormaliseerd, bijv. "1234AB" of "1234"
+  lat: number;
+  lon: number;
+}
+
 export interface Pageview {
   id: string;
   path: string;

@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 
 // ------------------------------------------------------------------
@@ -22,6 +22,7 @@ interface DB {
   reviews: Review[];
   partnerkliks: PartnerKlik[];
   pageviews: Pageview[];
+  postcodegeo: PostcodeGeo[];
   resetTokens?: { token: string; userId: string; expires: number }[];
   seq: number;
 }
@@ -47,7 +48,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], seq: 100 };
 }
 
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -127,6 +128,7 @@ function load(): DB {
   if (!Array.isArray(cache.reviews)) { cache.reviews = []; migrated = true; }
   if (!Array.isArray(cache.partnerkliks)) { cache.partnerkliks = []; migrated = true; }
   if (!Array.isArray(cache.pageviews)) { cache.pageviews = []; migrated = true; }
+  if (!Array.isArray(cache.postcodegeo)) { cache.postcodegeo = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
   if (fresh || removed || added || migrated) save();
@@ -458,6 +460,27 @@ export function addPageview(data: { path: string; ref: string; device: Pageview[
 
 export function getPageviews(): Pageview[] {
   return load().pageviews;
+}
+
+// ---------- Postcode → coördinaten (cache van geocoderesultaten) ----------
+export function normaliseerPostcode(pc: string): string {
+  return pc.toUpperCase().replace(/\s+/g, "").slice(0, 6);
+}
+export function getPostcodeGeoMap(): Record<string, [number, number]> {
+  const out: Record<string, [number, number]> = {};
+  for (const g of load().postcodegeo) out[g.pc] = [g.lat, g.lon];
+  return out;
+}
+export function setPostcodeGeo(pc: string, lat: number, lon: number): boolean {
+  // Alleen geldige NL-coördinaten bewaren.
+  if (!(lat >= 50.5 && lat <= 53.8 && lon >= 3.2 && lon <= 7.5)) return false;
+  const key = normaliseerPostcode(pc);
+  if (!key) return false;
+  const db = load();
+  if (db.postcodegeo.some((g) => g.pc === key)) return true; // al bekend
+  db.postcodegeo.push({ pc: key, lat, lon });
+  save();
+  return true;
 }
 
 export interface AnalyticsSamenvatting {
