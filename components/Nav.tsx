@@ -21,6 +21,7 @@ export function Nav() {
     { href: "/", label: t("nav.aanbod") },
     { href: "/plaatsen", label: t("nav.plaats") },
     { href: "/zoeker", label: t("nav.zoeker") },
+    { href: "/favorieten", label: `❤️ ${t("nav.favorieten")}` },
     { href: "/huusmeesters", label: t("nav.huusmeesters") },
     { href: "/blog", label: t("nav.blog") },
     ...(session ? [{ href: "/dashboard", label: t("nav.dashboard") }] : []),
