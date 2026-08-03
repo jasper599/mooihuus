@@ -37,4 +37,10 @@ export const HUUSMEESTERS_CATEGORIEEN: { icon: string; titel: string; tekst: str
   { icon: "🛋️", titel: "Interieur & inventaris", tekst: "Inrichten, opfrissen of vervangen zodat je huus er top bij staat." },
   { icon: "📦", titel: "Bergingen", tekst: "Een berging of tuinhuis besteld en geplaatst bij je woning." },
   { icon: "♨️", titel: "Wellness", tekst: "Hottub, jacuzzi of sauna — regel extra luxe bij je recreatiewoning." },
+  { icon: "❄️", titel: "Airco & klimaat", tekst: "Airco geplaatst in je recreatiewoning — heerlijk koel in de zomer, comfortabel warm in het tussenseizoen." },
 ];
+
+// Zoek een partner op naam (voor de klik-doorstuur/telling).
+export function partnerByNaam(naam: string): Partner | undefined {
+  return HUUSMEESTERS_PARTNERS.find((p) => p.naam === naam);
+}

@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
   getUsers, getListings, getLeads, getPayments, getEmails, getUser, getListing, getEnquetes, getAllReviews,
+  partnerklikTotalen, getPartnerkliks,
 } from "@/lib/db";
 import { euro, euroCents } from "@/lib/money";
 import { ReviewModeratie } from "@/components/ReviewModeratie";
@@ -19,6 +20,7 @@ const TABS = [
   { key: "mailbox", label: "Mailbox" },
   { key: "enquetes", label: "Enquêtes" },
   { key: "reviews", label: "Beoordelingen" },
+  { key: "partners", label: "Partners" },
 ];
 
 export default async function Beheer({ searchParams }: { searchParams: { tab?: string } }) {
@@ -33,6 +35,8 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
   const emails = getEmails();
   const enquetes = getEnquetes();
   const reviews = getAllReviews();
+  const partnerTotalen = partnerklikTotalen();
+  const partnerkliks = getPartnerkliks();
   const gemRating = enquetes.length ? enquetes.reduce((s, e) => s + e.rating, 0) / enquetes.length : 0;
   const metAanbev = enquetes.filter((e) => e.aanbeveling != null);
   const gemAanbev = metAanbev.length ? metAanbev.reduce((s, e) => s + (e.aanbeveling ?? 0), 0) / metAanbev.length : 0;
@@ -210,6 +214,31 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
             </div>
           ))}
         </div>
+      )}
+
+      {tab === "partners" && (
+        <>
+          <p className="text-grijs text-sm mb-4">
+            Doorkliks vanaf de Huusmeesters-pagina naar de partnerwebsites. Elke keer dat iemand op &ldquo;Bekijk partner&rdquo; klikt, tellen we dat hier.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+            <Stat n={String(partnerkliks.length)} l="Doorkliks totaal" />
+            <Stat n={String(partnerTotalen.length)} l="Partners aangeklikt" />
+          </div>
+          {partnerTotalen.length === 0 ? (
+            <div className="card text-grijs text-sm">Nog geen doorkliks geregistreerd.</div>
+          ) : (
+            <Table head={["Partner", "Doorkliks", "Laatste klik"]}>
+              {partnerTotalen.map((p) => (
+                <tr key={p.partner} className="border-t border-lijn">
+                  <Td>{p.partner}</Td>
+                  <Td><span className="font-display font-bold text-bosgroen-dk">{p.aantal}</span></Td>
+                  <Td>{p.laatste ? new Date(p.laatste).toLocaleString("nl-NL") : "—"}</Td>
+                </tr>
+              ))}
+            </Table>
+          )}
+        </>
       )}
     </div>
   );

@@ -34,7 +34,7 @@ export default function HuusmeestersPage() {
         {HUUSMEESTERS_PARTNERS.map((p) => (
           <a
             key={p.url}
-            href={p.url}
+            href={`/api/uit?partner=${encodeURIComponent(p.naam)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="card flex gap-3 items-start hover:shadow-md transition-shadow"

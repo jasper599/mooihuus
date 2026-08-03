@@ -107,6 +107,13 @@ export interface Enquete {
   datum: string;
 }
 
+export interface PartnerKlik {
+  id: string;
+  partner: string; // naam van de partner
+  url: string;
+  datum: string;
+}
+
 export interface Review {
   id: string;
   naam: string;

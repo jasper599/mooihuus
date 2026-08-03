@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 
 // ------------------------------------------------------------------
@@ -20,6 +20,7 @@ interface DB {
   huusmeesters: Huusmeester[];
   zoekopdrachten: Zoekopdracht[];
   reviews: Review[];
+  partnerkliks: PartnerKlik[];
   resetTokens?: { token: string; userId: string; expires: number }[];
   seq: number;
 }
@@ -45,7 +46,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], seq: 100 };
 }
 
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -123,6 +124,7 @@ function load(): DB {
   // Migratie: zorg dat nieuwere velden bestaan in oudere db.json bestanden.
   let migrated = false;
   if (!Array.isArray(cache.reviews)) { cache.reviews = []; migrated = true; }
+  if (!Array.isArray(cache.partnerkliks)) { cache.partnerkliks = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
   if (fresh || removed || added || migrated) save();
@@ -421,4 +423,29 @@ export function deleteReview(id: string): boolean {
   db.reviews.splice(i, 1);
   save();
   return true;
+}
+
+// ---------- Partner-kliks (doorklikmeting) ----------
+export function addPartnerklik(partner: string, url: string): PartnerKlik {
+  const db = load();
+  const klik: PartnerKlik = { id: nextId("klik-"), partner, url, datum: new Date().toISOString() };
+  db.partnerkliks.unshift(klik);
+  save();
+  return klik;
+}
+export function getPartnerkliks(): PartnerKlik[] {
+  return load().partnerkliks;
+}
+export function partnerklikTotalen(): { partner: string; aantal: number; laatste?: string }[] {
+  const kliks = load().partnerkliks;
+  const map = new Map<string, { aantal: number; laatste?: string }>();
+  for (const k of kliks) {
+    const cur = map.get(k.partner) || { aantal: 0, laatste: undefined };
+    cur.aantal += 1;
+    if (!cur.laatste || k.datum > cur.laatste) cur.laatste = k.datum;
+    map.set(k.partner, cur);
+  }
+  return Array.from(map.entries())
+    .map(([partner, v]) => ({ partner, aantal: v.aantal, laatste: v.laatste }))
+    .sort((a, b) => b.aantal - a.aantal);
 }
