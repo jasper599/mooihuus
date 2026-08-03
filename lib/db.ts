@@ -19,6 +19,7 @@ interface DB {
   enquetes: Enquete[];
   huusmeesters: Huusmeester[];
   zoekopdrachten: Zoekopdracht[];
+  resetTokens?: { token: string; userId: string; expires: number }[];
   seq: number;
 }
 
@@ -169,6 +170,47 @@ export function addUser(data: {
   db.users.push(user);
   save();
   return user;
+}
+
+export function updateUser(id: string, patch: Partial<User>): User | undefined {
+  const db = load();
+  const u = db.users.find((x) => x.id === id);
+  if (!u) return undefined;
+  Object.assign(u, patch);
+  save();
+  return u;
+}
+export function setWachtwoord(id: string, nieuwWachtwoord: string): boolean {
+  const u = updateUser(id, { wachtwoordHash: bcrypt.hashSync(nieuwWachtwoord, 10) });
+  return !!u;
+}
+export function checkWachtwoord(id: string, wachtwoord: string): boolean {
+  const u = getUser(id);
+  return !!u && bcrypt.compareSync(wachtwoord, u.wachtwoordHash);
+}
+
+// ---------- Wachtwoord-reset tokens ----------
+function genToken(): string {
+  return Array.from({ length: 40 }, () => "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]).join("");
+}
+export function maakResetToken(userId: string): string {
+  const db = load();
+  if (!db.resetTokens) db.resetTokens = [];
+  const token = genToken();
+  // oude tokens van deze gebruiker opruimen
+  db.resetTokens = db.resetTokens.filter((t) => t.userId !== userId && t.expires > Date.now());
+  db.resetTokens.push({ token, userId, expires: Date.now() + 60 * 60 * 1000 });
+  save();
+  return token;
+}
+export function gebruikResetToken(token: string): User | undefined {
+  const db = load();
+  if (!db.resetTokens) db.resetTokens = [];
+  const rec = db.resetTokens.find((t) => t.token === token && t.expires > Date.now());
+  if (!rec) return undefined;
+  db.resetTokens = db.resetTokens.filter((t) => t.token !== token);
+  save();
+  return db.users.find((u) => u.id === rec.userId);
 }
 
 // ---------- Listings ----------

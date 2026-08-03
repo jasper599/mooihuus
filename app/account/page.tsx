@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUser, getPaymentsByUser, getListing } from "@/lib/db";
 import { euroCents } from "@/lib/money";
+import { WachtwoordWijzigen } from "@/components/WachtwoordWijzigen";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +68,11 @@ export default async function Account() {
         </div>
       )}
       <p className="text-xs text-grijs mt-2">Klik op een factuurnummer om je factuur te bekijken, te downloaden of te printen (PDF). Je ontvangt ook per e-mail een betalingsbewijs.</p>
+
+      <h2 className="font-display font-bold text-lg mt-8 mb-2">Wachtwoord wijzigen</h2>
+      <div className="card">
+        <WachtwoordWijzigen />
+      </div>
     </div>
   );
 }

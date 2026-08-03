@@ -40,6 +40,9 @@ export default function Inloggen() {
         <label className="label">Wachtwoord</label>
         <input type="password" className="field" value={form.wachtwoord} onChange={(e) => setForm({ ...form, wachtwoord: e.target.value })} required />
         <button className="btn w-full mt-4" disabled={busy}>{busy ? "Bezig…" : "Inloggen"}</button>
+        <div className="text-center mt-2">
+          <Link href="/wachtwoord-vergeten" className="text-sm text-grijs hover:text-bosgroen">Wachtwoord vergeten?</Link>
+        </div>
       </form>
       <p className="text-sm text-grijs mt-4 text-center">
         <Link href="/zoeker" className="text-bosgroen font-semibold">Woning zoeken? Zet een alert</Link>

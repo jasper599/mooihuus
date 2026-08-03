@@ -199,6 +199,16 @@ export function renderZoekBevestiging(z: Zoekopdracht, matches: Listing[]): { on
   return { onderwerp: "Je woning-alert op Mooihuus staat aan", html: layout("Woning-alert", inner) };
 }
 
+export function renderWachtwoordReset(naam: string, resetUrl: string): { onderwerp: string; html: string } {
+  const inner = `
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Wachtwoord opnieuw instellen</h1>
+    <p style="line-height:1.6;">Hoi ${naam || "daar"}, je hebt gevraagd om je wachtwoord opnieuw in te stellen. Klik op de knop hieronder om een nieuw wachtwoord te kiezen. Deze link is 1 uur geldig.</p>
+    <p style="margin:22px 0;">${btn(resetUrl, "Nieuw wachtwoord instellen")}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Heb je dit niet aangevraagd? Dan kun je deze mail negeren; er verandert niets aan je account.</p>
+    <p style="line-height:1.4;color:${BRAND.grijs};font-size:12px;word-break:break-all;">Werkt de knop niet? Kopieer deze link: ${resetUrl}</p>`;
+  return { onderwerp: "Stel je Mooihuus-wachtwoord opnieuw in", html: layout("Wachtwoord opnieuw instellen", inner) };
+}
+
 export async function sendEmail(opts: {
   aan: string;
   onderwerp: string;
