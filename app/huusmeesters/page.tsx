@@ -86,11 +86,6 @@ export default function HuusmeestersPage() {
           <HuusmeesterForm />
         </div>
       </div>
-
-      <p className="text-xs text-grijs mt-6">
-        Mooihuus brengt eigenaren en vakmensen/partners bij elkaar. Afspraken en betalingen regel je
-        onderling — Mooihuus is geen partij in die overeenkomst.
-      </p>
     </div>
   );
 }
