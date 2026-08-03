@@ -1,0 +1,31 @@
+{
+  "name": "mooihuus-mvp",
+  "private": true,
+  "version": "0.2.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "seed": "node scripts/seed-note.mjs"
+  },
+  "dependencies": {
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "next-auth": "4.24.7",
+    "bcryptjs": "2.4.3",
+    "nodemailer": "6.9.14",
+    "@mollie/api-client": "3.7.0"
+  },
+  "devDependencies": {
+    "typescript": "5.4.5",
+    "@types/node": "20.12.7",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "@types/bcryptjs": "2.4.6",
+    "@types/nodemailer": "6.4.15",
+    "tailwindcss": "3.4.4",
+    "postcss": "8.4.38",
+    "autoprefixer": "10.4.19"
+  }
+}

@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #f6f1e7;
+  color: #22302a;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center rounded-[10px] font-display font-semibold text-sm px-4 py-2.5 bg-oranje text-white transition-colors;
+  }
+  .btn:hover { @apply bg-oranje-dk; }
+  .btn-green { @apply bg-bosgroen; }
+  .btn-green:hover { @apply bg-bosgroen-dk; }
+  .btn-ghost { @apply bg-transparent text-bosgroen-dk border border-salie; }
+  .btn-ghost:hover { @apply bg-zand; }
+  .card { @apply bg-white border border-lijn rounded-2xl p-5; }
+  .pill { @apply inline-block bg-salie-lt text-bosgroen-dk font-semibold text-xs px-3 py-1 rounded-full; }
+  .field { @apply w-full text-[0.95rem] border border-lijn rounded-[10px] px-3 py-2.5 bg-creme; }
+  .label { @apply block font-semibold text-sm mt-3 mb-1 text-inkt; }
+}
+
+.legal { max-width: 46rem; }
+.legal h2 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #1F4E32; font-size: 1.15rem; margin: 1.6rem 0 .5rem; }
+.legal h3 { font-family: 'Poppins', sans-serif; font-weight: 600; color: #22302a; font-size: 1rem; margin: 1.1rem 0 .35rem; }
+.legal p { margin-bottom: .8rem; }
+.legal ul { list-style: disc; margin: 0 0 .9rem 1.25rem; }
+.legal li { margin-bottom: .35rem; }
+.legal a { color: #2C6B45; }
+
+@media print {
+  header, footer, .no-print { display: none !important; }
+  body { background: #fff; }
+  main { padding: 0 !important; max-width: none !important; }
+}
