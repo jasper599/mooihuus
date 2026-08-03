@@ -6,6 +6,7 @@ import { Wordmark } from "@/components/Wordmark";
 import { Providers } from "@/components/Providers";
 import { CookieBanner } from "@/components/CookieBanner";
 import { ChatWidget } from "@/components/ChatWidget";
+import { Analytics } from "@/components/Analytics";
 import { I18nProvider } from "@/components/I18nProvider";
 import { getLocale, getPathname } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
@@ -103,6 +104,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </footer>
             <CookieBanner />
             <ChatWidget />
+            <Analytics />
           </I18nProvider>
         </Providers>
       </body>

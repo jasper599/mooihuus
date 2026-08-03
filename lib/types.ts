@@ -107,6 +107,15 @@ export interface Enquete {
   datum: string;
 }
 
+export interface Pageview {
+  id: string;
+  path: string;
+  ref: string; // herkomst: "direct" | "google" | "social" | hostnaam
+  device: "mobiel" | "tablet" | "desktop";
+  vid: string; // anonieme bezoeker-id (localStorage, geen cookie)
+  datum: string;
+}
+
 export interface PartnerKlik {
   id: string;
   partner: string; // naam van de partner

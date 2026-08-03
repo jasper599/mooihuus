@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 
 // ------------------------------------------------------------------
@@ -21,6 +21,7 @@ interface DB {
   zoekopdrachten: Zoekopdracht[];
   reviews: Review[];
   partnerkliks: PartnerKlik[];
+  pageviews: Pageview[];
   resetTokens?: { token: string; userId: string; expires: number }[];
   seq: number;
 }
@@ -46,7 +47,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], seq: 100 };
 }
 
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -125,6 +126,7 @@ function load(): DB {
   let migrated = false;
   if (!Array.isArray(cache.reviews)) { cache.reviews = []; migrated = true; }
   if (!Array.isArray(cache.partnerkliks)) { cache.partnerkliks = []; migrated = true; }
+  if (!Array.isArray(cache.pageviews)) { cache.pageviews = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
   if (fresh || removed || added || migrated) save();
@@ -436,6 +438,122 @@ export function addPartnerklik(partner: string, url: string): PartnerKlik {
 export function getPartnerkliks(): PartnerKlik[] {
   return load().partnerkliks;
 }
+// ---------- Statistieken (eigen, privacyvriendelijke pageview-tracking) ----------
+const PAGEVIEW_CAP = 20000; // rollend venster, houdt db.json compact
+
+export function addPageview(data: { path: string; ref: string; device: Pageview["device"]; vid: string }): void {
+  const db = load();
+  const pv: Pageview = {
+    id: nextId("pv-"),
+    path: data.path.slice(0, 200),
+    ref: data.ref.slice(0, 60),
+    device: data.device,
+    vid: data.vid.slice(0, 40),
+    datum: new Date().toISOString(),
+  };
+  db.pageviews.unshift(pv);
+  if (db.pageviews.length > PAGEVIEW_CAP) db.pageviews = db.pageviews.slice(0, PAGEVIEW_CAP);
+  save();
+}
+
+export function getPageviews(): Pageview[] {
+  return load().pageviews;
+}
+
+export interface AnalyticsSamenvatting {
+  totaalWeergaven: number;
+  totaalBezoekers: number;
+  vandaagWeergaven: number;
+  vandaagBezoekers: number;
+  weekWeergaven: number;
+  weekBezoekers: number;
+  gemSessieMin: number;
+  perDag: { dag: string; weergaven: number; bezoekers: number }[];
+  topPaginas: { path: string; aantal: number }[];
+  herkomst: { ref: string; aantal: number }[];
+  apparaat: { mobiel: number; tablet: number; desktop: number };
+}
+
+export function analyticsSamenvatting(): AnalyticsSamenvatting {
+  const pvs = load().pageviews;
+  const nu = Date.now();
+  const dag = 24 * 60 * 60 * 1000;
+  const startVandaag = new Date(new Date().toDateString()).getTime();
+  const week = nu - 7 * dag;
+
+  const bezoekersSet = new Set<string>();
+  const vandaagV = new Set<string>();
+  const weekV = new Set<string>();
+  let vandaagW = 0, weekW = 0;
+  const paginas = new Map<string, number>();
+  const herkomst = new Map<string, number>();
+  const apparaat = { mobiel: 0, tablet: 0, desktop: 0 };
+  const perDagMap = new Map<string, { w: number; v: Set<string> }>();
+
+  // sessies per bezoeker voor duurschatting
+  const perVid = new Map<string, number[]>();
+
+  for (const pv of pvs) {
+    const t = new Date(pv.datum).getTime();
+    bezoekersSet.add(pv.vid);
+    paginas.set(pv.path, (paginas.get(pv.path) || 0) + 1);
+    herkomst.set(pv.ref || "direct", (herkomst.get(pv.ref || "direct") || 0) + 1);
+    if (pv.device in apparaat) (apparaat as any)[pv.device] += 1;
+    if (t >= startVandaag) { vandaagW += 1; vandaagV.add(pv.vid); }
+    if (t >= week) { weekW += 1; weekV.add(pv.vid); }
+
+    const dagKey = pv.datum.slice(0, 10);
+    const pd = perDagMap.get(dagKey) || { w: 0, v: new Set<string>() };
+    pd.w += 1; pd.v.add(pv.vid); perDagMap.set(dagKey, pd);
+
+    const arr = perVid.get(pv.vid) || [];
+    arr.push(t); perVid.set(pv.vid, arr);
+  }
+
+  // Gemiddelde sessieduur: splits per bezoeker in sessies (gap > 30 min).
+  const sessieDuren: number[] = [];
+  for (const tijden of Array.from(perVid.values())) {
+    tijden.sort((a, b) => a - b);
+    let sessieStart = tijden[0];
+    let vorige = tijden[0];
+    for (let i = 1; i < tijden.length; i++) {
+      if (tijden[i] - vorige > 30 * 60 * 1000) {
+        sessieDuren.push(vorige - sessieStart);
+        sessieStart = tijden[i];
+      }
+      vorige = tijden[i];
+    }
+    sessieDuren.push(vorige - sessieStart);
+  }
+  const gemMs = sessieDuren.length ? sessieDuren.reduce((s, d) => s + d, 0) / sessieDuren.length : 0;
+
+  // Laatste 14 dagen als reeks (ook lege dagen).
+  const perDag: { dag: string; weergaven: number; bezoekers: number }[] = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(nu - i * dag);
+    const key = d.toISOString().slice(0, 10);
+    const pd = perDagMap.get(key);
+    perDag.push({ dag: key, weergaven: pd?.w || 0, bezoekers: pd?.v.size || 0 });
+  }
+
+  const top = (m: Map<string, number>, n: number) =>
+    Array.from(m.entries()).map(([k, v]) => ({ k, v })).sort((a, b) => b.v - a.v).slice(0, n);
+
+  return {
+    totaalWeergaven: pvs.length,
+    totaalBezoekers: bezoekersSet.size,
+    vandaagWeergaven: vandaagW,
+    vandaagBezoekers: vandaagV.size,
+    weekWeergaven: weekW,
+    weekBezoekers: weekV.size,
+    gemSessieMin: Math.round((gemMs / 60000) * 10) / 10,
+    perDag,
+    topPaginas: top(paginas, 8).map((x) => ({ path: x.k, aantal: x.v })),
+    herkomst: top(herkomst, 6).map((x) => ({ ref: x.k, aantal: x.v })),
+    apparaat,
+  };
+}
+
 export function partnerklikTotalen(): { partner: string; aantal: number; laatste?: string }[] {
   const kliks = load().partnerkliks;
   const map = new Map<string, { aantal: number; laatste?: string }>();

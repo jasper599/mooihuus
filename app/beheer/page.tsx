@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
   getUsers, getListings, getLeads, getPayments, getEmails, getUser, getListing, getEnquetes, getAllReviews,
-  partnerklikTotalen, getPartnerkliks,
+  partnerklikTotalen, getPartnerkliks, analyticsSamenvatting,
 } from "@/lib/db";
 import { euro, euroCents } from "@/lib/money";
 import { ReviewModeratie } from "@/components/ReviewModeratie";
@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 
 const TABS = [
   { key: "overzicht", label: "Overzicht" },
+  { key: "statistieken", label: "Statistieken" },
   { key: "profielen", label: "Profielen" },
   { key: "advertenties", label: "Advertenties" },
   { key: "betalingen", label: "Betalingen" },
@@ -37,6 +38,8 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
   const reviews = getAllReviews();
   const partnerTotalen = partnerklikTotalen();
   const partnerkliks = getPartnerkliks();
+  const stats = analyticsSamenvatting();
+  const maxDag = Math.max(1, ...stats.perDag.map((d) => d.weergaven));
   const gemRating = enquetes.length ? enquetes.reduce((s, e) => s + e.rating, 0) / enquetes.length : 0;
   const metAanbev = enquetes.filter((e) => e.aanbeveling != null);
   const gemAanbev = metAanbev.length ? metAanbev.reduce((s, e) => s + (e.aanbeveling ?? 0), 0) / metAanbev.length : 0;
@@ -60,6 +63,68 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
           </Link>
         ))}
       </div>
+
+      {tab === "statistieken" && (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <Stat n={String(stats.vandaagBezoekers)} l="Bezoekers vandaag" />
+            <Stat n={String(stats.weekBezoekers)} l="Bezoekers (7 dagen)" />
+            <Stat n={String(stats.totaalBezoekers)} l="Bezoekers totaal" />
+            <Stat n={stats.gemSessieMin ? stats.gemSessieMin + " min" : "—"} l="Gem. sessieduur" />
+            <Stat n={String(stats.vandaagWeergaven)} l="Weergaven vandaag" />
+            <Stat n={String(stats.weekWeergaven)} l="Weergaven (7 dagen)" />
+            <Stat n={String(stats.totaalWeergaven)} l="Weergaven totaal" />
+            <Stat n={`${stats.apparaat.mobiel}/${stats.apparaat.desktop}`} l="Mobiel / desktop" />
+          </div>
+
+          <div className="card mb-4">
+            <div className="font-display font-bold mb-3">Bezoek per dag (laatste 14 dagen)</div>
+            <div className="flex items-end gap-1.5 h-32">
+              {stats.perDag.map((d) => (
+                <div key={d.dag} className="flex-1 flex flex-col items-center justify-end h-full" title={`${d.dag}: ${d.weergaven} weergaven, ${d.bezoekers} bezoekers`}>
+                  <div className="w-full bg-bosgroen rounded-t" style={{ height: `${Math.max(3, (d.weergaven / maxDag) * 100)}%` }} />
+                  <div className="text-[0.6rem] text-grijs mt-1">{d.dag.slice(8)}</div>
+                </div>
+              ))}
+            </div>
+            <div className="text-xs text-grijs mt-2">Groene balk = paginaweergaven per dag. Beweeg eroverheen voor de aantallen.</div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="card">
+              <div className="font-display font-bold mb-2">Populairste pagina's</div>
+              {stats.topPaginas.length === 0 ? <div className="text-sm text-grijs">Nog geen data.</div> : (
+                <ul className="text-sm space-y-1">
+                  {stats.topPaginas.map((p) => (
+                    <li key={p.path} className="flex justify-between gap-2"><span className="truncate text-grijs">{p.path}</span><span className="font-semibold">{p.aantal}</span></li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="card">
+              <div className="font-display font-bold mb-2">Waar komen ze vandaan</div>
+              {stats.herkomst.length === 0 ? <div className="text-sm text-grijs">Nog geen data.</div> : (
+                <ul className="text-sm space-y-1">
+                  {stats.herkomst.map((h) => (
+                    <li key={h.ref} className="flex justify-between gap-2"><span className="truncate text-grijs">{h.ref === "direct" ? "Direct / bookmark" : h.ref}</span><span className="font-semibold">{h.aantal}</span></li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="card">
+              <div className="font-display font-bold mb-2">Apparaat</div>
+              <ul className="text-sm space-y-1">
+                <li className="flex justify-between"><span className="text-grijs">📱 Mobiel</span><span className="font-semibold">{stats.apparaat.mobiel}</span></li>
+                <li className="flex justify-between"><span className="text-grijs">💻 Desktop</span><span className="font-semibold">{stats.apparaat.desktop}</span></li>
+                <li className="flex justify-between"><span className="text-grijs">📲 Tablet</span><span className="font-semibold">{stats.apparaat.tablet}</span></li>
+              </ul>
+            </div>
+          </div>
+          <p className="text-xs text-grijs mt-3">
+            Eigen, privacyvriendelijke meting — zonder cookies en zonder externe partij. Eigen verkeer (beheer &amp; dashboard) telt niet mee. &ldquo;Waar&rdquo; is de herkomstbron; exacte locatie/land meten we niet.
+          </p>
+        </>
+      )}
 
       {tab === "overzicht" && (
         <>
