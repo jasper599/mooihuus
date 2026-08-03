@@ -1,5 +1,5 @@
-import { getPayment, updatePayment, getListing, updateListing, getUser } from "./db";
-import { renderBetalingsbewijs, renderOpvallerBewijs, sendEmail } from "./email";
+import { getPayment, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning } from "./db";
+import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, sendEmail } from "./email";
 
 // Markeer een betaling als betaald. Idempotent — dubbel aanroepen (bijv.
 // webhook + redirect) doet niets extra's.
@@ -37,6 +37,16 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
 
   // Advertentie: zet live.
   if (listing) updateListing(listing.id, { status: "live" });
+
+  // Woning-alerts: mail zoekers met een passende zoekopdracht.
+  if (listing) {
+    const live = getListing(listing.id)!;
+    for (const z of zoekopdrachtenVoorWoning(live)) {
+      const mail = renderWoningAlert(z, live);
+      await sendEmail({ aan: z.email, onderwerp: mail.onderwerp, soort: "alert", html: mail.html });
+    }
+  }
+
   if (owner && listing) {
     const updated = getPayment(payment.id)!;
     const mail = renderBetalingsbewijs(updated, listing, owner.naam);

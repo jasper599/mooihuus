@@ -83,6 +83,19 @@ export interface Payment {
   betaaldOp?: string;
 }
 
+export interface Zoekopdracht {
+  id: string;
+  naam: string;
+  email: string;
+  doel: "koop" | "huur" | "alle";
+  provincie: string; // "alle" of een provincienaam
+  prijsMax?: number;
+  personenMin?: number;
+  type?: string; // optioneel woningtype
+  alerts: boolean; // e-mail bij een match
+  datum: string;
+}
+
 export interface Enquete {
   id: string;
   userId?: string;
@@ -97,7 +110,7 @@ export interface EmailRecord {
   id: string;
   aan: string;
   onderwerp: string;
-  soort: "welkom" | "betalingsbewijs" | "lead" | "contact";
+  soort: "welkom" | "betalingsbewijs" | "lead" | "contact" | "alert";
   html: string;
   verzondenVia: "smtp" | "preview";
   datum: string;

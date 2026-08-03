@@ -22,6 +22,7 @@ export default function Home() {
           <div className="mt-5 flex gap-3 flex-wrap">
             <Link href={localeHref(locale, "/plaatsen")} className="btn">{t(locale, "home.ctaPlace")}</Link>
             <a href="#aanbod" className="btn btn-ghost text-[#EAF3EC]">{t(locale, "home.ctaBrowse")}</a>
+            <Link href={localeHref(locale, "/zoeker")} className="btn btn-ghost text-[#EAF3EC]">🔔 {t(locale, "nav.zoeker")}</Link>
           </div>
         </div>
         <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-salie/25" />

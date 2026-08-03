@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 
 // ------------------------------------------------------------------
@@ -18,6 +18,7 @@ interface DB {
   emails: EmailRecord[];
   enquetes: Enquete[];
   huusmeesters: Huusmeester[];
+  zoekopdrachten: Zoekopdracht[];
   seq: number;
 }
 
@@ -42,7 +43,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], seq: 100 };
 }
 
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -293,6 +294,35 @@ export function addHuusmeester(data: Omit<Huusmeester, "id" | "datum">): Huusmee
   db.huusmeesters.push(hm);
   save();
   return hm;
+}
+
+// ---------- Zoekopdrachten (woning-alerts) ----------
+export function getZoekopdrachten(): Zoekopdracht[] {
+  const db = load();
+  if (!db.zoekopdrachten) db.zoekopdrachten = [];
+  return db.zoekopdrachten;
+}
+export function addZoekopdracht(data: Omit<Zoekopdracht, "id" | "datum">): Zoekopdracht {
+  const db = load();
+  if (!db.zoekopdrachten) db.zoekopdrachten = [];
+  const z: Zoekopdracht = { ...data, id: nextId("zk-"), datum: new Date().toISOString() };
+  db.zoekopdrachten.unshift(z);
+  save();
+  return z;
+}
+// Past een woning bij een zoekopdracht?
+export function matchtZoekopdracht(z: Zoekopdracht, l: Listing): boolean {
+  if (l.status !== "live") return false;
+  if (z.doel && z.doel !== "alle" && z.doel !== l.doel) return false;
+  if (z.provincie && z.provincie !== "alle" && z.provincie !== l.provincie) return false;
+  if (z.prijsMax && l.prijs > z.prijsMax) return false;
+  if (z.personenMin && l.personen < z.personenMin) return false;
+  if (z.type && z.type !== l.type) return false;
+  return true;
+}
+// Zoekopdrachten (met alerts aan) die bij deze woning passen.
+export function zoekopdrachtenVoorWoning(l: Listing): Zoekopdracht[] {
+  return getZoekopdrachten().filter((z) => z.alerts && matchtZoekopdracht(z, l));
 }
 
 // ---------- Enquêtes ----------

@@ -86,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <p className="mt-2 max-w-xl">{t(locale, "footer.tagline")}</p>
                 <nav className="mt-4 flex gap-4 flex-wrap font-semibold text-bosgroen-dk">
                   <Link href={localeHref(locale, "/huusmeesters")} className="hover:underline">{t(locale, "nav.huusmeesters")}</Link>
+                  <Link href={localeHref(locale, "/zoeker")} className="hover:underline">{t(locale, "nav.zoeker")}</Link>
                   <Link href={localeHref(locale, "/blog")} className="hover:underline">{t(locale, "nav.blog")}</Link>
                   <Link href={localeHref(locale, "/contact")} className="hover:underline">{t(locale, "nav.contact")}</Link>
                   <Link href={localeHref(locale, "/faq")} className="hover:underline">{t(locale, "footer.faq")}</Link>

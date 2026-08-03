@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
 import { addEmail } from "./db";
-import { EmailRecord, Listing, Payment, Lead } from "./types";
-import { euroCents } from "./money";
+import { EmailRecord, Listing, Payment, Lead, Zoekopdracht } from "./types";
+import { euroCents, euro } from "./money";
+import { COMPANY } from "./company";
 
 // ------------------------------------------------------------------
 // E-mail: rendert merk-HTML en "verstuurt".
@@ -154,6 +155,48 @@ export function renderContact(d: {
     </table>
     <p style="margin:22px 0;">${btn("mailto:" + d.email, "Beantwoord " + d.naam.split(" ")[0])}</p>`;
   return { onderwerp: `[Mooihuus] ${d.onderwerp} — ${d.naam}`, html: layout("Nieuw bericht", inner) };
+}
+
+function woningRegel(l: Listing): string {
+  const url = `${COMPANY.website}/aanbod/${l.id}`;
+  return `<tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};">
+      <a href="${url}" style="color:${BRAND.bosgroenDk};font-weight:bold;text-decoration:none;">${l.titel}</a><br>
+      <span style="color:${BRAND.grijs};font-size:13px;">${l.type} · ${l.personen} pers · ${l.provincie} · ${l.doel === "huur" ? "te huur" : "te koop"}</span>
+    </td>
+    <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;color:${BRAND.oranjeDk};font-weight:bold;white-space:nowrap;">${euro(l.prijs)}</td></tr>`;
+}
+
+export function renderWoningAlert(z: Zoekopdracht, listing: Listing): { onderwerp: string; html: string } {
+  const inner = `
+    <span style="display:inline-block;background:${BRAND.oranje};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Nieuwe match 🎯</span>
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Er staat een nieuwe woning die bij je zoekopdracht past</h1>
+    <p style="line-height:1.6;">Hoi ${z.naam || "daar"}, we vonden een nieuwe woning op Mooihuus die aansluit bij wat je zoekt:</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
+      ${woningRegel(listing)}
+    </table>
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/aanbod/${listing.id}`, "Bekijk de woning")}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je ontvangt deze mail omdat je een woning-alert hebt ingesteld op Mooihuus. Reageren op de woning gaat rechtstreeks naar de aanbieder.</p>`;
+  return { onderwerp: `Nieuwe match: ${listing.titel}`, html: layout("Nieuwe match", inner) };
+}
+
+export function renderZoekBevestiging(z: Zoekopdracht, matches: Listing[]): { onderwerp: string; html: string } {
+  const wensen = [
+    z.doel && z.doel !== "alle" ? (z.doel === "huur" ? "te huur" : "te koop") : null,
+    z.provincie && z.provincie !== "alle" ? z.provincie : null,
+    z.prijsMax ? `tot ${euro(z.prijsMax)}` : null,
+    z.personenMin ? `vanaf ${z.personenMin} personen` : null,
+    z.type || null,
+  ].filter(Boolean).join(" · ") || "alle recreatiewoningen";
+  const lijst = matches.slice(0, 5).map(woningRegel).join("");
+  const inner = `
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 6px;">Je woning-alert staat aan ✅</h1>
+    <p style="line-height:1.6;">Hoi ${z.naam || "daar"}, je zoekopdracht is opgeslagen. Zodra er een nieuwe woning bij past, krijg je meteen een mailtje.</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Je zoekt: <strong>${wensen}</strong>.</p>
+    ${matches.length ? `<p style="line-height:1.6;">Dit past nú al bij je zoekopdracht:</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:14px 0;">${lijst}</table>` : `<p style="line-height:1.6;">Er staat nu nog niets dat precies past — maar zodra dat verandert, ben jij de eerste die het weet.</p>`}
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/`, "Bekijk het aanbod")}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je kunt je op elk moment afmelden door te reageren op deze mail.</p>`;
+  return { onderwerp: "Je woning-alert op Mooihuus staat aan", html: layout("Woning-alert", inner) };
 }
 
 export async function sendEmail(opts: {
