@@ -18,11 +18,11 @@ export const HUUSMEESTERS_PARTNERS: Partner[] = [
     emoji: "🛡️",
   },
   {
-    naam: "Samen Financieel Sterk",
+    naam: "Samen Financieel Sterker",
     vak: "Hypotheken & financiering",
     omschrijving:
       "Hypotheken en financiering speciaal voor vakantiewoningen. Deskundig advies op maat.",
-    url: "https://samenfinancieelsterk.nl",
+    url: "https://samenfinancieelsterker.nl",
     emoji: "🏦",
   },
 ];
