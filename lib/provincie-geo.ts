@@ -20,8 +20,10 @@ export const PROVINCIE_CENTROID: Record<string, [number, number]> = {
 
 // Deterministische kleine verschuiving zodat woningen in dezelfde provincie
 // niet exact op elkaar liggen. Op basis van de index — geen willekeur nodig.
+// Strak gehouden zodat de huisjes netjes rond het provinciecentrum clusteren
+// en niet in zee of een buurprovincie belanden.
 export function scatter(base: [number, number], i: number): [number, number] {
   const angle = (i * 137.508 * Math.PI) / 180; // gulden hoek → mooie spreiding
-  const r = 0.06 + (i % 7) * 0.015;
-  return [base[0] + Math.sin(angle) * r, base[1] + Math.cos(angle) * r * 1.4];
+  const r = 0.02 + (i % 6) * 0.009; // ~2–7 km rond het centrum
+  return [base[0] + Math.sin(angle) * r, base[1] + Math.cos(angle) * r * 1.15];
 }
