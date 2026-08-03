@@ -3,9 +3,10 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
-  getUsers, getListings, getLeads, getPayments, getEmails, getUser, getListing, getEnquetes,
+  getUsers, getListings, getLeads, getPayments, getEmails, getUser, getListing, getEnquetes, getAllReviews,
 } from "@/lib/db";
 import { euro, euroCents } from "@/lib/money";
+import { ReviewModeratie } from "@/components/ReviewModeratie";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ const TABS = [
   { key: "leads", label: "Leads" },
   { key: "mailbox", label: "Mailbox" },
   { key: "enquetes", label: "Enquêtes" },
+  { key: "reviews", label: "Beoordelingen" },
 ];
 
 export default async function Beheer({ searchParams }: { searchParams: { tab?: string } }) {
@@ -30,6 +32,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
   const payments = getPayments();
   const emails = getEmails();
   const enquetes = getEnquetes();
+  const reviews = getAllReviews();
   const gemRating = enquetes.length ? enquetes.reduce((s, e) => s + e.rating, 0) / enquetes.length : 0;
   const metAanbev = enquetes.filter((e) => e.aanbeveling != null);
   const gemAanbev = metAanbev.length ? metAanbev.reduce((s, e) => s + (e.aanbeveling ?? 0), 0) / metAanbev.length : 0;
@@ -184,6 +187,29 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
             ))}
           </div>
         </>
+      )}
+
+      {tab === "reviews" && (
+        <div className="space-y-2">
+          {reviews.length === 0 ? (
+            <div className="card text-grijs text-sm">Nog geen beoordelingen ontvangen.</div>
+          ) : reviews.map((r) => (
+            <div key={r.id} className={`card ${r.goedgekeurd ? "" : "opacity-70 border-dashed"}`}>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="font-semibold text-sm">
+                  {r.naam}{r.plaats ? <span className="text-grijs font-normal"> · {r.plaats}</span> : ""}
+                  {!r.goedgekeurd && <span className="ml-2 text-xs text-oranje-dk font-semibold">(verborgen)</span>}
+                </div>
+                <div className="text-oranje text-sm">{"★".repeat(r.rating)}<span className="text-lijn">{"★".repeat(5 - r.rating)}</span></div>
+              </div>
+              {r.tekst && <div className="text-sm mt-1.5">&ldquo;{r.tekst}&rdquo;</div>}
+              <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">
+                <div className="text-xs text-grijs">{new Date(r.datum).toLocaleString("nl-NL")}</div>
+                <ReviewModeratie id={r.id} goedgekeurd={r.goedgekeurd} />
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

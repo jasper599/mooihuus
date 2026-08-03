@@ -9,7 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = COMPANY.website;
   const nu = new Date();
 
-  const statisch = ["", "/zoeker", "/blog", "/huusmeesters", "/contact", "/faq", "/plaatsen", "/registreren", "/inloggen", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"];
+  const statisch = ["", "/zoeker", "/blog", "/reviews", "/huusmeesters", "/contact", "/faq", "/plaatsen", "/registreren", "/inloggen", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"];
   const pages: MetadataRoute.Sitemap = statisch.map((p) => ({
     url: `${base}${p}`,
     lastModified: nu,

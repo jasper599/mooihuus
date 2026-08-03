@@ -88,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Link href={localeHref(locale, "/huusmeesters")} className="hover:underline">{t(locale, "nav.huusmeesters")}</Link>
                   <Link href={localeHref(locale, "/zoeker")} className="hover:underline">{t(locale, "nav.zoeker")}</Link>
                   <Link href={localeHref(locale, "/blog")} className="hover:underline">{t(locale, "nav.blog")}</Link>
+                  <Link href={localeHref(locale, "/reviews")} className="hover:underline">{t(locale, "footer.reviews")}</Link>
                   <Link href={localeHref(locale, "/contact")} className="hover:underline">{t(locale, "nav.contact")}</Link>
                   <Link href={localeHref(locale, "/faq")} className="hover:underline">{t(locale, "footer.faq")}</Link>
                   <Link href={localeHref(locale, "/voorwaarden")} className="hover:underline">{t(locale, "footer.voorwaarden")}</Link>

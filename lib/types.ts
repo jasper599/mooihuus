@@ -107,6 +107,16 @@ export interface Enquete {
   datum: string;
 }
 
+export interface Review {
+  id: string;
+  naam: string;
+  plaats?: string;
+  rating: number; // 1-5
+  tekst: string;
+  goedgekeurd: boolean; // zichtbaar op de site
+  datum: string;
+}
+
 export interface EmailRecord {
   id: string;
   aan: string;

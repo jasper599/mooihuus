@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 
 // ------------------------------------------------------------------
@@ -19,6 +19,7 @@ interface DB {
   enquetes: Enquete[];
   huusmeesters: Huusmeester[];
   zoekopdrachten: Zoekopdracht[];
+  reviews: Review[];
   resetTokens?: { token: string; userId: string; expires: number }[];
   seq: number;
 }
@@ -44,7 +45,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], seq: 100 };
 }
 
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -119,9 +120,12 @@ function load(): DB {
   }
   const fresh = !cache;
   if (!cache) cache = seed();
+  // Migratie: zorg dat nieuwere velden bestaan in oudere db.json bestanden.
+  let migrated = false;
+  if (!Array.isArray(cache.reviews)) { cache.reviews = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
-  if (fresh || removed || added) save();
+  if (fresh || removed || added || migrated) save();
   return cache;
 }
 
@@ -377,4 +381,44 @@ export function addEnquete(data: Omit<Enquete, "id" | "datum">): Enquete {
   db.enquetes.unshift(enq);
   save();
   return enq;
+}
+
+// ---------- Reviews (openbare beoordelingen) ----------
+export function getReviews(): Review[] {
+  // Alleen goedgekeurde, nieuwste eerst.
+  return load().reviews.filter((r) => r.goedgekeurd);
+}
+export function getAllReviews(): Review[] {
+  return load().reviews;
+}
+export function addReview(data: { naam: string; plaats?: string; rating: number; tekst: string; goedgekeurd?: boolean }): Review {
+  const db = load();
+  const rev: Review = {
+    id: nextId("rev-"),
+    naam: data.naam,
+    plaats: data.plaats,
+    rating: data.rating,
+    tekst: data.tekst,
+    goedgekeurd: data.goedgekeurd ?? true,
+    datum: new Date().toISOString(),
+  };
+  db.reviews.unshift(rev);
+  save();
+  return rev;
+}
+export function setReviewGoedgekeurd(id: string, goedgekeurd: boolean): Review | undefined {
+  const db = load();
+  const r = db.reviews.find((x) => x.id === id);
+  if (!r) return undefined;
+  r.goedgekeurd = goedgekeurd;
+  save();
+  return r;
+}
+export function deleteReview(id: string): boolean {
+  const db = load();
+  const i = db.reviews.findIndex((x) => x.id === id);
+  if (i === -1) return false;
+  db.reviews.splice(i, 1);
+  save();
+  return true;
 }
