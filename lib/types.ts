@@ -28,6 +28,7 @@ export interface Listing {
   personen: number;
   m2: number;
   prijs: number;
+  prijsSuffix?: string; // "k.k.", "v.o.n.", "excl. btw", "per week", ...
   omschrijving: string;
   kleur: number;
   pakket: Pakket;

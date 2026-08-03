@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Listing } from "@/lib/types";
-import { gradient, euro } from "@/lib/format";
+import { gradient, euro, prijsSuffix, grondInfo } from "@/lib/format";
 import { Locale, t, localeHref } from "@/lib/i18n";
 
 export function ListingCard({ listing, locale = "nl" }: { listing: Listing; locale?: Locale }) {
@@ -24,13 +24,25 @@ export function ListingCard({ listing, locale = "nl" }: { listing: Listing; loca
             ✨ Uitgelicht
           </span>
         )}
+        {grondInfo(listing.grond) && (
+          <span
+            className={`absolute bottom-2.5 left-2.5 font-display font-semibold text-[0.66rem] px-2.5 py-0.5 rounded-full text-white ${
+              grondInfo(listing.grond)!.eigen ? "bg-bosgroen-dk" : "bg-inkt/80"
+            }`}
+          >
+            {grondInfo(listing.grond)!.eigen ? "🌳 Eigen grond" : `🔑 ${grondInfo(listing.grond)!.label}`}
+          </span>
+        )}
       </div>
       <div className="p-3.5">
         <div className="font-display font-bold text-inkt">{listing.titel}</div>
         <div className="text-sm text-grijs">
           {listing.type} · {listing.personen} {t(locale, "listing.persons")} · {listing.m2} m² · {listing.provincie}
         </div>
-        <div className="font-display font-extrabold text-oranje-dk mt-1.5">{euro(listing.prijs)}</div>
+        <div className="font-display font-extrabold text-oranje-dk mt-1.5">
+          {euro(listing.prijs)}
+          {prijsSuffix(listing) && <span className="text-grijs font-semibold text-sm ml-1">{prijsSuffix(listing)}</span>}
+        </div>
       </div>
     </Link>
   );

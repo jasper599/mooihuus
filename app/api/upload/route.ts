@@ -1,0 +1,32 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import fs from "fs";
+import path from "path";
+
+export const runtime = "nodejs";
+
+const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
+const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
+
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!(session?.user as any)?.id) {
+    return NextResponse.json({ error: "Log eerst in." }, { status: 401 });
+  }
+  const form = await req.formData();
+  const file = form.get("file") as File | null;
+  if (!file) return NextResponse.json({ error: "Geen bestand ontvangen." }, { status: 400 });
+  if (!file.type.startsWith("image/")) {
+    return NextResponse.json({ error: "Alleen afbeeldingen zijn toegestaan." }, { status: 400 });
+  }
+  const buf = Buffer.from(await file.arrayBuffer());
+  if (buf.length > 8 * 1024 * 1024) {
+    return NextResponse.json({ error: "Elke foto mag maximaal 8 MB zijn." }, { status: 400 });
+  }
+  if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  const ext = (file.type.split("/")[1] || "jpg").replace(/[^a-z0-9]/gi, "").slice(0, 5);
+  const name = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  fs.writeFileSync(path.join(UPLOAD_DIR, name), buf);
+  return NextResponse.json({ url: `/api/foto/${name}` });
+}

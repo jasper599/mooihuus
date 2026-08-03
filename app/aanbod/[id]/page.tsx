@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getListing, getUser } from "@/lib/db";
-import { gradient, euro } from "@/lib/format";
+import { gradient, euro, prijsSuffix, grondInfo } from "@/lib/format";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { COMPANY } from "@/lib/company";
@@ -69,6 +69,15 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             <span className={`absolute top-3 left-3 text-white font-display font-semibold text-xs px-3 py-1 rounded-full ${listing.status === "verkocht" ? "bg-oranje" : "bg-bosgroen"}`}>
               {listing.status === "verkocht" ? "Verkocht" : listing.doel === "huur" ? t(locale, "home.huur") : t(locale, "home.koop")}
             </span>
+            {grondInfo(listing.grond) && (
+              <span
+                className={`absolute bottom-3 left-3 text-white font-display font-semibold text-xs px-3 py-1 rounded-full ${
+                  grondInfo(listing.grond)!.eigen ? "bg-bosgroen-dk" : "bg-inkt/85"
+                }`}
+              >
+                {grondInfo(listing.grond)!.eigen ? "🌳 Eigen grond" : `🔑 ${grondInfo(listing.grond)!.label}`}
+              </span>
+            )}
           </div>
           {listing.fotos && listing.fotos.length > 1 && (
             <div className="grid grid-cols-3 gap-2 mt-2">
@@ -135,7 +144,10 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
 
         <aside>
           <div className="card">
-            <div className="font-display font-extrabold text-2xl text-oranje-dk">{euro(listing.prijs)}</div>
+            <div className="font-display font-extrabold text-2xl text-oranje-dk">
+              {euro(listing.prijs)}
+              {prijsSuffix(listing) && <span className="text-grijs font-semibold text-base ml-1.5">{prijsSuffix(listing)}</span>}
+            </div>
             <div className="text-sm font-semibold mb-1 mt-3">{t(locale, zakelijk ? "listing.contactZakelijk" : "listing.contactTitle")}</div>
             <p className="text-xs text-grijs mb-3">{t(locale, zakelijk ? "listing.directZakelijk" : "listing.direct")}</p>
             <LeadForm listingId={listing.id} zakelijk={zakelijk} />

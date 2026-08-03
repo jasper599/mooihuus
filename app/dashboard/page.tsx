@@ -82,7 +82,10 @@ export default async function Dashboard() {
                 <div className="mt-2 text-xs text-oranje-dk font-semibold">✨ Uitgelicht op de home</div>
               )}
               {(l.status === "live" || l.status === "verkocht" || l.status === "offline") && (
-                <div className="mt-3 pt-3 border-t border-lijn"><ListingActions id={l.id} status={l.status} /></div>
+                <div className="mt-3 pt-3 border-t border-lijn flex items-center gap-3 flex-wrap">
+                  <Link href={`/dashboard/bewerken/${l.id}`} className="text-sm text-bosgroen font-semibold hover:underline">✏️ Bewerken</Link>
+                  <ListingActions id={l.id} status={l.status} />
+                </div>
               )}
             </div>
           ))}
