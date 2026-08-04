@@ -11,6 +11,7 @@ import { LeadForm } from "./LeadForm";
 import { ShareButtons } from "@/components/ShareButtons";
 import { FavButton } from "@/components/FavButton";
 import { BezichtigingForm } from "@/components/BezichtigingForm";
+import { MaandlastenCalculator } from "@/components/MaandlastenCalculator";
 
 export const dynamic = "force-dynamic";
 
@@ -163,6 +164,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             <FavButton id={listing.id} variant="inline" />
             <ShareButtons title={listing.titel} />
           </div>
+          {listing.doel !== "huur" && <MaandlastenCalculator prijs={listing.prijs} />}
         </aside>
       </div>
     </div>
