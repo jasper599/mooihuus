@@ -12,6 +12,7 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { FavButton } from "@/components/FavButton";
 import { BezichtigingForm } from "@/components/BezichtigingForm";
 import { MaandlastenCalculator } from "@/components/MaandlastenCalculator";
+import { VertaalOmschrijving } from "@/components/VertaalOmschrijving";
 
 export const dynamic = "force-dynamic";
 
@@ -102,7 +103,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             <span className="pill">{listing.m2} m²</span>
             <span className="pill">{listing.type}</span>
           </div>
-          <p className="mt-4 leading-relaxed">{listing.omschrijving}</p>
+          <VertaalOmschrijving text={listing.omschrijving} />
 
           {(() => {
             const embed = embedVideoUrl(listing.videoUrl);
