@@ -106,7 +106,7 @@ function ensureLmData(db: DB): boolean {
 
   for (const l of LM_LISTINGS) {
     if (!db.listings.some((x) => x.id === l.id)) {
-      db.listings.push({ ...l, ownerId: LM_OWNER.id, aangemaakt: new Date().toISOString() });
+      db.listings.push({ ...l, ownerId: LM_OWNER.id, source: "luyten", aangemaakt: new Date().toISOString() });
       changed = true;
     }
   }
@@ -131,6 +131,10 @@ function load(): DB {
   if (!Array.isArray(cache.partnerkliks)) { cache.partnerkliks = []; migrated = true; }
   if (!Array.isArray(cache.pageviews)) { cache.pageviews = []; migrated = true; }
   if (!Array.isArray(cache.postcodegeo)) { cache.postcodegeo = []; migrated = true; }
+  // Backfill: bestaande woningen een bron geven (lm-* = luyten, rest = eigen).
+  for (const l of cache.listings) {
+    if (!l.source) { l.source = l.id.startsWith("lm-") ? "luyten" : "eigen"; migrated = true; }
+  }
   if (!Array.isArray(cache.nieuwsbrief)) { cache.nieuwsbrief = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
@@ -251,7 +255,7 @@ export function getListingsByOwner(ownerId: string): Listing[] {
 }
 export function addListing(data: Omit<Listing, "id" | "aangemaakt">): Listing {
   const db = load();
-  const listing: Listing = { ...data, id: nextId("li-"), aangemaakt: new Date().toISOString() };
+  const listing: Listing = { source: "eigen", ...data, id: nextId("li-"), aangemaakt: new Date().toISOString() };
   db.listings.unshift(listing);
   save();
   return listing;

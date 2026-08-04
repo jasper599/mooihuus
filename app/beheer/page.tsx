@@ -9,6 +9,7 @@ import {
 import { euro, euroCents } from "@/lib/money";
 import { ReviewModeratie } from "@/components/ReviewModeratie";
 import { NieuwsbriefVerstuur } from "@/components/NieuwsbriefVerstuur";
+import { FeedImportKnop } from "@/components/FeedImportKnop";
 
 export const dynamic = "force-dynamic";
 
@@ -172,18 +173,41 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
       )}
 
       {tab === "advertenties" && (
-        <Table head={["Titel", "Eigenaar", "Doel", "Pakket", "Status", "Prijs"]}>
-          {listings.map((l) => (
-            <tr key={l.id} className="border-t border-lijn">
-              <Td>{l.titel}</Td>
-              <Td>{getUser(l.ownerId)?.naam ?? "—"}</Td>
-              <Td>{l.doel === "huur" ? "Te huur" : "Te koop"}</Td>
-              <Td>{l.pakket}</Td>
-              <Td>{statusLabel(l.status)}</Td>
-              <Td>{euro(l.prijs)}</Td>
-            </tr>
-          ))}
-        </Table>
+        <>
+          <div className="card mb-4">
+            <div className="font-display font-bold mb-2">Aanbod per bron</div>
+            <div className="flex gap-2 flex-wrap mb-3">
+              {Object.entries(
+                listings.reduce((acc: Record<string, number>, l) => {
+                  const b = l.source || "eigen";
+                  acc[b] = (acc[b] || 0) + 1;
+                  return acc;
+                }, {})
+              ).map(([bron, n]) => (
+                <span key={bron} className="pill">{bronLabel(bron)}: <strong className="ml-1">{n as number}</strong></span>
+              ))}
+            </div>
+            <div className="border-t border-lijn pt-3">
+              <div className="text-sm text-grijs mb-2">Feed-koppelingen (handmatig synchroniseren zodra geconfigureerd):</div>
+              <div className="flex gap-3 flex-wrap">
+                <FeedImportKnop bron="kolibri" label="Kolibri" />
+                <FeedImportKnop bron="realworks" label="Realworks" />
+              </div>
+            </div>
+          </div>
+          <Table head={["Titel", "Bron", "Eigenaar", "Doel", "Status", "Prijs"]}>
+            {listings.map((l) => (
+              <tr key={l.id} className="border-t border-lijn">
+                <Td>{l.titel}</Td>
+                <Td><span className="pill">{bronLabel(l.source)}</span></Td>
+                <Td>{getUser(l.ownerId)?.naam ?? "—"}</Td>
+                <Td>{l.doel === "huur" ? "Te huur" : "Te koop"}</Td>
+                <Td>{statusLabel(l.status)}</Td>
+                <Td>{euro(l.prijs)}</Td>
+              </tr>
+            ))}
+          </Table>
+        </>
       )}
 
       {tab === "betalingen" && (
@@ -335,6 +359,11 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
       )}
     </div>
   );
+}
+
+function bronLabel(s?: string) {
+  const m: Record<string, string> = { luyten: "Luyten", eigen: "Eigen", kolibri: "Kolibri", realworks: "Realworks" };
+  return m[s || "eigen"] || s || "—";
 }
 
 function statusLabel(s: string) {
