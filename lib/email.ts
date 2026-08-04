@@ -209,17 +209,50 @@ export function renderWachtwoordReset(naam: string, resetUrl: string): { onderwe
   return { onderwerp: "Stel je Mooihuus-wachtwoord opnieuw in", html: layout("Wachtwoord opnieuw instellen", inner) };
 }
 
+function woningRij(l: Listing): string {
+  const foto = l.fotos && l.fotos[0];
+  const media = foto
+    ? `<img src="${foto}" width="84" height="64" alt="" style="width:84px;height:64px;object-fit:cover;border-radius:8px;display:block;" />`
+    : `<div style="width:84px;height:64px;border-radius:8px;background:${BRAND.salie};"></div>`;
+  const suffix = l.prijsSuffix && l.prijsSuffix !== "geen" ? l.prijsSuffix : l.doel === "koop" ? "k.k." : "";
+  return `<a href="${COMPANY.website}/aanbod/${l.id}" style="text-decoration:none;color:${BRAND.inkt};display:block;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0;"><tr>
+      <td width="84" valign="top">${media}</td>
+      <td valign="top" style="padding-left:12px;">
+        <div style="font-weight:bold;color:${BRAND.bosgroenDk};font-size:14px;">${l.titel}</div>
+        <div style="color:${BRAND.grijs};font-size:12px;">${l.type} · ${l.provincie}</div>
+        <div style="color:${BRAND.oranjeDk};font-weight:bold;font-size:14px;">${euro(l.prijs)}${suffix ? " " + suffix : ""}</div>
+      </td>
+    </tr></table></a>`;
+}
+
+function woningenBlok(titel: string, list: Listing[]): string {
+  if (!list.length) return "";
+  return `<div style="margin-top:22px;">
+    <div style="font-weight:bold;color:${BRAND.bosgroenDk};font-size:16px;margin-bottom:2px;">${titel}</div>
+    ${list.map(woningRij).join("")}
+  </div>`;
+}
+
 export function renderNieuwsbrief(
   post: { titel: string; intro: string; categorie: string; emoji: string; slug: string },
-  afmeldUrl?: string
+  opts: { afmeldUrl?: string; koop?: Listing[]; huur?: Listing[] } = {}
 ): { onderwerp: string; html: string } {
   const url = `${COMPANY.website}/blog/${post.slug}`;
+  const koop = opts.koop || [];
+  const huur = opts.huur || [];
+  const heeftWoningen = koop.length > 0 || huur.length > 0;
   const inner = `
     <div style="font-size:12px;font-weight:bold;color:${BRAND.oranjeDk};text-transform:uppercase;letter-spacing:.04em;">${post.emoji} ${post.categorie}</div>
     <h1 style="font-size:23px;color:${BRAND.bosgroenDk};margin:6px 0 10px;">${post.titel}</h1>
     <p style="line-height:1.6;">${post.intro}</p>
-    <p style="margin:22px 0;">${btn(url, "Lees het hele artikel")}</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je ontvangt deze mail omdat je je hebt aangemeld voor de Mooihuus-nieuwsbrief.${afmeldUrl ? ` <a href="${afmeldUrl}" style="color:${BRAND.grijs};">Afmelden</a>.` : ""}</p>`;
+    <p style="margin:20px 0;">${btn(url, "Lees het hele artikel")}</p>
+    ${heeftWoningen ? `<div style="border-top:1px solid ${BRAND.lijn};margin:24px 0 0;"></div>
+    <h2 style="font-size:18px;color:${BRAND.bosgroenDk};margin:20px 0 0;">🏡 Uit ons aanbod</h2>
+    ${woningenBlok("Te koop", koop)}
+    ${woningenBlok("Te huur", huur)}
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/`, "Bekijk het hele aanbod")}</p>` : ""}
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;border-top:1px solid ${BRAND.lijn};padding-top:16px;">Je ontvangt deze mail omdat je je hebt aangemeld voor de Mooihuus-nieuwsbrief.${opts.afmeldUrl ? ` <a href="${opts.afmeldUrl}" style="color:${BRAND.grijs};">Afmelden</a>.` : ""}</p>`;
   return { onderwerp: `${post.emoji} ${post.titel} — Mooihuus`, html: layout(post.titel, inner) };
 }
 
