@@ -55,28 +55,32 @@ export async function GET() {
   const posts = blogList().slice(0, 10);
 
   type Item = { title: string; link: string; caption: string; image: string; date: string; guid: string };
-  const items: Item[] = [];
 
-  for (const l of listings) {
-    items.push({
-      title: `${l.type} ${l.doel === "huur" ? "te huur" : "te koop"} in ${l.provincie} — ${euro(l.prijs)}`,
-      link: `${SITE}/aanbod/${l.id}`,
-      caption: listingCaption(l),
-      image: `${SITE}/social/woning/${l.id}`,
-      date: new Date(l.aangemaakt || Date.now()).toUTCString(),
-      guid: `woning-${l.id}`,
-    });
+  const woningItems: Item[] = listings.map((l) => ({
+    title: `${l.type} ${l.doel === "huur" ? "te huur" : "te koop"} in ${l.provincie} — ${euro(l.prijs)}`,
+    link: `${SITE}/aanbod/${l.id}`,
+    caption: listingCaption(l),
+    image: `${SITE}/social/woning/${l.id}`,
+    date: new Date(l.aangemaakt || 0).toUTCString(),
+    guid: `woning-${l.id}`,
+  }));
+  const blogItems: Item[] = posts.map((p) => ({
+    title: p.titel,
+    link: `${SITE}/blog/${p.slug}`,
+    caption: blogCaption(p),
+    image: `${SITE}/social/blog/${p.slug}`,
+    date: new Date(p.datum).toUTCString(),
+    guid: `blog-${p.slug}`,
+  }));
+
+  // Afwisselen: na elke 3 woningen een blogartikel, zodat de feed "om en om" loopt.
+  const items: Item[] = [];
+  let bi = 0;
+  for (let i = 0; i < woningItems.length; i++) {
+    items.push(woningItems[i]);
+    if ((i + 1) % 3 === 0 && bi < blogItems.length) items.push(blogItems[bi++]);
   }
-  for (const p of posts) {
-    items.push({
-      title: p.titel,
-      link: `${SITE}/blog/${p.slug}`,
-      caption: blogCaption(p),
-      image: `${SITE}/social/blog/${p.slug}`,
-      date: new Date(p.datum).toUTCString(),
-      guid: `blog-${p.slug}`,
-    });
-  }
+  while (bi < blogItems.length) items.push(blogItems[bi++]);
 
   const body = items
     .map(
