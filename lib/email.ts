@@ -212,18 +212,17 @@ export function renderWachtwoordReset(naam: string, resetUrl: string): { onderwe
 function woningRij(l: Listing): string {
   const foto = l.fotos && l.fotos[0];
   const media = foto
-    ? `<img src="${foto}" width="84" height="64" alt="" style="width:84px;height:64px;object-fit:cover;border-radius:8px;display:block;" />`
-    : `<div style="width:84px;height:64px;border-radius:8px;background:${BRAND.salie};"></div>`;
+    ? `<img src="${foto}" width="540" alt="${l.titel}" style="width:100%;max-width:540px;height:180px;object-fit:cover;border-radius:12px;display:block;border:1px solid ${BRAND.lijn};" />`
+    : `<div style="width:100%;height:180px;border-radius:12px;background:${BRAND.salie};"></div>`;
   const suffix = l.prijsSuffix && l.prijsSuffix !== "geen" ? l.prijsSuffix : l.doel === "koop" ? "k.k." : "";
-  return `<a href="${COMPANY.website}/aanbod/${l.id}" style="text-decoration:none;color:${BRAND.inkt};display:block;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0;"><tr>
-      <td width="84" valign="top">${media}</td>
-      <td valign="top" style="padding-left:12px;">
-        <div style="font-weight:bold;color:${BRAND.bosgroenDk};font-size:14px;">${l.titel}</div>
-        <div style="color:${BRAND.grijs};font-size:12px;">${l.type} · ${l.provincie}</div>
-        <div style="color:${BRAND.oranjeDk};font-weight:bold;font-size:14px;">${euro(l.prijs)}${suffix ? " " + suffix : ""}</div>
-      </td>
-    </tr></table></a>`;
+  return `<a href="${COMPANY.website}/aanbod/${l.id}" style="text-decoration:none;color:${BRAND.inkt};display:block;margin:14px 0;">
+    ${media}
+    <div style="padding:8px 2px 0;">
+      <div style="font-weight:bold;color:${BRAND.bosgroenDk};font-size:15px;">${l.titel}</div>
+      <div style="color:${BRAND.grijs};font-size:13px;">${l.type} · ${l.provincie}</div>
+      <div style="color:${BRAND.oranjeDk};font-weight:bold;font-size:15px;">${euro(l.prijs)}${suffix ? " " + suffix : ""}</div>
+    </div>
+  </a>`;
 }
 
 function woningenBlok(titel: string, list: Listing[]): string {
