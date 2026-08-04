@@ -10,6 +10,7 @@ import { suggestUitjes } from "@/lib/uitjes";
 import { LeadForm } from "./LeadForm";
 import { ShareButtons } from "@/components/ShareButtons";
 import { FavButton } from "@/components/FavButton";
+import { BezichtigingForm } from "@/components/BezichtigingForm";
 
 export const dynamic = "force-dynamic";
 
@@ -152,6 +153,11 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             <div className="text-sm font-semibold mb-1 mt-3">{t(locale, zakelijk ? "listing.contactZakelijk" : "listing.contactTitle")}</div>
             <p className="text-xs text-grijs mb-3">{t(locale, zakelijk ? "listing.directZakelijk" : "listing.direct")}</p>
             <LeadForm listingId={listing.id} zakelijk={zakelijk} />
+            {listing.doel !== "huur" && (
+              <div className="mt-3 pt-3 border-t border-lijn">
+                <BezichtigingForm listingId={listing.id} />
+              </div>
+            )}
           </div>
           <div className="card mt-4 flex flex-col gap-3">
             <FavButton id={listing.id} variant="inline" />
