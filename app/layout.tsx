@@ -100,6 +100,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <NieuwsbriefForm />
                 </div>
                 <nav className="mt-4 flex gap-4 flex-wrap font-semibold text-bosgroen-dk">
+                  <Link href={localeHref(locale, "/te-koop")} className="hover:underline">Te koop per provincie</Link>
                   <Link href={localeHref(locale, "/huusmeesters")} className="hover:underline">{t(locale, "nav.huusmeesters")}</Link>
                   <Link href={localeHref(locale, "/verkocht")} className="hover:underline">{t(locale, "nav.verkocht")}</Link>
                   <Link href={localeHref(locale, "/zoeker")} className="hover:underline">{t(locale, "nav.zoeker")}</Link>

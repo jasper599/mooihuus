@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getLiveListings } from "@/lib/db";
 import { getBlogPosts } from "@/lib/blog";
+import { PROVINCIES, provincieSlug } from "@/lib/provincies";
 import { COMPANY } from "@/lib/company";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = COMPANY.website;
   const nu = new Date();
 
-  const statisch = ["", "/zoeker", "/blog", "/reviews", "/huusmeesters", "/verkocht", "/contact", "/faq", "/plaatsen", "/registreren", "/inloggen", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"];
+  const statisch = ["", "/te-koop", "/zoeker", "/blog", "/reviews", "/huusmeesters", "/verkocht", "/contact", "/faq", "/plaatsen", "/registreren", "/inloggen", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"];
   const pages: MetadataRoute.Sitemap = statisch.map((p) => ({
     url: `${base}${p}`,
     lastModified: nu,
@@ -38,5 +39,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...pages, ...listings, ...blog];
+  const seo: MetadataRoute.Sitemap = PROVINCIES.map((p) => ({
+    url: `${base}/te-koop/${provincieSlug(p)}`,
+    lastModified: nu,
+    changeFrequency: "daily",
+    priority: 0.7,
+  }));
+
+  return [...pages, ...seo, ...listings, ...blog];
 }
