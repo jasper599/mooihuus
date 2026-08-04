@@ -19,12 +19,23 @@ export function MakelaarFactuurKnop({ ownerId }: { ownerId: string }) {
     else setMsg({ ok: false, text: d.reden || d.error || "Mislukt." });
   }
 
+  async function rapport() {
+    setBusy(true); setMsg(null);
+    const res = await fetch("/api/beheer/maandrapport", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ownerId }),
+    });
+    const d = await res.json().catch(() => ({}));
+    setBusy(false);
+    setMsg(res.ok ? { ok: true, text: `✓ Maandrapport gemaild (${d.aantal} woningen).` } : { ok: false, text: d.reden || d.error || "Mislukt." });
+  }
+
   return (
-    <div>
-      <button onClick={maak} disabled={busy} className="btn btn-ghost text-xs py-1 px-2">
-        {busy ? "Bezig…" : "Maak factuur"}
-      </button>
-      {msg && <div className={`text-xs mt-1 ${msg.ok ? "text-bosgroen-dk" : "text-oranje-dk"}`}>{msg.text}</div>}
+    <div className="flex flex-col gap-1">
+      <div className="flex gap-1.5 flex-wrap">
+        <button onClick={maak} disabled={busy} className="btn btn-ghost text-xs py-1 px-2">{busy ? "…" : "Factuur"}</button>
+        <button onClick={rapport} disabled={busy} className="btn btn-ghost text-xs py-1 px-2">{busy ? "…" : "Rapport"}</button>
+      </div>
+      {msg && <div className={`text-xs ${msg.ok ? "text-bosgroen-dk" : "text-oranje-dk"}`}>{msg.text}</div>}
     </div>
   );
 }

@@ -25,6 +25,7 @@ interface DB {
   postcodegeo: PostcodeGeo[];
   nieuwsbrief: NieuwsbriefLid[];
   laatsteNieuwsbriefSlug?: string;
+  laatsteMaandrapportMaand?: string; // "yyyy-mm" van de laatst verstuurde ronde
   resetTokens?: { token: string; userId: string; expires: number }[];
   seq: number;
 }
@@ -536,6 +537,14 @@ export function getLaatsteNieuwsbriefSlug(): string | undefined {
 export function setLaatsteNieuwsbriefSlug(slug: string): void {
   const db = load();
   db.laatsteNieuwsbriefSlug = slug;
+  save();
+}
+export function getLaatsteMaandrapportMaand(): string | undefined {
+  return load().laatsteMaandrapportMaand;
+}
+export function setLaatsteMaandrapportMaand(m: string): void {
+  const db = load();
+  db.laatsteMaandrapportMaand = m;
   save();
 }
 

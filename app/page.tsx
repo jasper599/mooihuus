@@ -4,6 +4,7 @@ import { ListingsBrowser } from "@/components/ListingsBrowser";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { markeerHuidigeBlogAlsBasis, stuurNieuwsteBlog } from "@/lib/nieuwsbrief";
+import { markeerHuidigeMaandAlsBasis, stuurMaandrapportenIndienNieuweMaand } from "@/lib/maandrapport";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,9 @@ export default function Home() {
   // daarna gaat een nieuw blogartikel automatisch naar de inschrijvers.
   markeerHuidigeBlogAlsBasis();
   stuurNieuwsteBlog().catch(() => {});
+  // Maandrapport: automatisch één keer per maand naar alle makelaars.
+  markeerHuidigeMaandAlsBasis();
+  stuurMaandrapportenIndienNieuweMaand().catch(() => {});
 
   // Alleen de eerste foto meesturen naar de overzichtskaarten (de kaart toont
   // er maar één) — scheelt fors in paginagrootte bij 150+ woningen.

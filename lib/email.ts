@@ -233,6 +233,43 @@ function woningenBlok(titel: string, list: Listing[]): string {
   </div>`;
 }
 
+export function renderMaandrapport(d: {
+  kantoor: string;
+  maand: string;
+  rows: { titel: string; weergaven: number; leads: number }[];
+  totWeergaven: number;
+  totLeads: number;
+}): { onderwerp: string; html: string } {
+  const rows = d.rows
+    .map(
+      (r, i) => `<tr>
+      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;">${r.titel}</td>
+      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;text-align:right;">${r.weergaven}</td>
+      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;text-align:right;">${r.leads}</td>
+    </tr>`
+    )
+    .join("");
+  const inner = `
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 4px;">Maandrapport — ${d.maand}</h1>
+    <div style="color:${BRAND.grijs};font-size:13px;margin-bottom:14px;">${d.kantoor} · jouw aanbod op Mooihuus</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+      <tr>
+        <td style="padding:6px 0;color:${BRAND.grijs};font-size:12px;text-transform:uppercase;letter-spacing:.04em;">Woning</td>
+        <td style="padding:6px 0;color:${BRAND.grijs};font-size:12px;text-align:right;text-transform:uppercase;">Weergaven</td>
+        <td style="padding:6px 0;color:${BRAND.grijs};font-size:12px;text-align:right;text-transform:uppercase;">Leads</td>
+      </tr>
+      ${rows}
+      <tr>
+        <td style="padding:12px 0 0;font-weight:bold;font-size:14px;">Totaal (${d.rows.length} woningen)</td>
+        <td style="padding:12px 0 0;font-weight:bold;font-size:14px;text-align:right;color:${BRAND.oranjeDk};">${d.totWeergaven}</td>
+        <td style="padding:12px 0 0;font-weight:bold;font-size:14px;text-align:right;color:${BRAND.oranjeDk};">${d.totLeads}</td>
+      </tr>
+    </table>
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/dashboard`, "Bekijk je dashboard")}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Zo houd je grip op wat je aanbod doet. Vragen of meer objecten plaatsen? We helpen je graag.</p>`;
+  return { onderwerp: `Maandrapport ${d.maand} — je aanbod op Mooihuus`, html: layout("Maandrapport Mooihuus", inner) };
+}
+
 export function renderSimpel(titel: string, innerHtml: string): { onderwerp: string; html: string } {
   return { onderwerp: titel, html: layout(titel, innerHtml) };
 }

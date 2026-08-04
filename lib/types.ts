@@ -165,7 +165,7 @@ export interface EmailRecord {
   id: string;
   aan: string;
   onderwerp: string;
-  soort: "welkom" | "betalingsbewijs" | "lead" | "contact" | "alert" | "nieuwsbrief" | "bezichtiging" | "factuur";
+  soort: "welkom" | "betalingsbewijs" | "lead" | "contact" | "alert" | "nieuwsbrief" | "bezichtiging" | "factuur" | "rapport";
   html: string;
   verzondenVia: "smtp" | "preview";
   datum: string;
