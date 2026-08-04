@@ -16,7 +16,7 @@ export function BewerkForm({ listing }: { listing: Listing }) {
     titel: listing.titel, type: listing.type, doel: listing.doel, provincie: listing.provincie,
     park: listing.park, personen: String(listing.personen), m2: String(listing.m2),
     prijs: String(listing.prijs), prijsSuffix: listing.prijsSuffix || "", grond: listing.grond || "",
-    omschrijving: listing.omschrijving,
+    videoUrl: listing.videoUrl || "", omschrijving: listing.omschrijving,
   });
   const [fotos, setFotos] = useState<string[]>(listing.fotos || []);
   const [busy, setBusy] = useState(false);
@@ -104,6 +104,8 @@ export function BewerkForm({ listing }: { listing: Listing }) {
           </select>
         </div>
       </div>
+
+      <div><label className="label">Video / rondleiding (YouTube, Vimeo of Matterport)</label><input className="field" value={f.videoUrl} onChange={(e) => set("videoUrl", e.target.value)} placeholder="https://youtu.be/… of Matterport-link" /></div>
 
       <div><label className="label">Omschrijving</label><textarea className="field min-h-[140px]" value={f.omschrijving} onChange={(e) => set("omschrijving", e.target.value)} /></div>
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getListing, getUser } from "@/lib/db";
-import { gradient, euro, prijsSuffix, grondInfo } from "@/lib/format";
+import { gradient, euro, prijsSuffix, grondInfo, embedVideoUrl } from "@/lib/format";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { COMPANY } from "@/lib/company";
@@ -103,6 +103,25 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             <span className="pill">{listing.type}</span>
           </div>
           <p className="mt-4 leading-relaxed">{listing.omschrijving}</p>
+
+          {(() => {
+            const embed = embedVideoUrl(listing.videoUrl);
+            if (!embed) return null;
+            return (
+              <div className="mt-6">
+                <h2 className="font-display font-bold text-lg text-bosgroen-dk mb-2">🎬 Video & rondleiding</h2>
+                <div className="relative w-full rounded-2xl overflow-hidden border border-lijn" style={{ paddingTop: "56.25%" }}>
+                  <iframe
+                    src={embed}
+                    title={`Rondleiding ${listing.titel}`}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; xr-spatial-tracking"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            );
+          })()}
 
           {(() => {
             const rows: [string, string][] = [];

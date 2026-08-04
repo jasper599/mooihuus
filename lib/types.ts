@@ -38,6 +38,7 @@ export interface Listing {
   uitgelicht?: boolean;
   promotedAt?: string;
   fotos?: string[];
+  videoUrl?: string; // YouTube/Vimeo/Matterport-link voor rondleiding
   // Uitgebreide kenmerken (Funda-stijl), optioneel
   bouwjaar?: number;
   slaapkamers?: number;

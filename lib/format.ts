@@ -23,6 +23,25 @@ export function prijsSuffix(listing: { prijsSuffix?: string; doel: string }): st
   return listing.doel === "koop" ? "k.k." : "";
 }
 
+// Zet een video-/rondleiding-URL om naar een insluitbare (embed) URL.
+// Ondersteunt YouTube, Vimeo en Matterport. Geeft null bij onbekend formaat.
+export function embedVideoUrl(url?: string): string | null {
+  if (!url) return null;
+  const u = url.trim();
+  try {
+    const yt = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
+    if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+    const vim = u.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if (vim) return `https://player.vimeo.com/video/${vim[1]}`;
+    const mat = u.match(/matterport\.com\/show\/\?m=([\w-]+)/);
+    if (mat) return `https://my.matterport.com/show/?m=${mat[1]}`;
+    if (/^https:\/\/.+/.test(u) && /(youtube|vimeo|matterport)/.test(u)) return u;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 // Classificeer de grondsituatie voor een duidelijke badge.
 // Geeft null terug als er niets bekend is.
 export function grondInfo(grond?: string): { label: string; eigen: boolean } | null {

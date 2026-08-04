@@ -32,6 +32,7 @@ export default function Plaatsen() {
     grond: "",
     park: "Park De Veluwe",
     postcode: "",
+    videoUrl: "",
   });
   const [uitjes, setUitjes] = useState<string[]>([]);
   const [uitjeInput, setUitjeInput] = useState("");
@@ -78,6 +79,7 @@ export default function Plaatsen() {
         prijs: Number(f.prijs),
         prijsSuffix: f.prijsSuffix,
         grond: f.grond,
+        videoUrl: f.videoUrl,
         omschrijving,
         pakket,
         postcode: f.postcode,
@@ -162,6 +164,7 @@ export default function Plaatsen() {
           </Field>
           <Field label="Recreatiepark"><input className="field" value={f.park} onChange={(e) => setF({ ...f, park: e.target.value })} /></Field>
           <Field label="Postcode"><input className="field" value={f.postcode} onChange={(e) => setF({ ...f, postcode: e.target.value })} placeholder="1234 AB" /></Field>
+          <div className="sm:col-span-2"><Field label="Video / rondleiding (optioneel — YouTube, Vimeo of Matterport)"><input className="field" value={f.videoUrl} onChange={(e) => setF({ ...f, videoUrl: e.target.value })} placeholder="https://youtu.be/… of Matterport-link" /></Field></div>
           <div className="sm:col-span-2 text-right"><button className="btn" onClick={() => setStep(2)}>Volgende →</button></div>
         </div>
       )}
