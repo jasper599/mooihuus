@@ -10,6 +10,14 @@ export interface Partner {
 
 export const HUUSMEESTERS_PARTNERS: Partner[] = [
   {
+    naam: "Luyten Makelaardij",
+    vak: "Recreatiemakelaar",
+    omschrijving:
+      "Dé recreatiemakelaar van Nederland. Ervaren begeleiding bij de aan- en verkoop van je recreatiewoning.",
+    url: "https://www.luytenmakelaardij.nl",
+    emoji: "🏘️",
+  },
+  {
     naam: "Verzeker uw recreatiewoning",
     vak: "Verzekeringen",
     omschrijving:
@@ -29,6 +37,8 @@ export const HUUSMEESTERS_PARTNERS: Partner[] = [
 
 // Diensten/producten die je via de Huusmeesters kunt regelen.
 export const HUUSMEESTERS_CATEGORIEEN: { icon: string; titel: string; tekst: string }[] = [
+  { icon: "🏘️", titel: "Makelaar", tekst: "Professionele begeleiding bij de aan- of verkoop van je recreatiewoning." },
+  { icon: "⚖️", titel: "Notaris & overdracht", tekst: "Ervaren notariskantoren voor de eigendomsoverdracht en juridische afwikkeling." },
   { icon: "🛡️", titel: "Verzekeringen", tekst: "Je recreatiewoning goed verzekerd, afgestemd op recreatief gebruik." },
   { icon: "🏦", titel: "Hypotheek & financiering", tekst: "Financiering en hypotheekadvies speciaal voor vakantiewoningen." },
   { icon: "🧽", titel: "Schoonmaak & wissel", tekst: "Bezemschoon opgeleverd of een complete wisselschoonmaak tussen gasten." },

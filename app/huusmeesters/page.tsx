@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ContactForm } from "@/components/ContactForm";
 import { HuusmeesterForm } from "./HuusmeesterForm";
 import { HUUSMEESTERS_PARTNERS, HUUSMEESTERS_CATEGORIEEN } from "@/lib/partners";
@@ -27,6 +28,37 @@ export default function HuusmeestersPage() {
         samen met betrouwbare partners en vakmensen. Vertel ons waar je mee zit, dan brengen we je in
         contact met de juiste persoon.
       </p>
+
+      {/* U heeft uw woning verkocht. Wat nu?! */}
+      <div className="mt-8 rounded-2xl bg-creme border border-salie p-6 md:p-7">
+        <h2 className="font-display font-extrabold text-2xl text-bosgroen-dk">U heeft uw woning verkocht. Wat nu?!</h2>
+        <p className="text-grijs mt-2 max-w-2xl">
+          Gefeliciteerd! Na de verkoop komt er nog een aantal dingen kijken. Wij helpen je het netjes en zonder zorgen
+          af te ronden — van de notaris tot de sleuteloverdracht.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 mt-5">
+          {[
+            { icon: "⚖️", titel: "1. Naar de notaris", tekst: "De eigendomsoverdracht en de akte regel je bij de notaris. Wij werken samen met ervaren notariskantoren." },
+            { icon: "🔑", titel: "2. Sleutel- en inventarisoverdracht", tekst: "Spreek de opleverdatum en eventuele inboedel/inventaris af met de koper." },
+            { icon: "🛡️", titel: "3. Verzekering & nutsvoorzieningen", tekst: "Zeg je opstal- en inboedelverzekering en de abonnementen (water, energie) op of zet ze over." },
+            { icon: "🏕️", titel: "4. Park of VvE informeren", tekst: "Meld de verkoop bij het recreatiepark of de vereniging en regel de overdracht van lidmaatschap en servicekosten." },
+            { icon: "💶", titel: "5. Financiën & belasting", tekst: "Los een eventuele financiering af en denk aan de fiscale kant (o.a. box 3)." },
+            { icon: "🤝", titel: "6. Hulp nodig?", tekst: "Twijfel je ergens over? De Huusmeesters en onze makelaar denken vrijblijvend met je mee." },
+          ].map((s) => (
+            <div key={s.titel} className="bg-white rounded-xl border border-lijn p-4 flex gap-3 items-start">
+              <div className="text-2xl shrink-0">{s.icon}</div>
+              <div>
+                <div className="font-display font-bold text-bosgroen-dk text-sm">{s.titel}</div>
+                <div className="text-sm text-grijs mt-0.5">{s.tekst}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2 flex-wrap mt-5">
+          <a href="/api/uit?partner=Luyten%20Makelaardij" target="_blank" rel="noopener noreferrer" className="btn btn-green text-sm">Vraag de makelaar</a>
+          <Link href="/contact?onderwerp=Woning verkocht — wat nu?" className="btn btn-ghost text-sm">Vind een notaris via ons</Link>
+        </div>
+      </div>
 
       {/* Vaste partners */}
       <h2 className="font-display font-bold text-xl text-bosgroen-dk mt-8 mb-2">Onze partners</h2>
