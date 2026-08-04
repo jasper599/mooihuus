@@ -23,6 +23,7 @@ export function Nav() {
     { href: "/zoeker", label: t("nav.zoeker") },
     { href: "/favorieten", label: `❤️ ${t("nav.favorieten")}` },
     { href: "/huusmeesters", label: t("nav.huusmeesters") },
+    { href: "/verkocht", label: t("nav.verkocht") },
     { href: "/blog", label: t("nav.blog") },
     ...(session ? [{ href: "/dashboard", label: t("nav.dashboard") }] : []),
     ...(rol === "beheerder" ? [{ href: "/beheer", label: t("nav.beheer") }] : []),
