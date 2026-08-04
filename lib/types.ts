@@ -107,6 +107,12 @@ export interface Enquete {
   datum: string;
 }
 
+export interface NieuwsbriefLid {
+  id: string;
+  email: string;
+  datum: string;
+}
+
 export interface PostcodeGeo {
   pc: string; // genormaliseerd, bijv. "1234AB" of "1234"
   lat: number;
@@ -143,7 +149,7 @@ export interface EmailRecord {
   id: string;
   aan: string;
   onderwerp: string;
-  soort: "welkom" | "betalingsbewijs" | "lead" | "contact" | "alert";
+  soort: "welkom" | "betalingsbewijs" | "lead" | "contact" | "alert" | "nieuwsbrief" | "bezichtiging";
   html: string;
   verzondenVia: "smtp" | "preview";
   datum: string;

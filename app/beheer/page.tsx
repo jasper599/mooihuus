@@ -4,10 +4,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
   getUsers, getListings, getLeads, getPayments, getEmails, getUser, getListing, getEnquetes, getAllReviews,
-  partnerklikTotalen, getPartnerkliks, analyticsSamenvatting,
+  partnerklikTotalen, getPartnerkliks, analyticsSamenvatting, getNieuwsbriefLeden,
 } from "@/lib/db";
 import { euro, euroCents } from "@/lib/money";
 import { ReviewModeratie } from "@/components/ReviewModeratie";
+import { NieuwsbriefVerstuur } from "@/components/NieuwsbriefVerstuur";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ const TABS = [
   { key: "enquetes", label: "Enquêtes" },
   { key: "reviews", label: "Beoordelingen" },
   { key: "partners", label: "Partners" },
+  { key: "nieuwsbrief", label: "Nieuwsbrief" },
 ];
 
 export default async function Beheer({ searchParams }: { searchParams: { tab?: string } }) {
@@ -40,6 +42,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
   const partnerkliks = getPartnerkliks();
   const stats = analyticsSamenvatting();
   const maxDag = Math.max(1, ...stats.perDag.map((d) => d.weergaven));
+  const nieuwsbrief = getNieuwsbriefLeden();
   const gemRating = enquetes.length ? enquetes.reduce((s, e) => s + e.rating, 0) / enquetes.length : 0;
   const metAanbev = enquetes.filter((e) => e.aanbeveling != null);
   const gemAanbev = metAanbev.length ? metAanbev.reduce((s, e) => s + (e.aanbeveling ?? 0), 0) / metAanbev.length : 0;
@@ -299,6 +302,31 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
                   <Td>{p.partner}</Td>
                   <Td><span className="font-display font-bold text-bosgroen-dk">{p.aantal}</span></Td>
                   <Td>{p.laatste ? new Date(p.laatste).toLocaleString("nl-NL") : "—"}</Td>
+                </tr>
+              ))}
+            </Table>
+          )}
+        </>
+      )}
+
+      {tab === "nieuwsbrief" && (
+        <>
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <Stat n={String(nieuwsbrief.length)} l="Inschrijvingen" />
+          </div>
+          <div className="card mb-4">
+            <div className="font-display font-bold mb-1">Blog versturen naar inschrijvers</div>
+            <p className="text-sm text-grijs mb-3">Stuurt het nieuwste blogartikel als nieuwsbrief. Nieuwe artikelen gaan ook automatisch de deur uit; met de knop kun je het handmatig doen.</p>
+            <NieuwsbriefVerstuur aantal={nieuwsbrief.length} />
+          </div>
+          {nieuwsbrief.length === 0 ? (
+            <div className="card text-grijs text-sm">Nog geen inschrijvingen.</div>
+          ) : (
+            <Table head={["E-mail", "Aangemeld"]}>
+              {nieuwsbrief.map((l) => (
+                <tr key={l.id} className="border-t border-lijn">
+                  <Td>{l.email}</Td>
+                  <Td>{new Date(l.datum).toLocaleDateString("nl-NL")}</Td>
                 </tr>
               ))}
             </Table>

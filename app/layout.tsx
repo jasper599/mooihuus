@@ -7,6 +7,7 @@ import { Providers } from "@/components/Providers";
 import { CookieBanner } from "@/components/CookieBanner";
 import { ChatWidget } from "@/components/ChatWidget";
 import { Analytics } from "@/components/Analytics";
+import { NieuwsbriefForm } from "@/components/NieuwsbriefForm";
 import { I18nProvider } from "@/components/I18nProvider";
 import { getLocale, getPathname } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
@@ -85,6 +86,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="max-w-6xl mx-auto px-4 py-8 text-sm text-grijs">
                 <Wordmark className="text-lg" />
                 <p className="mt-2 max-w-xl">{t(locale, "footer.tagline")}</p>
+                <div className="mt-4 max-w-md">
+                  <div className="font-display font-semibold text-bosgroen-dk mb-1">📬 Blijf op de hoogte</div>
+                  <p className="text-xs mb-2">Nieuwe woningen en handige tips in je inbox. Je kunt je altijd afmelden.</p>
+                  <NieuwsbriefForm />
+                </div>
                 <nav className="mt-4 flex gap-4 flex-wrap font-semibold text-bosgroen-dk">
                   <Link href={localeHref(locale, "/huusmeesters")} className="hover:underline">{t(locale, "nav.huusmeesters")}</Link>
                   <Link href={localeHref(locale, "/zoeker")} className="hover:underline">{t(locale, "nav.zoeker")}</Link>

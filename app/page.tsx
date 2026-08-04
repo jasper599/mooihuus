@@ -3,10 +3,16 @@ import { getLiveListings } from "@/lib/db";
 import { ListingsBrowser } from "@/components/ListingsBrowser";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
+import { markeerHuidigeBlogAlsBasis, stuurNieuwsteBlog } from "@/lib/nieuwsbrief";
 
 export const dynamic = "force-dynamic";
 
 export default function Home() {
+  // Nieuwsbrief: eerste keer een basislijn zetten (geen oude artikelen sturen),
+  // daarna gaat een nieuw blogartikel automatisch naar de inschrijvers.
+  markeerHuidigeBlogAlsBasis();
+  stuurNieuwsteBlog().catch(() => {});
+
   // Alleen de eerste foto meesturen naar de overzichtskaarten (de kaart toont
   // er maar één) — scheelt fors in paginagrootte bij 150+ woningen.
   const listings = getLiveListings().map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined }));

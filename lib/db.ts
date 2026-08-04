@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 
 // ------------------------------------------------------------------
@@ -23,6 +23,8 @@ interface DB {
   partnerkliks: PartnerKlik[];
   pageviews: Pageview[];
   postcodegeo: PostcodeGeo[];
+  nieuwsbrief: NieuwsbriefLid[];
+  laatsteNieuwsbriefSlug?: string;
   resetTokens?: { token: string; userId: string; expires: number }[];
   seq: number;
 }
@@ -48,7 +50,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], seq: 100 };
 }
 
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -129,6 +131,7 @@ function load(): DB {
   if (!Array.isArray(cache.partnerkliks)) { cache.partnerkliks = []; migrated = true; }
   if (!Array.isArray(cache.pageviews)) { cache.pageviews = []; migrated = true; }
   if (!Array.isArray(cache.postcodegeo)) { cache.postcodegeo = []; migrated = true; }
+  if (!Array.isArray(cache.nieuwsbrief)) { cache.nieuwsbrief = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
   if (fresh || removed || added || migrated) save();
@@ -427,6 +430,35 @@ export function deleteReview(id: string): boolean {
   db.reviews.splice(i, 1);
   save();
   return true;
+}
+
+// ---------- Nieuwsbrief ----------
+export function addNieuwsbriefLid(email: string): { nieuw: boolean } {
+  const db = load();
+  const e = email.trim().toLowerCase();
+  if (db.nieuwsbrief.some((l) => l.email === e)) return { nieuw: false };
+  db.nieuwsbrief.unshift({ id: nextId("nb-"), email: e, datum: new Date().toISOString() });
+  save();
+  return { nieuw: true };
+}
+export function getNieuwsbriefLeden(): NieuwsbriefLid[] {
+  return load().nieuwsbrief;
+}
+export function verwijderNieuwsbriefLid(email: string): boolean {
+  const db = load();
+  const e = email.trim().toLowerCase();
+  const voor = db.nieuwsbrief.length;
+  db.nieuwsbrief = db.nieuwsbrief.filter((l) => l.email !== e);
+  if (db.nieuwsbrief.length !== voor) { save(); return true; }
+  return false;
+}
+export function getLaatsteNieuwsbriefSlug(): string | undefined {
+  return load().laatsteNieuwsbriefSlug;
+}
+export function setLaatsteNieuwsbriefSlug(slug: string): void {
+  const db = load();
+  db.laatsteNieuwsbriefSlug = slug;
+  save();
 }
 
 // ---------- Partner-kliks (doorklikmeting) ----------

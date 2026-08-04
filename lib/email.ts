@@ -209,6 +209,39 @@ export function renderWachtwoordReset(naam: string, resetUrl: string): { onderwe
   return { onderwerp: "Stel je Mooihuus-wachtwoord opnieuw in", html: layout("Wachtwoord opnieuw instellen", inner) };
 }
 
+export function renderNieuwsbrief(
+  post: { titel: string; intro: string; categorie: string; emoji: string; slug: string },
+  afmeldUrl?: string
+): { onderwerp: string; html: string } {
+  const url = `${COMPANY.website}/blog/${post.slug}`;
+  const inner = `
+    <div style="font-size:12px;font-weight:bold;color:${BRAND.oranjeDk};text-transform:uppercase;letter-spacing:.04em;">${post.emoji} ${post.categorie}</div>
+    <h1 style="font-size:23px;color:${BRAND.bosgroenDk};margin:6px 0 10px;">${post.titel}</h1>
+    <p style="line-height:1.6;">${post.intro}</p>
+    <p style="margin:22px 0;">${btn(url, "Lees het hele artikel")}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je ontvangt deze mail omdat je je hebt aangemeld voor de Mooihuus-nieuwsbrief.${afmeldUrl ? ` <a href="${afmeldUrl}" style="color:${BRAND.grijs};">Afmelden</a>.` : ""}</p>`;
+  return { onderwerp: `${post.emoji} ${post.titel} — Mooihuus`, html: layout(post.titel, inner) };
+}
+
+export function renderBezichtiging(
+  listing: { titel: string; id: string },
+  d: { naam: string; email: string; datum: string; tijd: string; bericht: string }
+): { onderwerp: string; html: string } {
+  const url = `${COMPANY.website}/aanbod/${listing.id}`;
+  const inner = `
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Nieuw bezichtigingsverzoek</h1>
+    <p style="line-height:1.6;">Voor je woning <strong>${listing.titel}</strong> is een bezichtiging aangevraagd.</p>
+    <table role="presentation" style="width:100%;border-collapse:collapse;margin:14px 0;">
+      <tr><td style="padding:6px 0;color:${BRAND.grijs};">Naam</td><td style="padding:6px 0;font-weight:bold;">${d.naam}</td></tr>
+      <tr><td style="padding:6px 0;color:${BRAND.grijs};">E-mail</td><td style="padding:6px 0;font-weight:bold;">${d.email}</td></tr>
+      <tr><td style="padding:6px 0;color:${BRAND.grijs};">Voorkeursdatum</td><td style="padding:6px 0;font-weight:bold;">${d.datum} ${d.tijd}</td></tr>
+    </table>
+    ${d.bericht ? `<p style="line-height:1.6;">&ldquo;${d.bericht}&rdquo;</p>` : ""}
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Let op: dit is een <strong>verzoek</strong>, nog geen bevestigde afspraak. Neem contact op met de aanvrager om de bezichtiging te bevestigen.</p>
+    <p style="margin:18px 0;">${btn(url, "Bekijk de woning")}</p>`;
+  return { onderwerp: `Bezichtigingsverzoek: ${listing.titel}`, html: layout("Bezichtigingsverzoek", inner) };
+}
+
 export async function sendEmail(opts: {
   aan: string;
   onderwerp: string;
