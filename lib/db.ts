@@ -494,6 +494,15 @@ export function getPageviews(): Pageview[] {
   return load().pageviews;
 }
 
+// Statistiek per advertentie: weergaven (uit pageviews) en leads.
+export function getListingStats(listingId: string): { weergaven: number; leads: number } {
+  const db = load();
+  const suffix = `/aanbod/${listingId}`;
+  const weergaven = db.pageviews.filter((p) => p.path.split("?")[0].endsWith(suffix)).length;
+  const leads = db.leads.filter((l) => l.listingId === listingId).length;
+  return { weergaven, leads };
+}
+
 // ---------- Postcode → coördinaten (cache van geocoderesultaten) ----------
 export function normaliseerPostcode(pc: string): string {
   return pc.toUpperCase().replace(/\s+/g, "").slice(0, 6);

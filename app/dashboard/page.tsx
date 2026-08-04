@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getListingsByOwner, getLeadsForOwner, getPaymentsByUser, getPayments, getUser } from "@/lib/db";
+import { getListingsByOwner, getLeadsForOwner, getPaymentsByUser, getPayments, getUser, getListingStats } from "@/lib/db";
 import { gradient } from "@/lib/format";
 import { euro } from "@/lib/money";
 import { ListingActions } from "@/components/ListingActions";
@@ -78,6 +78,15 @@ export default async function Dashboard() {
                   </div>
                 )}
               </div>
+              {(l.status === "live" || l.status === "verkocht") && (() => {
+                const s = getListingStats(l.id);
+                return (
+                  <div className="mt-2 flex gap-3 text-xs text-grijs">
+                    <span title="Paginaweergaven">👁️ <strong className="text-inkt">{s.weergaven}</strong> weergaven</span>
+                    <span title="Ontvangen leads">✉️ <strong className="text-inkt">{s.leads}</strong> leads</span>
+                  </div>
+                );
+              })()}
               {l.status === "live" && l.uitgelicht && (
                 <div className="mt-2 text-xs text-oranje-dk font-semibold">✨ Uitgelicht op de home</div>
               )}
