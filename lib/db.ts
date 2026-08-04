@@ -170,9 +170,15 @@ export function addUser(data: {
   type?: "particulier" | "zakelijk";
   bedrijfsnaam?: string;
   kvk?: string;
+  btw?: string;
+  telefoon?: string;
+  adres?: string;
+  postcode?: string;
+  plaats?: string;
 }): User {
   const db = load();
   const type = data.type === "zakelijk" ? "zakelijk" : "particulier";
+  const zak = type === "zakelijk";
   const user: User = {
     id: nextId("u-"),
     naam: data.naam,
@@ -180,8 +186,13 @@ export function addUser(data: {
     wachtwoordHash: bcrypt.hashSync(data.wachtwoord, 10),
     rol: "eigenaar",
     type,
-    bedrijfsnaam: type === "zakelijk" ? data.bedrijfsnaam : undefined,
-    kvk: type === "zakelijk" ? data.kvk : undefined,
+    bedrijfsnaam: zak ? data.bedrijfsnaam : undefined,
+    kvk: zak ? data.kvk : undefined,
+    btw: zak ? data.btw : undefined,
+    telefoon: zak ? data.telefoon : undefined,
+    adres: zak ? data.adres : undefined,
+    postcode: zak ? data.postcode : undefined,
+    plaats: zak ? data.plaats : undefined,
     aangemaakt: new Date().toISOString(),
   };
   db.users.push(user);

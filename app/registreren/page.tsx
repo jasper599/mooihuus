@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -10,9 +10,15 @@ type Type = "particulier" | "zakelijk";
 export default function Registreren() {
   const router = useRouter();
   const [type, setType] = useState<Type>("particulier");
-  const [form, setForm] = useState({ naam: "", email: "", wachtwoord: "", bedrijfsnaam: "", kvk: "" });
+  const [form, setForm] = useState({ naam: "", email: "", wachtwoord: "", bedrijfsnaam: "", kvk: "", btw: "", telefoon: "", adres: "", postcode: "", plaats: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  // Voorselecteren op basis van ?type=zakelijk (deeplink vanaf inloggen/knoppen).
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("type");
+    if (p === "zakelijk" || p === "particulier") setType(p);
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,8 +56,8 @@ export default function Registreren() {
               type === t ? "border-bosgroen bg-[#EAF4EC]" : "border-lijn bg-white"
             }`}
           >
-            <div className="font-display font-bold text-bosgroen-dk">{t === "particulier" ? "Particulier" : "Zakelijk"}</div>
-            <div className="text-xs text-grijs">{t === "particulier" ? "Eén of enkele woningen" : "Organisatie, meerdere objecten"}</div>
+            <div className="font-display font-bold text-bosgroen-dk">{t === "particulier" ? "Particulier" : "Bedrijf"}</div>
+            <div className="text-xs text-grijs">{t === "particulier" ? "Eén of enkele woningen" : "Makelaar of organisatie"}</div>
           </button>
         ))}
       </div>
@@ -63,8 +69,18 @@ export default function Registreren() {
           <>
             <label className="label">Bedrijfsnaam</label>
             <input className="field" value={form.bedrijfsnaam} onChange={(e) => setForm({ ...form, bedrijfsnaam: e.target.value })} required />
-            <label className="label">KvK-nummer <span className="text-grijs font-normal">(optioneel)</span></label>
-            <input className="field" value={form.kvk} onChange={(e) => setForm({ ...form, kvk: e.target.value })} />
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="label">KvK-nummer</label><input className="field" value={form.kvk} onChange={(e) => setForm({ ...form, kvk: e.target.value })} required /></div>
+              <div><label className="label">Btw-nummer</label><input className="field" value={form.btw} onChange={(e) => setForm({ ...form, btw: e.target.value })} placeholder="NL000000000B00" required /></div>
+            </div>
+            <label className="label">Telefoonnummer</label>
+            <input className="field" value={form.telefoon} onChange={(e) => setForm({ ...form, telefoon: e.target.value })} required />
+            <label className="label">Adres <span className="text-grijs font-normal">(optioneel)</span></label>
+            <input className="field" value={form.adres} onChange={(e) => setForm({ ...form, adres: e.target.value })} placeholder="Straat en huisnummer" />
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="label">Postcode <span className="text-grijs font-normal">(optioneel)</span></label><input className="field" value={form.postcode} onChange={(e) => setForm({ ...form, postcode: e.target.value })} /></div>
+              <div><label className="label">Plaats <span className="text-grijs font-normal">(optioneel)</span></label><input className="field" value={form.plaats} onChange={(e) => setForm({ ...form, plaats: e.target.value })} /></div>
+            </div>
           </>
         )}
 

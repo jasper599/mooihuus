@@ -14,6 +14,11 @@ export interface User {
   type: AccountType;
   bedrijfsnaam?: string;
   kvk?: string;
+  btw?: string;
+  telefoon?: string;
+  adres?: string;
+  postcode?: string;
+  plaats?: string;
   aangemaakt: string;
 }
 
