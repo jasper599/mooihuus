@@ -50,14 +50,8 @@ export function BedrijfsgegevensForm({ user }: { user: User }) {
             <div><label className="label">Factuur-e-mail</label><input type="email" className="field" value={f.factuurEmail} onChange={(e) => set("factuurEmail", e.target.value)} /></div>
             <div><label className="label">Website</label><input className="field" value={f.website} onChange={(e) => set("website", e.target.value)} /></div>
           </div>
-          <div>
-            <label className="label">Standaardpakket voor doorgezette woningen</label>
-            <select className="field" value={f.standaardPakket} onChange={(e) => set("standaardPakket", e.target.value)}>
-              <option value="Basis">Basis — € 25 per object</option>
-              <option value="Plus">Plus — € 49 per object</option>
-              <option value="Premium">Premium — € 79 per object</option>
-            </select>
-            <p className="text-xs text-grijs mt-1">Dit pakket geldt voor woningen die automatisch via je CRM (Kolibri/Realworks) binnenkomen. Volumekorting wordt automatisch toegepast.</p>
+          <div className="bg-[#EAF4EC] border border-[#CADFCF] rounded-xl p-3 text-sm text-bosgroen-dk">
+            🏷️ Als makelaar publiceer je met het <strong>Premiumpakket voor € 65 per object</strong> — inclusief automatische volumekorting (vanaf 5 objecten 15%, vanaf 10 objecten 25%).
           </div>
         </>
       )}

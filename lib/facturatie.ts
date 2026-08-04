@@ -2,14 +2,18 @@ import { getUser, getListingsByOwner, addPayment, updatePayment } from "./db";
 import { mollieEnabled, createMolliePayment } from "./mollie";
 import { renderMakelaarFactuur, sendEmail } from "./email";
 import { COMPANY } from "./company";
-import { PAKKET_PRIJS, volumeKortingPct } from "./money";
+import { volumeKortingPct } from "./money";
 
-// Zelfde prijzen als voor particulieren: het gekozen pakket-tarief per object,
-// mét dezelfde volumekorting (vanaf 5 objecten 15%, vanaf 10 objecten 25%).
-export function prijsPerObject(aantal = 1, pakket: keyof typeof PAKKET_PRIJS = "Basis"): number {
-  const basis = PAKKET_PRIJS[pakket] ?? PAKKET_PRIJS.Basis;
+// Makelaars publiceren met het Premiumpakket tegen een vast makelaarstarief
+// van € 65 per object (instelbaar via env), mét de bekende volumekorting
+// (vanaf 5 objecten 15%, vanaf 10 objecten 25%).
+export function makelaarBasisTarief(): number {
+  const v = Number(process.env.MAKELAAR_OBJECT_PRIJS);
+  return isFinite(v) && v > 0 ? v : 65;
+}
+export function prijsPerObject(aantal = 1): number {
   const korting = volumeKortingPct(aantal);
-  return Math.round(basis * (1 - korting / 100) * 100) / 100;
+  return Math.round(makelaarBasisTarief() * (1 - korting / 100) * 100) / 100;
 }
 
 // Objecten die we een makelaar in rekening brengen: hun live woningen die via
@@ -40,9 +44,7 @@ export async function maakMakelaarFactuur(ownerId: string): Promise<{
   const objecten = factureerbareObjecten(ownerId);
   if (objecten.length === 0) return { ok: false, reden: "Geen factureerbare (feed-)objecten voor deze makelaar." };
 
-  const pakket: "Basis" | "Plus" | "Premium" =
-    owner.standaardPakket === "Plus" || owner.standaardPakket === "Premium" ? owner.standaardPakket : "Basis";
-  const prijs = prijsPerObject(objecten.length, pakket);
+  const prijs = prijsPerObject(objecten.length);
   const bedrag = Math.round(objecten.length * prijs * 100) / 100;
   const kantoor = owner.bedrijfsnaam || owner.naam;
 
@@ -50,7 +52,7 @@ export async function maakMakelaarFactuur(ownerId: string): Promise<{
   const payment = addPayment({
     listingId: `makelaar-${ownerId}`,
     userId: ownerId,
-    pakket: "Basis",
+    pakket: "Premium",
     bedrag,
     status: "open",
     methode: "iDEAL",
