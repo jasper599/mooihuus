@@ -8,10 +8,16 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { ChatWidget } from "@/components/ChatWidget";
 import { Analytics } from "@/components/Analytics";
 import { NieuwsbriefForm } from "@/components/NieuwsbriefForm";
+import { ServiceWorker } from "@/components/ServiceWorker";
+import { InstallPrompt } from "@/components/InstallPrompt";
 import { I18nProvider } from "@/components/I18nProvider";
 import { getLocale, getPathname } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { COMPANY } from "@/lib/company";
+
+export const viewport = {
+  themeColor: "#2C6B45",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = getLocale();
@@ -23,6 +29,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: title, template: "%s · Mooihuus" },
     description,
     applicationName: "Mooihuus",
+    manifest: "/manifest.webmanifest",
+    appleWebApp: { capable: true, title: "Mooihuus", statusBarStyle: "default" },
     alternates: {
       canonical: localeHref(locale, path),
       languages: {
@@ -111,6 +119,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CookieBanner />
             <ChatWidget />
             <Analytics />
+            <ServiceWorker />
+            <InstallPrompt />
           </I18nProvider>
         </Providers>
       </body>
