@@ -10,6 +10,7 @@ import { euro, euroCents } from "@/lib/money";
 import { ReviewModeratie } from "@/components/ReviewModeratie";
 import { NieuwsbriefVerstuur } from "@/components/NieuwsbriefVerstuur";
 import { FeedImportKnop } from "@/components/FeedImportKnop";
+import { MakelaarFactuurKnop } from "@/components/MakelaarFactuurKnop";
 
 export const dynamic = "force-dynamic";
 
@@ -158,15 +159,14 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
       )}
 
       {tab === "profielen" && (
-        <Table head={["Naam / bedrijf", "E-mail", "Type", "Rol", "Aangemaakt", "Objecten"]}>
+        <Table head={["Naam / bedrijf", "E-mail", "Type", "Objecten", "Facturatie"]}>
           {users.map((u) => (
             <tr key={u.id} className="border-t border-lijn">
               <Td>{u.type === "zakelijk" && u.bedrijfsnaam ? <span><strong>{u.bedrijfsnaam}</strong><br /><span className="text-grijs text-xs">{u.naam}</span></span> : u.naam}</Td>
               <Td>{u.email}</Td>
               <Td>{u.type === "zakelijk" ? <span className="pill">Zakelijk</span> : "Particulier"}</Td>
-              <Td>{u.rol === "beheerder" ? "Beheerder" : "Eigenaar"}</Td>
-              <Td>{new Date(u.aangemaakt).toLocaleDateString("nl-NL")}</Td>
               <Td>{listings.filter((l) => l.ownerId === u.id).length}</Td>
+              <Td>{u.type === "zakelijk" ? <MakelaarFactuurKnop ownerId={u.id} /> : <span className="text-grijs text-xs">—</span>}</Td>
             </tr>
           ))}
         </Table>

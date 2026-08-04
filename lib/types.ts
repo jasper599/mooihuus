@@ -80,7 +80,8 @@ export interface Payment {
   factuurnummer: string;
   methode: string;
   kortingPct?: number;
-  soort?: "advertentie" | "opvaller";
+  soort?: "advertentie" | "opvaller" | "makelaar-factuur";
+  aantalObjecten?: number; // bij een makelaar-factuur: aantal gefactureerde objecten
   omschrijving?: string;
   mollieId?: string;
   aangemaakt: string;
@@ -152,7 +153,7 @@ export interface EmailRecord {
   id: string;
   aan: string;
   onderwerp: string;
-  soort: "welkom" | "betalingsbewijs" | "lead" | "contact" | "alert" | "nieuwsbrief" | "bezichtiging";
+  soort: "welkom" | "betalingsbewijs" | "lead" | "contact" | "alert" | "nieuwsbrief" | "bezichtiging" | "factuur";
   html: string;
   verzondenVia: "smtp" | "preview";
   datum: string;

@@ -13,6 +13,19 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
   const nu = new Date().toISOString();
   updatePayment(payment.id, { status: "paid", methode, betaaldOp: nu });
 
+  // Makelaar-factuur: alleen betaald markeren + korte bevestiging, geen woninglogica.
+  if (payment.soort === "makelaar-factuur") {
+    const kantoor = getUser(payment.userId);
+    if (kantoor) {
+      const inner = `<h1 style="font-size:22px;color:#1F4E32;margin:0 0 10px;">Betaling ontvangen — bedankt!</h1>
+        <p style="line-height:1.6;">We hebben je betaling van factuur <strong>${payment.factuurnummer}</strong> ontvangen. Je recreatiewoningen blijven live op Mooihuus.</p>`;
+      const { renderSimpel } = await import("./email");
+      const mail = renderSimpel("Betaling ontvangen — Mooihuus", inner);
+      await sendEmail({ aan: kantoor.email, onderwerp: mail.onderwerp, soort: "betalingsbewijs", html: mail.html });
+    }
+    return true;
+  }
+
   const listing = getListing(payment.listingId);
   const owner = getUser(payment.userId);
 

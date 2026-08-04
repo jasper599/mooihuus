@@ -233,6 +233,42 @@ function woningenBlok(titel: string, list: Listing[]): string {
   </div>`;
 }
 
+export function renderSimpel(titel: string, innerHtml: string): { onderwerp: string; html: string } {
+  return { onderwerp: titel, html: layout(titel, innerHtml) };
+}
+
+export function renderMakelaarFactuur(d: {
+  kantoor: string;
+  factuurnummer: string;
+  objecten: { titel: string }[];
+  prijsPerObject: number;
+  totaal: number;
+  betaalUrl: string;
+}): { onderwerp: string; html: string } {
+  const rows = d.objecten
+    .map(
+      (o, i) => `<tr>
+      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;">${i + 1}. ${o.titel}</td>
+      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;text-align:right;">${euroCents(d.prijsPerObject)}</td>
+    </tr>`
+    )
+    .join("");
+  const inner = `
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 4px;">Factuur — advertenties op Mooihuus</h1>
+    <div style="color:${BRAND.grijs};font-size:13px;margin-bottom:14px;">Factuurnr. ${d.factuurnummer} · ${d.kantoor}</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+      <tr><td style="padding:6px 0;color:${BRAND.grijs};font-size:12px;text-transform:uppercase;letter-spacing:.04em;">Object</td>
+          <td style="padding:6px 0;color:${BRAND.grijs};font-size:12px;text-align:right;text-transform:uppercase;letter-spacing:.04em;">Bedrag</td></tr>
+      ${rows}
+      <tr><td style="padding:12px 0 0;font-weight:bold;font-size:15px;">Totaal (${d.objecten.length} objecten)</td>
+          <td style="padding:12px 0 0;font-weight:bold;font-size:15px;text-align:right;color:${BRAND.oranjeDk};">${euroCents(d.totaal)}</td></tr>
+    </table>
+    <p style="margin:22px 0 8px;">${btn(d.betaalUrl, "Betaal deze factuur")}</p>
+    <p style="line-height:1.5;color:${BRAND.grijs};font-size:12px;word-break:break-all;">Werkt de knop niet? Betaal via: ${d.betaalUrl}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;margin-top:14px;">Je betaalt eenvoudig en direct via iDEAL. Na betaling ontvang je automatisch een bevestiging.</p>`;
+  return { onderwerp: `Factuur ${d.factuurnummer} — advertenties op Mooihuus`, html: layout("Factuur Mooihuus", inner) };
+}
+
 export function renderNieuwsbrief(
   post: { titel: string; intro: string; categorie: string; emoji: string; slug: string },
   opts: { afmeldUrl?: string; koop?: Listing[]; huur?: Listing[] } = {}
