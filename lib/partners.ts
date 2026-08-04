@@ -56,3 +56,10 @@ export const HUUSMEESTERS_CATEGORIEEN: { icon: string; titel: string; tekst: str
 export function partnerByNaam(naam: string): Partner | undefined {
   return HUUSMEESTERS_PARTNERS.find((p) => p.naam === naam);
 }
+
+export function huusmeesterSlug(titel: string): string {
+  return titel.toLowerCase().replace(/&/g, "en").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+export function getHuusmeesterCategorie(slug: string) {
+  return HUUSMEESTERS_CATEGORIEEN.find((c) => huusmeesterSlug(c.titel) === slug);
+}

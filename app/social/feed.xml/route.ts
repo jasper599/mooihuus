@@ -1,6 +1,7 @@
 import { getLiveListings } from "@/lib/db";
 import { getBlogPosts as blogList } from "@/lib/blog";
 import { COMPANY } from "@/lib/company";
+import { HUUSMEESTERS_CATEGORIEEN, huusmeesterSlug } from "@/lib/partners";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -72,15 +73,27 @@ export async function GET() {
     date: new Date(p.datum).toUTCString(),
     guid: `blog-${p.slug}`,
   }));
+  const huusItems: Item[] = HUUSMEESTERS_CATEGORIEEN.map((c) => {
+    const slug = huusmeesterSlug(c.titel);
+    return {
+      title: `Huusmeesters — ${c.titel}`,
+      link: `${SITE}/huusmeesters`,
+      caption: `🛠️ ${c.titel} voor je recreatiewoning?\n\n${c.tekst}\n\nDe Huusmeesters van Mooihuus regelen het voor je. 👉 Kijk op mooihuus.nl/huusmeesters (link in bio).\n\n#huusmeesters #recreatiewoning #vakantiehuis #mooihuus`,
+      image: `${SITE}/social/huusmeester/${slug}`,
+      date: new Date(0).toUTCString(),
+      guid: `huusmeester-${slug}`,
+    };
+  });
 
-  // Afwisselen: na elke 3 woningen een blogartikel, zodat de feed "om en om" loopt.
+  // Rotatie "om en om": woning → blog → Huusmeester-categorie → woning → …
+  // Loopt door alle drie de rijen; slaat een lege rij netjes over.
   const items: Item[] = [];
-  let bi = 0;
-  for (let i = 0; i < woningItems.length; i++) {
-    items.push(woningItems[i]);
-    if ((i + 1) % 3 === 0 && bi < blogItems.length) items.push(blogItems[bi++]);
+  let wi = 0, bi = 0, hi = 0;
+  while (wi < woningItems.length || bi < blogItems.length || hi < huusItems.length) {
+    if (wi < woningItems.length) items.push(woningItems[wi++]);
+    if (bi < blogItems.length) items.push(blogItems[bi++]);
+    if (hi < huusItems.length) items.push(huusItems[hi++]);
   }
-  while (bi < blogItems.length) items.push(blogItems[bi++]);
 
   const body = items
     .map(
