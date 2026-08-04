@@ -264,6 +264,63 @@ export function updateListing(id: string, patch: Partial<Listing>): Listing | un
   save();
   return l;
 }
+// ---------- Feed-synchronisatie (Kolibri / Realworks / andere bronnen) ----------
+// Woningen staan al in de database; deze functies laten een externe feed
+// woningen toevoegen, bijwerken en (als ze bij de bron verdwijnen) offline zetten.
+export function getFeedListings(source: string): Listing[] {
+  return load().listings.filter((l) => l.source === source);
+}
+
+export function upsertFeedListing(source: string, externalId: string, data: Partial<Listing>): Listing {
+  const db = load();
+  const bestaand = db.listings.find((l) => l.source === source && l.externalId === externalId);
+  if (bestaand) {
+    Object.assign(bestaand, data, { source, externalId });
+    save();
+    return bestaand;
+  }
+  const id = `${source}-${externalId}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-").slice(0, 90);
+  const listing: Listing = {
+    id,
+    source,
+    externalId,
+    ownerId: data.ownerId || LM_OWNER.id,
+    titel: data.titel || "Recreatiewoning",
+    type: data.type || "Recreatiewoning",
+    doel: (data.doel as any) || "koop",
+    provincie: data.provincie || "Nederland",
+    park: data.park || "",
+    personen: data.personen ?? 2,
+    m2: data.m2 ?? 50,
+    prijs: data.prijs ?? 0,
+    omschrijving: data.omschrijving || "",
+    kleur: data.kleur ?? db.listings.length % 6,
+    pakket: (data.pakket as any) || "Basis",
+    status: (data.status as any) || "live",
+    aangemaakt: new Date().toISOString(),
+  };
+  // optionele velden overnemen (fotos, videoUrl, kenmerken, prijsSuffix, grond, ...)
+  Object.assign(listing, data, { id, source, externalId, ownerId: listing.ownerId, aangemaakt: listing.aangemaakt });
+  db.listings.push(listing);
+  save();
+  return listing;
+}
+
+// Zet woningen van deze bron die niet meer in de feed voorkomen op offline.
+export function sweepFeed(source: string, seenExternalIds: string[]): number {
+  const db = load();
+  const seen = new Set(seenExternalIds);
+  let n = 0;
+  for (const l of db.listings) {
+    if (l.source === source && l.externalId && !seen.has(l.externalId) && l.status === "live") {
+      l.status = "offline";
+      n++;
+    }
+  }
+  if (n) save();
+  return n;
+}
+
 export function deleteListing(id: string): boolean {
   const db = load();
   const i = db.listings.findIndex((x) => x.id === id);

@@ -20,6 +20,8 @@ export interface User {
 export interface Listing {
   id: string;
   ownerId: string;
+  source?: string; // "eigen" | "luyten" | "kolibri" | "realworks" — herkomst van de woning
+  externalId?: string; // id bij de bron, voor feed-synchronisatie (upsert/verwijderen)
   titel: string;
   type: string;
   doel: Doel;
