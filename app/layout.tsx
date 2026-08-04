@@ -1,3 +1,91 @@
+jasper599
+mooihuus
+Repository navigation
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security and quality
+Insights
+Settings
+Files
+Go to file
+t
+T
+app
+aanbod
+account
+api
+beheer
+betaling
+blog
+contact
+cookies
+dashboard
+disclaimer
+enquete
+factuur
+faq
+favorieten
+huusmeesters
+inloggen
+nieuwsbrief
+openhuizen
+plaatsen
+privacy
+promoten
+registreren
+reviews
+social
+te-koop
+vergelijken
+verkocht
+voorwaarden
+wachtwoord-reset
+wachtwoord-vergeten
+zoeker
+apple-icon.png
+globals.css
+icon.png
+layout.tsx
+manifest.ts
+page.tsx
+robots.ts
+sitemap.ts
+components
+lib
+public
+scripts
+.env.example
+.gitignore
+.railwayignore
+DEPLOY.md
+README.md
+middleware.ts
+next.config.mjs
+package-lock.json
+package.json
+postcss.config.mjs
+tailwind.config.ts
+tsconfig.json
+mooihuus/app
+/layout.tsx
+claude
+claude
+Open huis: datum/tijd per woning (bewerken), prominente blok op detai…
+661e6ab
+ · 
+4 hours ago
+mooihuus/app
+/layout.tsx
+
+Code
+
+Blame
+132 lines (127 loc) · 6.05 KB
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
