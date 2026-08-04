@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { getUser, getPaymentsByUser, getListing } from "@/lib/db";
 import { euroCents } from "@/lib/money";
 import { WachtwoordWijzigen } from "@/components/WachtwoordWijzigen";
+import { BedrijfsgegevensForm } from "@/components/BedrijfsgegevensForm";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,12 @@ export default async function Account() {
         </div>
       )}
       <p className="text-xs text-grijs mt-2">Klik op een factuurnummer om je factuur te bekijken, te downloaden of te printen (PDF). Je ontvangt ook per e-mail een betalingsbewijs.</p>
+
+      <h2 className="font-display font-bold text-lg mt-8 mb-2">{user.type === "zakelijk" ? "Bedrijfsgegevens" : "Mijn gegevens"}</h2>
+      <p className="text-grijs text-sm mb-2">Je kunt deze gegevens altijd zelf aanpassen. Bedrijfsgegevens gebruiken we onder andere op je facturen.</p>
+      <div className="card">
+        <BedrijfsgegevensForm user={user} />
+      </div>
 
       <h2 className="font-display font-bold text-lg mt-8 mb-2">Wachtwoord wijzigen</h2>
       <div className="card">

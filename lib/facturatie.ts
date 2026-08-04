@@ -2,11 +2,14 @@ import { getUser, getListingsByOwner, addPayment, updatePayment } from "./db";
 import { mollieEnabled, createMolliePayment } from "./mollie";
 import { renderMakelaarFactuur, sendEmail } from "./email";
 import { COMPANY } from "./company";
+import { PAKKET_PRIJS, volumeKortingPct } from "./money";
 
-// Prijs per gepubliceerd object (per factuurronde). Instelbaar via env.
-export function prijsPerObject(): number {
-  const v = Number(process.env.MAKELAAR_OBJECT_PRIJS);
-  return isFinite(v) && v > 0 ? v : 4.95;
+// Zelfde prijs als voor particulieren: het Basis-advertentietarief per object,
+// mét dezelfde volumekorting (vanaf 5 objecten 15%, vanaf 10 objecten 25%).
+export function prijsPerObject(aantal = 1): number {
+  const basis = PAKKET_PRIJS.Basis;
+  const korting = volumeKortingPct(aantal);
+  return Math.round(basis * (1 - korting / 100) * 100) / 100;
 }
 
 // Objecten die we een makelaar in rekening brengen: hun live woningen die via
@@ -37,7 +40,7 @@ export async function maakMakelaarFactuur(ownerId: string): Promise<{
   const objecten = factureerbareObjecten(ownerId);
   if (objecten.length === 0) return { ok: false, reden: "Geen factureerbare (feed-)objecten voor deze makelaar." };
 
-  const prijs = prijsPerObject();
+  const prijs = prijsPerObject(objecten.length);
   const bedrag = Math.round(objecten.length * prijs * 100) / 100;
   const kantoor = owner.bedrijfsnaam || owner.naam;
 

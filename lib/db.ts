@@ -175,6 +175,9 @@ export function addUser(data: {
   adres?: string;
   postcode?: string;
   plaats?: string;
+  iban?: string;
+  factuurEmail?: string;
+  website?: string;
 }): User {
   const db = load();
   const type = data.type === "zakelijk" ? "zakelijk" : "particulier";
@@ -193,6 +196,9 @@ export function addUser(data: {
     adres: zak ? data.adres : undefined,
     postcode: zak ? data.postcode : undefined,
     plaats: zak ? data.plaats : undefined,
+    iban: zak ? data.iban : undefined,
+    factuurEmail: zak ? data.factuurEmail : undefined,
+    website: zak ? data.website : undefined,
     aangemaakt: new Date().toISOString(),
   };
   db.users.push(user);

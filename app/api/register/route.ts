@@ -3,7 +3,7 @@ import { addUser, getUserByEmail } from "@/lib/db";
 import { renderWelkom, sendEmail } from "@/lib/email";
 
 export async function POST(req: Request) {
-  const { naam, email, wachtwoord, type, bedrijfsnaam, kvk, btw, telefoon, adres, postcode, plaats } = await req.json();
+  const { naam, email, wachtwoord, type, bedrijfsnaam, kvk, btw, telefoon, adres, postcode, plaats, iban, factuurEmail, website } = await req.json();
   if (!naam || !email || !wachtwoord) {
     return NextResponse.json({ error: "Vul je naam, e-mail en wachtwoord in." }, { status: 400 });
   }
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   if (getUserByEmail(email)) {
     return NextResponse.json({ error: "Er bestaat al een account met dit e-mailadres." }, { status: 409 });
   }
-  const user = addUser({ naam, email, wachtwoord, type, bedrijfsnaam, kvk, btw, telefoon, adres, postcode, plaats });
+  const user = addUser({ naam, email, wachtwoord, type, bedrijfsnaam, kvk, btw, telefoon, adres, postcode, plaats, iban, factuurEmail, website });
   const mail = renderWelkom(user.naam);
   await sendEmail({ aan: user.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html });
   return NextResponse.json({ ok: true });

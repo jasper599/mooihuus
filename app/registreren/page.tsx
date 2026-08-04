@@ -10,7 +10,7 @@ type Type = "particulier" | "zakelijk";
 export default function Registreren() {
   const router = useRouter();
   const [type, setType] = useState<Type>("particulier");
-  const [form, setForm] = useState({ naam: "", email: "", wachtwoord: "", bedrijfsnaam: "", kvk: "", btw: "", telefoon: "", adres: "", postcode: "", plaats: "" });
+  const [form, setForm] = useState({ naam: "", email: "", wachtwoord: "", bedrijfsnaam: "", kvk: "", btw: "", telefoon: "", adres: "", postcode: "", plaats: "", iban: "", factuurEmail: "", website: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -80,6 +80,12 @@ export default function Registreren() {
             <div className="grid grid-cols-2 gap-2">
               <div><label className="label">Postcode <span className="text-grijs font-normal">(optioneel)</span></label><input className="field" value={form.postcode} onChange={(e) => setForm({ ...form, postcode: e.target.value })} /></div>
               <div><label className="label">Plaats <span className="text-grijs font-normal">(optioneel)</span></label><input className="field" value={form.plaats} onChange={(e) => setForm({ ...form, plaats: e.target.value })} /></div>
+            </div>
+            <label className="label">IBAN <span className="text-grijs font-normal">(optioneel — voor automatische incasso)</span></label>
+            <input className="field" value={form.iban} onChange={(e) => setForm({ ...form, iban: e.target.value })} placeholder="NL00 BANK 0000 0000 00" />
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="label">Factuur-e-mail <span className="text-grijs font-normal">(optioneel)</span></label><input type="email" className="field" value={form.factuurEmail} onChange={(e) => setForm({ ...form, factuurEmail: e.target.value })} placeholder="facturen@bedrijf.nl" /></div>
+              <div><label className="label">Website <span className="text-grijs font-normal">(optioneel)</span></label><input className="field" value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="www.bedrijf.nl" /></div>
             </div>
           </>
         )}

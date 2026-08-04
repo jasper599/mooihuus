@@ -19,6 +19,9 @@ export interface User {
   adres?: string;
   postcode?: string;
   plaats?: string;
+  iban?: string;
+  factuurEmail?: string;
+  website?: string;
   aangemaakt: string;
 }
 

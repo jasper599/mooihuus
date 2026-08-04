@@ -162,7 +162,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
         <Table head={["Naam / bedrijf", "E-mail", "Type", "Objecten", "Facturatie"]}>
           {users.map((u) => (
             <tr key={u.id} className="border-t border-lijn">
-              <Td>{u.type === "zakelijk" && u.bedrijfsnaam ? <span><strong>{u.bedrijfsnaam}</strong><br /><span className="text-grijs text-xs">{u.naam}</span></span> : u.naam}</Td>
+              <Td>{u.type === "zakelijk" && u.bedrijfsnaam ? <span><strong>{u.bedrijfsnaam}</strong><br /><span className="text-grijs text-xs">{u.naam}{u.kvk ? ` · KvK ${u.kvk}` : ""}{u.btw ? ` · btw ${u.btw}` : ""}</span></span> : u.naam}</Td>
               <Td>{u.email}</Td>
               <Td>{u.type === "zakelijk" ? <span className="pill">Zakelijk</span> : "Particulier"}</Td>
               <Td>{listings.filter((l) => l.ownerId === u.id).length}</Td>
