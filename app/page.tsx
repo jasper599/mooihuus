@@ -34,6 +34,28 @@ export default function Home() {
         <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-salie/25" />
       </section>
 
+      <section className="mt-8">
+        <h2 className="font-display font-extrabold text-2xl text-bosgroen-dk text-center">{t(locale, "usp.title")}</h2>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mt-5">
+          {[
+            { e: "💶", t: "usp.1t", d: "usp.1d" },
+            { e: "📩", t: "usp.2t", d: "usp.2d" },
+            { e: "🌲", t: "usp.3t", d: "usp.3d" },
+            { e: "🤝", t: "usp.4t", d: "usp.4d" },
+            { e: "🧰", t: "usp.5t", d: "usp.5d" },
+            { e: "🔔", t: "usp.6t", d: "usp.6d" },
+          ].map((u) => (
+            <div key={u.t} className="card flex gap-3 items-start">
+              <div className="w-11 h-11 rounded-xl bg-salie-lt flex items-center justify-center text-xl shrink-0">{u.e}</div>
+              <div>
+                <div className="font-display font-bold text-bosgroen-dk">{t(locale, u.t)}</div>
+                <div className="text-sm text-grijs mt-0.5">{t(locale, u.d)}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <ListingsBrowser listings={listings} locale={locale} />
     </div>
   );

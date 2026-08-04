@@ -18,6 +18,7 @@ type SeedListing = Omit<Listing, "ownerId" | "aangemaakt">;
 export const LM_LISTINGS: SeedListing[] = [
   {
     "id": "lm-hall-voorstondensestraat-7-a",
+    "videoUrl": "https://youtu.be/sMKNWDCxnYU",
     "titel": "Exclusieve recreatievilla op Havezate Hall",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -55,6 +56,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-239",
+    "videoUrl": "https://youtu.be/nGzMJdGfA_o",
     "titel": "Stijlvol vakantiehuis aan het water in Berkhout",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -91,6 +93,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-vuursche-koudelaan-ref-453",
+    "videoUrl": "https://youtu.be/U8BDmm203wA",
     "titel": "Duurzame ecolodge met wellness in Lage Vuursche",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -127,6 +130,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-leuvenumse-beek-1",
+    "videoUrl": "https://youtu.be/UdcdjJc3M2s",
     "titel": "Gelijkvloerse vakantiewoning aan het Veluwemeer",
     "type": "Bungalow",
     "doel": "koop",
@@ -163,6 +167,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-568",
+    "videoUrl": "https://youtu.be/rGd68h0ngYY",
     "titel": "Moderne recreatiewoning op de Utrechtse Heuvelrug",
     "type": "Bungalow",
     "doel": "koop",
@@ -200,6 +205,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-500",
+    "videoUrl": "https://youtu.be/GHAssH-M2EI",
     "titel": "Ruime recreatiewoning in het Limburgse Schin op Geul",
     "type": "Bungalow",
     "doel": "koop",
@@ -235,6 +241,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-75a",
+    "videoUrl": "https://www.youtube.com/watch?v=KI_Yw9ay5Cg",
     "titel": "Instapklare bosbungalow in Ede",
     "type": "Bungalow",
     "doel": "koop",
@@ -270,6 +277,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-20",
+    "videoUrl": "https://www.youtube.com/watch?v=Mmzn91mzjvg",
     "titel": "Moderne vakantiewoning in Schin op Geul",
     "type": "Bungalow",
     "doel": "koop",
@@ -304,6 +312,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-613a",
+    "videoUrl": "https://youtu.be/PTtcGJ0RDlc",
     "titel": "Vakantiewoning met jacuzzi op de Veluwe",
     "type": "Bungalow",
     "doel": "koop",
@@ -408,6 +417,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-42",
+    "videoUrl": "https://youtu.be/JP6B4JdFj5A",
     "titel": "Vakantiewoning met sauna in Lichtenvoorde",
     "type": "Bungalow",
     "doel": "koop",
@@ -445,6 +455,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-102",
+    "videoUrl": "https://youtu.be/QoffQbt1aSk",
     "titel": "Ruime eco-villa voor tien personen in Biddinghuizen",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -481,6 +492,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-garderen-putterweg-68-309",
+    "videoUrl": "https://youtu.be/QuuHhdD90MU",
     "titel": "Luxe vakantiewoning in de bossen van Garderen",
     "type": "Bungalow",
     "doel": "koop",
@@ -517,6 +529,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-211",
+    "videoUrl": "https://youtu.be/gShA9G_TGWc",
     "titel": "Vakantiehuis met sauna en jacuzzi in Berkhout",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -552,6 +565,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-607",
+    "videoUrl": "https://youtu.be/yzbJ7aNvksA",
     "titel": "Vrijstaande vakantiewoning met dijkzicht in Biddinghuizen",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -589,6 +603,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-b10",
+    "videoUrl": "https://youtu.be/KAKBwy13bO0",
     "titel": "Sfeervolle bungalow op Résidence de Leuvert in Cromvoirt",
     "type": "Bungalow",
     "doel": "koop",
@@ -625,6 +640,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-workum-suderseleane-27-20",
+    "videoUrl": "https://youtu.be/Iphka6miACs",
     "titel": "Nieuwe vrijstaande vakantievilla aan het water in Workum",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -661,6 +677,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-37",
+    "videoUrl": "https://youtu.be/0UhPVGyxhyk",
     "titel": "Vrijstaande waterwoning op Park Westerkogge in Berkhout",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -697,6 +714,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-leuvenumse-beek-1-145",
+    "videoUrl": "https://youtu.be/9o3QMGJTsHU",
     "titel": "Luxe recreatiewoning aan het water op Landal Waterparc Veluwemeer",
     "type": "Bungalow",
     "doel": "koop",
@@ -733,6 +751,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-a22-ref-437",
+    "videoUrl": "https://youtu.be/RjLBnwr5NWk",
     "titel": "Gezellige recreatiewoning Casa di Rialto op Résidence de Leuvert",
     "type": "Bungalow",
     "doel": "koop",
@@ -769,6 +788,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-364",
+    "videoUrl": "https://youtu.be/pv3EEhWIAyw",
     "titel": "Instapklare recreatiewoning op Bospark Ede aan de Veluwe",
     "type": "Chalet",
     "doel": "koop",
@@ -841,6 +861,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-k16",
+    "videoUrl": "https://youtu.be/WGGY0Q46xw4",
     "titel": "Ruime recreatiewoning met haard op Résidence de Leuvert",
     "type": "Bungalow",
     "doel": "koop",
@@ -878,6 +899,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-613",
+    "videoUrl": "https://youtu.be/Ftnv9cW3n2Y",
     "titel": "Luxe recreatiewoning met sauna en jacuzzi op Landgoed de Scheleberg",
     "type": "Bungalow",
     "doel": "koop",
@@ -914,6 +936,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-a6",
+    "videoUrl": "https://youtu.be/UFt4WiU9ukA",
     "titel": "Warme, gezellige recreatiewoning op Résidence de Leuvert",
     "type": "Bungalow",
     "doel": "koop",
@@ -980,6 +1003,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-149",
+    "videoUrl": "https://youtu.be/mMlByFLBm0c",
     "titel": "Stijlvolle 6-persoonswoning aan het Veluwemeer op EuroParcs Zuiderzee",
     "type": "Bungalow",
     "doel": "koop",
@@ -1052,6 +1076,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-ref-53",
+    "videoUrl": "https://www.youtube.com/watch?v=vzTaYG1VqPE",
     "titel": "Luxe vakantievilla met wellness voor 12 personen in de Achterhoek",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -1088,6 +1113,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-501",
+    "videoUrl": "https://youtu.be/FEYxOVsYBe8",
     "titel": "Charmante 6-persoons vakantiewoning in het Limburgse heuvelland",
     "type": "Bungalow",
     "doel": "koop",
@@ -1125,6 +1151,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-den-oever-akkerweg-41-028",
+    "videoUrl": "https://youtu.be/fBOrBstNsMk",
     "titel": "Sfeervol 6-persoons chalet met vrij uitzicht in Den Oever",
     "type": "Chalet",
     "doel": "koop",
@@ -1161,6 +1188,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-82",
+    "videoUrl": "https://youtu.be/w0vf5qMdKMc",
     "titel": "Luxe waterchalet op TopParken Westerkogge in Berkhout",
     "type": "Chalet",
     "doel": "koop",
@@ -1197,6 +1225,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-d17",
+    "videoUrl": "https://youtu.be/EakOTn9QJS0",
     "titel": "Recreatiewoning met sauna en jacuzzi op Résidence de Leuvert",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -1233,6 +1262,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-311",
+    "videoUrl": "https://youtu.be/zsHHJ_Xeiw8",
     "titel": "Ruime villa aan het Veluwemeer op EuroParcs Zuiderzee",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -1269,6 +1299,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-1130",
+    "videoUrl": "https://youtu.be/qNy9yNeWuTY",
     "titel": "Tiny House op de Utrechtse Heuvelrug in Maarn",
     "type": "Tiny house",
     "doel": "koop",
@@ -1305,6 +1336,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-164",
+    "videoUrl": "https://youtu.be/nRVJFdOrbtM",
     "titel": "Luxe recreatiewoning met sauna aan het water in Lichtenvoorde",
     "type": "Bungalow",
     "doel": "koop",
@@ -1341,6 +1373,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-26",
+    "videoUrl": "https://youtu.be/PeCLrAjjKGg",
     "titel": "Instapklare recreatiewoning op Park Westerkogge in Berkhout",
     "type": "Bungalow",
     "doel": "koop",
@@ -1377,6 +1410,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-520",
+    "videoUrl": "https://youtu.be/u13u1dXNUS8",
     "titel": "Vakantiewoning Casa di Rialto in het Heuvelland bij Valkenburg",
     "type": "Bungalow",
     "doel": "koop",
@@ -1412,6 +1446,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-b2",
+    "videoUrl": "https://youtu.be/S9xIWbmoPXg",
     "titel": "Sfeervolle recreatiewoning met eigen grond op Résidence de Leuvert",
     "type": "Bungalow",
     "doel": "koop",
@@ -1483,6 +1518,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-214",
+    "videoUrl": "https://youtu.be/QVf1oCa0oZk",
     "titel": "Recent opgeleverd Tiny House op de Utrechtse Heuvelrug",
     "type": "Tiny house",
     "doel": "koop",
@@ -1554,6 +1590,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-mierde-wellenseind-9-261",
+    "videoUrl": "https://youtu.be/5Zua2bpt1tQ",
     "titel": "Gloednieuwe recreatiewoning met jacuzzi op Resort De Brabantse Kempen",
     "type": "Bungalow",
     "doel": "koop",
@@ -1590,6 +1627,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-48a",
+    "videoUrl": "https://youtu.be/ZcKYgu_bLf8",
     "titel": "Luxe deluxe recreatiewoning met hottub in Lichtenvoorde",
     "type": "Bungalow",
     "doel": "koop",
@@ -1626,6 +1664,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ruinen-ref-83",
+    "videoUrl": "https://www.youtube.com/watch?v=ym0C4GZcWBk",
     "titel": "Ruime gelijkvloerse vakantiewoning op EuroParcs Ruinen",
     "type": "Bungalow",
     "doel": "koop",
@@ -1662,6 +1701,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-113",
+    "videoUrl": "https://youtu.be/MO38FjK7mng",
     "titel": "Recreatiewoning Casa di Rialto aan het water in Berkhout",
     "type": "Bungalow",
     "doel": "koop",
@@ -1698,6 +1738,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kampen-flevoweg-90-310",
+    "videoUrl": "https://www.youtube.com/watch?v=bs_86usu4sk",
     "titel": "Vrijstaande waterwoning Just Nature op EuroParcs De IJssel Eilanden",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -1734,6 +1775,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-814",
+    "videoUrl": "https://youtu.be/5QleMg_iZLQ",
     "titel": "Sfeervolle 6-persoons recreatiewoning op EuroParcs Zuiderzee",
     "type": "Bungalow",
     "doel": "koop",
@@ -1770,6 +1812,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-harderwijk-korhoenlaan-2-393",
+    "videoUrl": "https://youtu.be/F5BOmGxU5lc",
     "titel": "Moderne recreatiewoning in de bossen bij Harderwijk",
     "type": "Bungalow",
     "doel": "koop",
@@ -1806,6 +1849,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-24",
+    "videoUrl": "https://youtu.be/2geTQnq5VDo",
     "titel": "Luxe vakantiewoning met privé jacuzzi in Beekbergen",
     "type": "Bungalow",
     "doel": "koop",
@@ -1842,6 +1886,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-786a",
+    "videoUrl": "https://youtu.be/0T0MLUlia1I",
     "titel": "Stijlvolle 6-persoons vakantiewoning De Velthorst",
     "type": "Bungalow",
     "doel": "koop",
@@ -1878,6 +1923,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-94",
+    "videoUrl": "https://youtu.be/9v_u3B6vBGU",
     "titel": "Landhuis Deluxe aan het water in Lichtenvoorde",
     "type": "Bungalow",
     "doel": "koop",
@@ -1914,6 +1960,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-213",
+    "videoUrl": "https://youtu.be/KlDhgohP-SQ",
     "titel": "Blokhut als oase van rust op de Veluwe",
     "type": "Chalet",
     "doel": "koop",
@@ -1950,6 +1997,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-229",
+    "videoUrl": "https://youtu.be/PPvNE_8QYZk",
     "titel": "Ruime 6-persoons recreatiewoning op Park Westerkogge",
     "type": "Bungalow",
     "doel": "koop",
@@ -1986,6 +2034,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-695",
+    "videoUrl": "https://www.youtube.com/watch?v=0FzaepL8WZE",
     "titel": "Instapklare recreatiewoning in de bossen van Lunteren",
     "type": "Bungalow",
     "doel": "koop",
@@ -2022,6 +2071,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-323a",
+    "videoUrl": "https://youtu.be/CeJTKzR5hIk",
     "titel": "Charmante recreatiewoning Rialto op de Veluwe",
     "type": "Bungalow",
     "doel": "koop",
@@ -2058,6 +2108,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-37",
+    "videoUrl": "https://youtu.be/RANxswcCNOg",
     "titel": "Moderne recreatiewoning in bosrijk Beekbergen",
     "type": "Bungalow",
     "doel": "koop",
@@ -2094,6 +2145,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-62",
+    "videoUrl": "https://youtu.be/zXaC2y4_k3I",
     "titel": "Ruime recreatiewoning met overkapping op Westerkogge",
     "type": "Bungalow",
     "doel": "koop",
@@ -2130,6 +2182,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-48",
+    "videoUrl": "https://youtu.be/eDIArsQ0Ork",
     "titel": "Ruime 6-persoons recreatiewoning op eigen grond",
     "type": "Bungalow",
     "doel": "koop",
@@ -2166,6 +2219,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-98-ref-369",
+    "videoUrl": "https://youtu.be/ybmkgTZSxDQ",
     "titel": "Stijlvolle recreatiewoning direct aan het water",
     "type": "Bungalow",
     "doel": "koop",
@@ -2238,6 +2292,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-enkhuizen-kooizandweg-12-a200",
+    "videoUrl": "https://youtu.be/iD_xTk9MMkA",
     "titel": "Vrijstaand vakantiehuis op EuroParcs Enkhuizer Strand",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2274,6 +2329,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kotten-vosseveldseweg-8",
+    "videoUrl": "https://www.youtube.com/watch?v=AuHV9G8UX4A",
     "titel": "Ruime groepsaccommodatie Amalia Familia in Winterswijk",
     "type": "Groepsaccommodatie",
     "doel": "koop",
@@ -2311,6 +2367,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-165",
+    "videoUrl": "https://youtu.be/FDmaSAIv2EQ",
     "titel": "Ruime recreatiewoning aan het Veluwemeer",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2347,6 +2404,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-140",
+    "videoUrl": "https://youtu.be/LucsBXQvHS0",
     "titel": "Comfortabele recreatiebungalow bij Hoorn",
     "type": "Bungalow",
     "doel": "koop",
@@ -2383,6 +2441,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-noordwijk-kraaierslaan-7-155",
+    "videoUrl": "https://www.youtube.com/watch?v=efgu3BMa-1g",
     "titel": "Gerenoveerd vakantiehuis nabij strand en bos",
     "type": "Bungalow",
     "doel": "koop",
@@ -2419,6 +2478,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-813",
+    "videoUrl": "https://youtu.be/tT1V7BafTUY",
     "titel": "Eigentijdse recreatiewoning aan het Veluwemeer",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2455,6 +2515,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-c14",
+    "videoUrl": "https://youtu.be/sdAKgIeOQe0",
     "titel": "Instapklare boswoning bij De IJzeren Man",
     "type": "Bungalow",
     "doel": "koop",
@@ -2491,6 +2552,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-vuursche-koudelaan-14-d26",
+    "videoUrl": "https://youtu.be/Yl2U4Q5mspw",
     "titel": "Duurzame eco-lodge in Lage Vuursche",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2527,6 +2589,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-nunspeet-randmeerweg-8-214",
+    "videoUrl": "https://youtu.be/BJhmVw696XQ",
     "titel": "Luxe watervilla aan het Veluwemeer",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2563,6 +2626,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-694",
+    "videoUrl": "https://youtu.be/e0v-qgW2hhs",
     "titel": "Moderne boswoning op Landgoed de Scheleberg",
     "type": "Bungalow",
     "doel": "koop",
@@ -2599,6 +2663,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-109",
+    "videoUrl": "https://youtu.be/Ry3G31-nWCs",
     "titel": "Stijlvolle vakantiewoning met jacuzzi op de Veluwe",
     "type": "Bungalow",
     "doel": "koop",
@@ -2636,6 +2701,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-8",
+    "videoUrl": "https://youtu.be/aetIEX8I3_w",
     "titel": "Luxe vakantiewoning midden in de natuur",
     "type": "Bungalow",
     "doel": "koop",
@@ -2672,6 +2738,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-garderen-putterweg-70-10",
+    "videoUrl": "https://youtu.be/zF3V_Pz0rhM",
     "titel": "Luxe vakantiewoning met sauna in het bos",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2708,6 +2775,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-131",
+    "videoUrl": "https://youtu.be/QvyWHaranfY",
     "titel": "Ruime recreatiewoning op eigen grond bij Hoorn",
     "type": "Bungalow",
     "doel": "koop",
@@ -2744,6 +2812,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-garderen-putterweg-70-47a",
+    "videoUrl": "https://youtu.be/O3bWn_j1mXg",
     "titel": "Luxe vrijstaande vakantiewoning in Garderen",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2780,6 +2849,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-119",
+    "videoUrl": "https://youtu.be/TFpjW5NFNGo",
     "titel": "Luxe recreatiewoning aan de bosrand",
     "type": "Bungalow",
     "doel": "koop",
@@ -2815,6 +2885,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-velsen-zuid-buitenhuizerweg-2-474",
+    "videoUrl": "https://youtu.be/zl_5WH5H3G4",
     "titel": "Duurzame waterwoning tussen strand en Amsterdam",
     "type": "Bungalow",
     "doel": "koop",
@@ -2851,6 +2922,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kampen-reeveweg-154",
+    "videoUrl": "https://www.youtube.com/watch?v=2Xgo4M8GKsQ",
     "titel": "Ultra luxe watervilla voor 10 personen",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2886,6 +2958,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kaatsheuvel-van-haestrechtstraat-24-298",
+    "videoUrl": "https://youtu.be/3qyiMxZTUIc",
     "titel": "Moderne vakantiewoning bij de Efteling in Kaatsheuvel",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2922,6 +2995,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-vuursche-koudelaan-25-g4",
+    "videoUrl": "https://youtu.be/p2igvMBN_ZI",
     "titel": "Luxe lodge aan de bosrand in Lage Vuursche",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -2958,6 +3032,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-518",
+    "videoUrl": "https://youtu.be/XIZCdwwgi40",
     "titel": "Ruime luxe villa op landgoed in Lunteren",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -3030,6 +3105,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-velsen-zuid-buitenhuizerweg-2-451",
+    "videoUrl": "https://youtu.be/WzkNq80zlvc",
     "titel": "Duurzame bungalow aan het water bij Velsen-Zuid",
     "type": "Bungalow",
     "doel": "koop",
@@ -3066,6 +3142,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-223",
+    "videoUrl": "https://youtu.be/_MSiqEriqVo",
     "titel": "Bungalow aan het water in Beekbergen",
     "type": "Bungalow",
     "doel": "koop",
@@ -3103,6 +3180,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-46",
+    "videoUrl": "https://youtu.be/CWWEJNktfm8",
     "titel": "Verzorgde recreatiewoning in de bossen bij Ede",
     "type": "Bungalow",
     "doel": "koop",
@@ -3139,6 +3217,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-679",
+    "videoUrl": "https://youtu.be/Qa1QOKQUJeo",
     "titel": "Gezellige recreatiewoning op landgoed in Lunteren",
     "type": "Bungalow",
     "doel": "koop",
@@ -3175,6 +3254,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-ref-54",
+    "videoUrl": "https://www.youtube.com/watch?v=-ha0mibo9kY",
     "titel": "Instapklare recreatiewoning in de bossen bij Ede",
     "type": "Bungalow",
     "doel": "koop",
@@ -3210,6 +3290,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-velsen-zuid-buitenhuizerweg-2-123",
+    "videoUrl": "https://youtu.be/DcLymOk-r8M",
     "titel": "Stijlvol L-vormig chalet aan het water bij Velsen-Zuid",
     "type": "Chalet",
     "doel": "koop",
@@ -3246,6 +3327,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-96",
+    "videoUrl": "https://youtu.be/W7RfPLE8PvI",
     "titel": "Rolstoelvriendelijk chalet in Lichtenvoorde",
     "type": "Chalet",
     "doel": "koop",
@@ -3282,6 +3364,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-32",
+    "videoUrl": "https://youtu.be/qqf4zJxV9NE",
     "titel": "Moderne recreatiewoning op ruime kavel in Berkhout",
     "type": "Bungalow",
     "doel": "koop",
@@ -3318,6 +3401,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-016",
+    "videoUrl": "https://youtu.be/rlqEeqa5r1Q",
     "titel": "Vakantiewoning met hottub op de Utrechtse Heuvelrug",
     "type": "Bungalow",
     "doel": "koop",
@@ -3390,6 +3474,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-79a",
+    "videoUrl": "https://youtu.be/1hNn9TDRdwU",
     "titel": "Luxe villa met zwembad en wellness in Lichtenvoorde",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -3426,6 +3511,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-aalst-zaaiwaard-3-108a",
+    "videoUrl": "https://youtu.be/uqn0KHqby9M",
     "titel": "Instapklare waterwoning bij de Biesbosch in Aalst",
     "type": "Bungalow",
     "doel": "koop",
@@ -3462,6 +3548,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-a28",
+    "videoUrl": "https://youtu.be/ClNMSC7xYyQ",
     "titel": "Instapklare recreatiewoning in Cromvoirt",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -3498,6 +3585,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-noordwijk-zh-kraaierslaan-7-178",
+    "videoUrl": "https://youtu.be/oNgSzsjVD_s",
     "titel": "Stijlvol beach house bij de duinen in Noordwijk",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -3534,6 +3622,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-704",
+    "videoUrl": "https://youtu.be/6Ifz4_JKP2s",
     "titel": "Moderne bosbungalow op de Utrechtse Heuvelrug",
     "type": "Bungalow",
     "doel": "koop",
@@ -3570,6 +3659,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-k13",
+    "videoUrl": "https://www.youtube.com/watch?v=4IWqP4whGGE",
     "titel": "Nieuwbouw recreatiewoning in Cromvoirt",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -3606,6 +3696,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-d4",
+    "videoUrl": "https://youtu.be/8jeCPcdM6zo",
     "titel": "Luxe waterwoning op Résidence de Leuvert",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -3641,6 +3732,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-74",
+    "videoUrl": "https://youtu.be/vMDvKnRbb2Y",
     "titel": "Vakantiewoning met sauna op de Veluwe",
     "type": "Bungalow",
     "doel": "koop",
@@ -3677,6 +3769,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-29",
+    "videoUrl": "https://youtu.be/SVfcn-sYQk0",
     "titel": "Lichte recreatiewoning in Beekbergen",
     "type": "Bungalow",
     "doel": "koop",
@@ -3713,6 +3806,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-644a",
+    "videoUrl": "https://youtu.be/1Rn4zn9_FQA",
     "titel": "Recreatiewoning in de bossen van Lunteren",
     "type": "Bungalow",
     "doel": "koop",
@@ -3749,6 +3843,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-3",
+    "videoUrl": "https://youtu.be/za1znbY5eJk",
     "titel": "Gezellige vakantiewoning in de bossen van Ede",
     "type": "Bungalow",
     "doel": "koop",
@@ -3784,6 +3879,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-loosdrecht-nieuw-loosdrechtsedijk-215-15",
+    "videoUrl": "https://youtu.be/bbYEcU4dNY4",
     "titel": "Luxe watervilla aan de Loosdrechtse Plassen",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -3820,6 +3916,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-154",
+    "videoUrl": "https://youtu.be/YxdUgdo2LyA",
     "titel": "Vakantiewoning in het Limburgse heuvelland",
     "type": "Bungalow",
     "doel": "koop",
@@ -3889,6 +3986,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-mierde-wellenseind-9-26",
+    "videoUrl": "https://youtu.be/nYTv7ZnMhWE",
     "titel": "Volledig gerenoveerde bungalow in de Brabantse Kempen",
     "type": "Bungalow",
     "doel": "koop",
@@ -3925,6 +4023,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-belfeld-maalbekerweg-ref-46",
+    "videoUrl": "https://www.youtube.com/watch?v=ZRVg8HeICY0",
     "titel": "Forest Lodge op EuroParcs Maasduinen",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -3961,6 +4060,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-bovenkarspel-zuiderdijk-1-21",
+    "videoUrl": "https://youtu.be/qKJ99xPbeag",
     "titel": "Vrijstaande vakantiewoning aan het Markermeer",
     "type": "Bungalow",
     "doel": "koop",
@@ -3997,6 +4097,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-372",
+    "videoUrl": "https://www.youtube.com/watch?v=POMae5OVHNU",
     "titel": "Riante recreatiewoning op EuroParcs Zuiderzee",
     "type": "Bungalow",
     "doel": "koop",
@@ -4032,6 +4133,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-404",
+    "videoUrl": "https://youtu.be/R0Fm3n5XVo0",
     "titel": "Eigentijdse bungalow op de Utrechtse Heuvelrug",
     "type": "Bungalow",
     "doel": "koop",
@@ -4068,6 +4170,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-west-graftdijk-burgemeester-dalenbergstraat-50-406",
+    "videoUrl": "https://youtu.be/q9-pKV5TGgo",
     "titel": "Moderne vakantievilla in West-Graftdijk",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -4104,6 +4207,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-288",
+    "videoUrl": "https://youtu.be/x9GRWQhhxXg",
     "titel": "Design vakantiewoning aan de Zuiderzee",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -4141,6 +4245,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-27",
+    "videoUrl": "https://youtu.be/FwPNQUc-vhc",
     "titel": "Gelijkvloerse recreatiewoning op de Veluwe",
     "type": "Bungalow",
     "doel": "koop",
@@ -4177,6 +4282,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-405",
+    "videoUrl": "https://youtu.be/8JvZ-Hu-j8M",
     "titel": "Boslodge met sauna op de Veluwe",
     "type": "Chalet",
     "doel": "koop",
@@ -4213,6 +4319,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-100",
+    "videoUrl": "https://www.youtube.com/watch?v=1ijBvwsVHdk",
     "titel": "Luxe vakantiewoning met sauna in Beekbergen",
     "type": "Bungalow",
     "doel": "koop",
@@ -4282,6 +4389,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-629",
+    "videoUrl": "https://youtu.be/qGCX5kasxSk",
     "titel": "Luxe chalet met jacuzzi op de Veluwe",
     "type": "Chalet",
     "doel": "koop",
@@ -4318,6 +4426,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-1",
+    "videoUrl": "https://youtu.be/mQDE4z8Wfp0",
     "titel": "Gezellige recreatiewoning op de Veluwe",
     "type": "Bungalow",
     "doel": "koop",
@@ -4353,6 +4462,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-vuursche-koudelaan-25-d18",
+    "videoUrl": "https://youtu.be/ajMPYLTtBEE",
     "titel": "Duurzame luxe lodge in Lage Vuursche",
     "type": "Bungalow",
     "doel": "koop",
@@ -4389,6 +4499,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-147",
+    "videoUrl": "https://youtu.be/craQo8LlMrs",
     "titel": "Instapklare vakantiewoning met sauna in Limburg",
     "type": "Bungalow",
     "doel": "koop",
@@ -4425,6 +4536,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-128",
+    "videoUrl": "https://youtu.be/hPoh3CCIHx8",
     "titel": "Energiezuinige Eco Villa voor 10 personen",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -4461,6 +4573,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-223",
+    "videoUrl": "https://www.youtube.com/watch?v=ao1m_7NyC94",
     "titel": "Sfeervolle vakantiewoning in het Geuldal",
     "type": "Bungalow",
     "doel": "koop",
@@ -4497,6 +4610,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-534",
+    "videoUrl": "https://youtu.be/JgAaBjT3nqs",
     "titel": "Recreatiewoning met heuvelzicht in Limburg",
     "type": "Bungalow",
     "doel": "koop",
@@ -4532,6 +4646,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-561",
+    "videoUrl": "https://youtu.be/qJcfd2pGMz4",
     "titel": "Luxe chalet met waterzicht in het Geuldal",
     "type": "Chalet",
     "doel": "koop",
@@ -4568,6 +4683,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kerkdriel-zandstraat-8",
+    "videoUrl": "https://youtu.be/qt_TP9GJ-gs",
     "titel": "Recreatiewoning met waterzicht in Kerkdriel",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -4603,6 +4719,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-uitdam-zeedijk-2-327",
+    "videoUrl": "https://youtu.be/WoNsglc4Zis",
     "titel": "Recreatiewoning aan het water in Uitdam",
     "type": "Bungalow",
     "doel": "koop",
@@ -4639,6 +4756,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-402",
+    "videoUrl": "https://youtu.be/789iivpp0Gs",
     "titel": "Stijlvolle boswoning op de Utrechtse Heuvelrug",
     "type": "Bungalow",
     "doel": "koop",
@@ -4675,6 +4793,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-379",
+    "videoUrl": "https://youtu.be/vTXxTHCpFfU",
     "titel": "Moderne boswoning met hottub in Ede",
     "type": "Bungalow",
     "doel": "koop",
@@ -4711,6 +4830,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-372",
+    "videoUrl": "https://youtu.be/xCZ-rSDjkUw",
     "titel": "Moderne boslodge op Landgoed de Scheleberg",
     "type": "Bungalow",
     "doel": "koop",
@@ -4747,6 +4867,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kaatsheuvel-van-haestrechtstraat-24-174",
+    "videoUrl": "https://youtu.be/mbvPCdMRZ0A",
     "titel": "Sfeervolle tiny house bij de Efteling",
     "type": "Tiny house",
     "doel": "koop",
@@ -4783,6 +4904,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kaatsheuvel-van-haestrechtstraat-24-538",
+    "videoUrl": "https://youtu.be/0nakx_4ykcs",
     "titel": "Instapklare recreatiewoning aan het water in Kaatsheuvel",
     "type": "Tiny house",
     "doel": "koop",
@@ -4819,6 +4941,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-halfweg-zuiderweg-2-21",
+    "videoUrl": "https://youtu.be/Q0OitNq5ViY",
     "titel": "Architectonische Cube Elite aan het water in Halfweg",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -4855,6 +4978,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-72",
+    "videoUrl": "https://youtu.be/WIesNDFqXzo",
     "titel": "Luxe wellnessvilla in de bossen van Lunteren",
     "type": "Bungalow",
     "doel": "koop",
@@ -4891,6 +5015,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-32",
+    "videoUrl": "https://youtu.be/5mBSC1MgX80",
     "titel": "Verzorgde recreatiewoning in het bos bij Ede",
     "type": "Bungalow",
     "doel": "koop",
@@ -4927,6 +5052,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-254",
+    "videoUrl": "https://youtu.be/DgX_7r7o1gI",
     "titel": "Luxe vakantiewoning met wellness in Schin op Geul",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -4963,6 +5089,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-591",
+    "videoUrl": "https://youtu.be/VonGoUvs5wY",
     "titel": "Duurzame Cube Split aan het Veluwemeer",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -4999,6 +5126,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-129",
+    "videoUrl": "https://youtu.be/CkQvQ0mwB-E",
     "titel": "Ruime duurzame vakantievilla voor 12 personen",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -5035,6 +5163,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-553",
+    "videoUrl": "https://www.youtube.com/watch?v=djHB1ZP_3aI",
     "titel": "Wellnesswoning met sauna en jacuzzi in Schin op Geul",
     "type": "Bungalow",
     "doel": "koop",
@@ -5071,6 +5200,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-502",
+    "videoUrl": "https://youtu.be/i9-5ME3LqXU",
     "titel": "Moderne vakantiewoning voor 6 personen in Schin op Geul",
     "type": "Bungalow",
     "doel": "koop",
@@ -5106,6 +5236,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-garderen-putterweg-70-326",
+    "videoUrl": "https://youtu.be/elutnjfat6A",
     "titel": "Luxe boswoning met sauna in Garderen",
     "type": "Bungalow",
     "doel": "koop",
@@ -5142,6 +5273,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ijmuiden-kennemermeer-27-11",
+    "videoUrl": "https://youtu.be/BR9hEX0_dVk",
     "titel": "Duurzame designloft aan zee in IJmuiden",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -5177,6 +5309,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-ref-74",
+    "videoUrl": "https://www.youtube.com/watch?v=AB1FdfyP8zQ",
     "titel": "Modern boshuisje op de Veluwe in Lunteren",
     "type": "Bungalow",
     "doel": "koop",
@@ -5212,6 +5345,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-workum-suderseleane-29",
+    "videoUrl": "https://youtu.be/NpCPcj4QaoU",
     "titel": "Modern appartement aan zee op Beach Resort Soal",
     "type": "Appartement",
     "doel": "koop",
@@ -5246,6 +5380,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-1144",
+    "videoUrl": "https://youtu.be/-MsepmTLdMY",
     "titel": "Scandinavisch tiny house in de bossen van Maarn",
     "type": "Tiny house",
     "doel": "koop",
@@ -5282,6 +5417,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-47",
+    "videoUrl": "https://youtu.be/uIVz6auvQBc",
     "titel": "Instapklare 6-persoons bungalow in de Achterhoek",
     "type": "Bungalow",
     "doel": "koop",
@@ -5318,6 +5454,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-149",
+    "videoUrl": "https://youtu.be/DBIgteNzSZM",
     "titel": "Stijlvolle bosrijke recreatiewoning in Ede",
     "type": "Bungalow",
     "doel": "koop",
@@ -5354,6 +5491,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-141",
+    "videoUrl": "https://youtu.be/LOZmreHAusU",
     "titel": "Instapklaar vakantiehuis in het Heuvelland",
     "type": "Bungalow",
     "doel": "koop",
@@ -5390,6 +5528,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-619",
+    "videoUrl": "https://youtu.be/3lnTIc7uH50",
     "titel": "Ruime bungalow op Landgoed de Scheleberg",
     "type": "Bungalow",
     "doel": "koop",
@@ -5426,6 +5565,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-susteren-hommelweg-2-671",
+    "videoUrl": "https://youtu.be/mSDBkSj0qfo",
     "titel": "Ruime groepsvilla voor 10 personen in Susteren",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -5494,6 +5634,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-noordwijk-kraaierslaan-7-138-ref-391",
+    "videoUrl": "https://youtu.be/hhYD59dah3Y",
     "titel": "Instapklare kustbungalow in Noordwijk",
     "type": "Bungalow",
     "doel": "koop",
@@ -5530,6 +5671,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-104",
+    "videoUrl": "https://youtu.be/KDR0NTspCSU",
     "titel": "Duurzame Eco Villa voor 12 personen in Biddinghuizen",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -5566,6 +5708,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kaatsheuvel-van-haestrechtstraat-24-411",
+    "videoUrl": "https://youtu.be/Vlxm24o2eUo",
     "titel": "Sfeervolle 6-persoons recreatiewoning in Kaatsheuvel",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -5603,6 +5746,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-301",
+    "videoUrl": "https://youtu.be/k4QfwAnVgD0",
     "titel": "Ruim vakantiehuis in het Limburgse Valkenburg",
     "type": "Bungalow",
     "doel": "koop",
@@ -5638,6 +5782,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ijhorst-veldhuisweg-4-129",
+    "videoUrl": "https://youtu.be/QP3pLD3Pp1E",
     "titel": "Stijlvolle luxe villa voor 10 personen in IJhorst",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
