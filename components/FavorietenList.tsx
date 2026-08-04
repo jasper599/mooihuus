@@ -24,7 +24,10 @@ export function FavorietenList({ listings, locale = "nl" }: { listings: Listing[
 
   return (
     <div>
-      <div className="text-sm text-grijs mb-4">{mijn.length} bewaarde {mijn.length === 1 ? "woning" : "woningen"}</div>
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="text-sm text-grijs">{mijn.length} bewaarde {mijn.length === 1 ? "woning" : "woningen"}</div>
+        {mijn.length > 1 && <Link href={localeHref(locale, "/vergelijken")} className="btn btn-ghost text-sm">⚖️ Vergelijken</Link>}
+      </div>
       {mijn.length === 0 ? (
         <div className="card text-grijs">Je bewaarde woningen zijn niet meer beschikbaar (verkocht of offline).</div>
       ) : (

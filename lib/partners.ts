@@ -38,6 +38,8 @@ export const HUUSMEESTERS_CATEGORIEEN: { icon: string; titel: string; tekst: str
   { icon: "📦", titel: "Bergingen", tekst: "Een berging of tuinhuis besteld en geplaatst bij je woning." },
   { icon: "♨️", titel: "Wellness", tekst: "Hottub, jacuzzi of sauna — regel extra luxe bij je recreatiewoning." },
   { icon: "❄️", titel: "Airco & klimaat", tekst: "Airco geplaatst in je recreatiewoning — heerlijk koel in de zomer, comfortabel warm in het tussenseizoen." },
+  { icon: "🏗️", titel: "Nieuwbouw & maatwerk", tekst: "Een nieuwe recreatiewoning laten bouwen of op maat — van chalet tot vrijstaand vakantiehuis." },
+  { icon: "🏡", titel: "Mantelzorgwoning", tekst: "Een mantelzorg- of maatwerkwoning plaatsen, zodat zorg en zelfstandigheid samengaan." },
 ];
 
 // Zoek een partner op naam (voor de klik-doorstuur/telling).
