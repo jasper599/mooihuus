@@ -1,91 +1,3 @@
-jasper599
-mooihuus
-Repository navigation
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security and quality
-Insights
-Settings
-Files
-Go to file
-t
-T
-app
-aanbod
-account
-api
-beheer
-betaling
-blog
-contact
-cookies
-dashboard
-disclaimer
-enquete
-factuur
-faq
-favorieten
-huusmeesters
-inloggen
-nieuwsbrief
-openhuizen
-plaatsen
-privacy
-promoten
-registreren
-reviews
-social
-te-koop
-vergelijken
-verkocht
-voorwaarden
-wachtwoord-reset
-wachtwoord-vergeten
-zoeker
-apple-icon.png
-globals.css
-icon.png
-layout.tsx
-manifest.ts
-page.tsx
-robots.ts
-sitemap.ts
-components
-lib
-public
-scripts
-.env.example
-.gitignore
-.railwayignore
-DEPLOY.md
-README.md
-middleware.ts
-next.config.mjs
-package-lock.json
-package.json
-postcss.config.mjs
-tailwind.config.ts
-tsconfig.json
-mooihuus/app
-/layout.tsx
-claude
-claude
-Open huis: datum/tijd per woning (bewerken), prominente blok op detai…
-661e6ab
- · 
-4 hours ago
-mooihuus/app
-/layout.tsx
-
-Code
-
-Blame
-132 lines (127 loc) · 6.05 KB
-export default function RootLayout({ children }: { children: React.ReactNode }) {
 import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
@@ -95,6 +7,7 @@ import { Providers } from "@/components/Providers";
 import { CookieBanner } from "@/components/CookieBanner";
 import { ChatWidget } from "@/components/ChatWidget";
 import { Analytics } from "@/components/Analytics";
+import { GoogleTag } from "@/components/GoogleTag";
 import { NieuwsbriefForm } from "@/components/NieuwsbriefForm";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import { InstallPrompt } from "@/components/InstallPrompt";
@@ -102,11 +15,9 @@ import { I18nProvider } from "@/components/I18nProvider";
 import { getLocale, getPathname } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { COMPANY } from "@/lib/company";
-
 export const viewport = {
   themeColor: "#2C6B45",
 };
-
 export async function generateMetadata(): Promise<Metadata> {
   const locale = getLocale();
   const path = getPathname();
@@ -140,10 +51,8 @@ export async function generateMetadata(): Promise<Metadata> {
     keywords: ["recreatiewoning", "vakantiehuis", "te koop", "te huur", "chalet", "bungalow", "tiny house", "recreatiepark"],
   };
 }
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = getLocale();
-
   const orgLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -160,7 +69,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     url: COMPANY.website,
     inLanguage: ["nl", "en", "de"],
   };
-
   return (
     <html lang={locale}>
       <head>
@@ -210,6 +118,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CookieBanner />
             <ChatWidget />
             <Analytics />
+            <GoogleTag />
             <ServiceWorker />
             <InstallPrompt />
           </I18nProvider>
