@@ -10,6 +10,7 @@ export function BedrijfsgegevensForm({ user }: { user: User }) {
     naam: user.naam || "", bedrijfsnaam: user.bedrijfsnaam || "", kvk: user.kvk || "", btw: user.btw || "",
     telefoon: user.telefoon || "", adres: user.adres || "", postcode: user.postcode || "", plaats: user.plaats || "",
     iban: user.iban || "", factuurEmail: user.factuurEmail || "", website: user.website || "",
+    standaardPakket: user.standaardPakket || "Basis",
   });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
@@ -48,6 +49,15 @@ export function BedrijfsgegevensForm({ user }: { user: User }) {
           <div className="grid grid-cols-2 gap-2">
             <div><label className="label">Factuur-e-mail</label><input type="email" className="field" value={f.factuurEmail} onChange={(e) => set("factuurEmail", e.target.value)} /></div>
             <div><label className="label">Website</label><input className="field" value={f.website} onChange={(e) => set("website", e.target.value)} /></div>
+          </div>
+          <div>
+            <label className="label">Standaardpakket voor doorgezette woningen</label>
+            <select className="field" value={f.standaardPakket} onChange={(e) => set("standaardPakket", e.target.value)}>
+              <option value="Basis">Basis — € 25 per object</option>
+              <option value="Plus">Plus — € 49 per object</option>
+              <option value="Premium">Premium — € 79 per object</option>
+            </select>
+            <p className="text-xs text-grijs mt-1">Dit pakket geldt voor woningen die automatisch via je CRM (Kolibri/Realworks) binnenkomen. Volumekorting wordt automatisch toegepast.</p>
           </div>
         </>
       )}

@@ -4,10 +4,10 @@ import { renderMakelaarFactuur, sendEmail } from "./email";
 import { COMPANY } from "./company";
 import { PAKKET_PRIJS, volumeKortingPct } from "./money";
 
-// Zelfde prijs als voor particulieren: het Basis-advertentietarief per object,
+// Zelfde prijzen als voor particulieren: het gekozen pakket-tarief per object,
 // mét dezelfde volumekorting (vanaf 5 objecten 15%, vanaf 10 objecten 25%).
-export function prijsPerObject(aantal = 1): number {
-  const basis = PAKKET_PRIJS.Basis;
+export function prijsPerObject(aantal = 1, pakket: keyof typeof PAKKET_PRIJS = "Basis"): number {
+  const basis = PAKKET_PRIJS[pakket] ?? PAKKET_PRIJS.Basis;
   const korting = volumeKortingPct(aantal);
   return Math.round(basis * (1 - korting / 100) * 100) / 100;
 }
@@ -40,7 +40,9 @@ export async function maakMakelaarFactuur(ownerId: string): Promise<{
   const objecten = factureerbareObjecten(ownerId);
   if (objecten.length === 0) return { ok: false, reden: "Geen factureerbare (feed-)objecten voor deze makelaar." };
 
-  const prijs = prijsPerObject(objecten.length);
+  const pakket: "Basis" | "Plus" | "Premium" =
+    owner.standaardPakket === "Plus" || owner.standaardPakket === "Premium" ? owner.standaardPakket : "Basis";
+  const prijs = prijsPerObject(objecten.length, pakket);
   const bedrag = Math.round(objecten.length * prijs * 100) / 100;
   const kantoor = owner.bedrijfsnaam || owner.naam;
 

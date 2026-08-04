@@ -19,6 +19,7 @@ export async function POST(req: Request) {
     for (const f of ["bedrijfsnaam", "kvk", "btw", "telefoon", "adres", "postcode", "plaats", "iban", "factuurEmail", "website"]) {
       if (typeof b[f] === "string") patch[f] = String(b[f]).slice(0, 120);
     }
+    if (["Basis", "Plus", "Premium"].includes(b.standaardPakket)) patch.standaardPakket = b.standaardPakket;
   }
   const updated = updateUser(userId, patch);
   return NextResponse.json({ ok: true, id: updated?.id });

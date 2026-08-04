@@ -22,6 +22,7 @@ export interface User {
   iban?: string;
   factuurEmail?: string;
   website?: string;
+  standaardPakket?: Pakket; // pakket voor woningen die via een feed (Kolibri) binnenkomen
   aangemaakt: string;
 }
 
