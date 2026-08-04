@@ -23,6 +23,18 @@ export function prijsSuffix(listing: { prijsSuffix?: string; doel: string }): st
   return listing.doel === "koop" ? "k.k." : "";
 }
 
+// Open huis: leest de gegevens uit en bepaalt of het nog moet komen.
+export function openhuisInfo(l: { openhuisDatum?: string; openhuisVan?: string; openhuisTot?: string }):
+  { datum: string; label: string; van?: string; tot?: string; aankomend: boolean } | null {
+  if (!l.openhuisDatum) return null;
+  const d = new Date(l.openhuisDatum + "T00:00:00");
+  if (isNaN(d.getTime())) return null;
+  const eind = new Date(l.openhuisDatum + "T23:59:59");
+  const aankomend = eind.getTime() >= Date.now();
+  const label = d.toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" });
+  return { datum: l.openhuisDatum, label, van: l.openhuisVan, tot: l.openhuisTot, aankomend };
+}
+
 // Zet een video-/rondleiding-URL om naar een insluitbare (embed) URL.
 // Ondersteunt YouTube, Vimeo en Matterport. Geeft null bij onbekend formaat.
 export function embedVideoUrl(url?: string): string | null {

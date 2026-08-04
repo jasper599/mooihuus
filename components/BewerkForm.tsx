@@ -17,6 +17,7 @@ export function BewerkForm({ listing }: { listing: Listing }) {
     park: listing.park, personen: String(listing.personen), m2: String(listing.m2),
     prijs: String(listing.prijs), prijsSuffix: listing.prijsSuffix || "", grond: listing.grond || "",
     videoUrl: listing.videoUrl || "", omschrijving: listing.omschrijving,
+    openhuisDatum: listing.openhuisDatum || "", openhuisVan: listing.openhuisVan || "", openhuisTot: listing.openhuisTot || "",
   });
   const [fotos, setFotos] = useState<string[]>(listing.fotos || []);
   const [busy, setBusy] = useState(false);
@@ -106,6 +107,16 @@ export function BewerkForm({ listing }: { listing: Listing }) {
       </div>
 
       <div><label className="label">Video / rondleiding (YouTube, Vimeo of Matterport)</label><input className="field" value={f.videoUrl} onChange={(e) => set("videoUrl", e.target.value)} placeholder="https://youtu.be/… of Matterport-link" /></div>
+
+      <div className="rounded-xl border border-lijn p-3">
+        <div className="font-display font-bold text-bosgroen-dk text-sm mb-1">🏠 Open huis (optioneel)</div>
+        <p className="text-xs text-grijs mb-2">Plan je een open dag? Vul een datum en tijd in — die tonen we prominent op je woning en op de open-huizenpagina.</p>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <div><label className="label">Datum</label><input type="date" className="field" value={f.openhuisDatum} onChange={(e) => set("openhuisDatum", e.target.value)} /></div>
+          <div><label className="label">Van</label><input type="time" className="field" value={f.openhuisVan} onChange={(e) => set("openhuisVan", e.target.value)} /></div>
+          <div><label className="label">Tot</label><input type="time" className="field" value={f.openhuisTot} onChange={(e) => set("openhuisTot", e.target.value)} /></div>
+        </div>
+      </div>
 
       <div><label className="label">Omschrijving</label><textarea className="field min-h-[140px]" value={f.omschrijving} onChange={(e) => set("omschrijving", e.target.value)} /></div>
 

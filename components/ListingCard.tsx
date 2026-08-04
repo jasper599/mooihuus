@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Listing } from "@/lib/types";
-import { gradient, euro, prijsSuffix, grondInfo } from "@/lib/format";
+import { gradient, euro, prijsSuffix, grondInfo, openhuisInfo } from "@/lib/format";
 import { Locale, t, localeHref } from "@/lib/i18n";
 import { FavButton } from "./FavButton";
 
@@ -35,6 +35,11 @@ export function ListingCard({ listing, locale = "nl" }: { listing: Listing; loca
             {grondInfo(listing.grond)!.eigen ? "🌳 Eigen grond" : `🔑 ${grondInfo(listing.grond)!.label}`}
           </span>
         )}
+        {(() => {
+          const oh = openhuisInfo(listing);
+          if (!oh || !oh.aankomend) return null;
+          return <span className="absolute bottom-2.5 right-2.5 bg-oranje text-white font-display font-semibold text-[0.66rem] px-2.5 py-0.5 rounded-full">🏠 Open huis</span>;
+        })()}
       </div>
       <div className="p-3.5">
         <div className="font-display font-bold text-inkt">{listing.titel}</div>

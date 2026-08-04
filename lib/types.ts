@@ -50,6 +50,9 @@ export interface Listing {
   promotedAt?: string;
   fotos?: string[];
   videoUrl?: string; // YouTube/Vimeo/Matterport-link voor rondleiding
+  openhuisDatum?: string; // yyyy-mm-dd van een open huis
+  openhuisVan?: string; // "13:00"
+  openhuisTot?: string; // "16:00"
   // Uitgebreide kenmerken (Funda-stijl), optioneel
   bouwjaar?: number;
   slaapkamers?: number;

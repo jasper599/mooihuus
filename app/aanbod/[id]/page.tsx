@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getListing, getUser } from "@/lib/db";
-import { gradient, euro, prijsSuffix, grondInfo, embedVideoUrl } from "@/lib/format";
+import { gradient, euro, prijsSuffix, grondInfo, embedVideoUrl, openhuisInfo } from "@/lib/format";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { COMPANY } from "@/lib/company";
@@ -103,6 +103,20 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             <span className="pill">{listing.m2} m²</span>
             <span className="pill">{listing.type}</span>
           </div>
+          {(() => {
+            const oh = openhuisInfo(listing);
+            if (!oh || !oh.aankomend) return null;
+            return (
+              <div className="mt-4 rounded-2xl bg-oranje text-white p-4 flex items-center gap-3 flex-wrap">
+                <div className="text-3xl">🏠</div>
+                <div>
+                  <div className="font-display font-extrabold text-lg">Open huis — {oh.label}</div>
+                  <div className="text-sm text-white/90">{oh.van && oh.tot ? `Loop binnen tussen ${oh.van} en ${oh.tot} uur.` : "Loop gerust binnen."} Je bent welkom — meld je even aan via het contactformulier.</div>
+                </div>
+              </div>
+            );
+          })()}
+
           <VertaalOmschrijving text={listing.omschrijving} />
 
           {(() => {
