@@ -1,15 +1,16 @@
-"use client";
 
+"use client";
+ 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Listing } from "@/lib/types";
-
+ 
 const PROVINCIES = [
   "Groningen", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Gelderland",
   "Utrecht", "Noord-Holland", "Zuid-Holland", "Zeeland", "Noord-Brabant", "Limburg",
 ];
 const TYPES = ["Bungalow", "Chalet", "Vrijstaand vakantiehuis", "Tiny house", "Recreatiewoning", "Appartement"];
-
+ 
 export function BewerkForm({ listing }: { listing: Listing }) {
   const router = useRouter();
   const [f, setF] = useState({
@@ -18,13 +19,14 @@ export function BewerkForm({ listing }: { listing: Listing }) {
     prijs: String(listing.prijs), prijsSuffix: listing.prijsSuffix || "", grond: listing.grond || "",
     videoUrl: listing.videoUrl || "", omschrijving: listing.omschrijving,
     openhuisDatum: listing.openhuisDatum || "", openhuisVan: listing.openhuisVan || "", openhuisTot: listing.openhuisTot || "",
+    plattegrond: listing.plattegrond || "",
   });
   const [fotos, setFotos] = useState<string[]>(listing.fotos || []);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const set = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }));
-
+ 
   async function upload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
@@ -42,7 +44,21 @@ export function BewerkForm({ listing }: { listing: Listing }) {
   }
   const removeFoto = (url: string) => setFotos((p) => p.filter((u) => u !== url));
   const moveFirst = (url: string) => setFotos((p) => [url, ...p.filter((u) => u !== url)]);
-
+ 
+  async function uploadPlattegrond(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true); setMsg(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const data = await res.json();
+    setUploading(false);
+    if (res.ok && data.url) set("plattegrond", data.url);
+    else setMsg({ ok: false, text: data.error || "Uploaden mislukt." });
+    e.target.value = "";
+  }
+ 
   async function opslaan(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setMsg(null);
@@ -58,13 +74,13 @@ export function BewerkForm({ listing }: { listing: Listing }) {
     setMsg({ ok: true, text: "✓ Opgeslagen!" });
     router.refresh();
   }
-
+ 
   return (
     <form onSubmit={opslaan} className="space-y-3">
       {msg && <div className={`rounded-xl p-3 text-sm ${msg.ok ? "bg-[#EAF4EC] border border-[#CADFCF] text-bosgroen-dk" : "bg-[#FBEEE4] border border-[#F0D6C1] text-oranje-dk"}`}>{msg.text}</div>}
-
+ 
       <div><label className="label">Titel</label><input className="field" value={f.titel} onChange={(e) => set("titel", e.target.value)} /></div>
-
+ 
       <div className="grid gap-3 sm:grid-cols-2">
         <div><label className="label">Type</label>
           <select className="field" value={f.type} onChange={(e) => set("type", e.target.value)}>
@@ -105,9 +121,9 @@ export function BewerkForm({ listing }: { listing: Listing }) {
           </select>
         </div>
       </div>
-
+ 
       <div><label className="label">Video / rondleiding (YouTube, Vimeo of Matterport)</label><input className="field" value={f.videoUrl} onChange={(e) => set("videoUrl", e.target.value)} placeholder="https://youtu.be/… of Matterport-link" /></div>
-
+ 
       <div className="rounded-xl border border-lijn p-3">
         <div className="font-display font-bold text-bosgroen-dk text-sm mb-1">🏠 Open huis (optioneel)</div>
         <p className="text-xs text-grijs mb-2">Plan je een open dag? Vul een datum en tijd in — die tonen we prominent op je woning en op de open-huizenpagina.</p>
@@ -117,9 +133,9 @@ export function BewerkForm({ listing }: { listing: Listing }) {
           <div><label className="label">Tot</label><input type="time" className="field" value={f.openhuisTot} onChange={(e) => set("openhuisTot", e.target.value)} /></div>
         </div>
       </div>
-
+ 
       <div><label className="label">Omschrijving</label><textarea className="field min-h-[140px]" value={f.omschrijving} onChange={(e) => set("omschrijving", e.target.value)} /></div>
-
+ 
       <div>
         <label className="label">Foto's</label>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
@@ -141,8 +157,27 @@ export function BewerkForm({ listing }: { listing: Listing }) {
         </label>
         <p className="text-xs text-grijs mt-1">De eerste foto is de hoofdfoto. Max 8 MB per foto.</p>
       </div>
-
+ 
+      <div>
+        <label className="label">Plattegrond (optioneel — PDF of afbeelding)</label>
+        {f.plattegrond && (
+          <div className="flex items-center gap-3 mb-2 rounded-xl border border-lijn p-2">
+            <span className="text-2xl">📐</span>
+            <a href={f.plattegrond} target="_blank" rel="noopener noreferrer" className="flex-1 truncate text-bosgroen font-semibold text-sm hover:underline">Huidige plattegrond bekijken</a>
+            <button type="button" onClick={() => set("plattegrond", "")} className="text-oranje-dk text-sm font-semibold">verwijderen</button>
+          </div>
+        )}
+        <label className="btn btn-ghost text-sm cursor-pointer inline-block">
+          {uploading ? "Uploaden…" : f.plattegrond ? "Plattegrond vervangen" : "+ Plattegrond toevoegen"}
+          <input type="file" accept="image/*,application/pdf" className="hidden" onChange={uploadPlattegrond} disabled={uploading} />
+        </label>
+        <p className="text-xs text-grijs mt-1">Optioneel. Een PDF of afbeelding, max 12 MB.</p>
+      </div>
+ 
       <button className="btn w-full" disabled={busy || uploading}>{busy ? "Opslaan…" : "Wijzigingen opslaan"}</button>
     </form>
   );
 }
+ 
+
+Downloaded foto-route.ts Show in Finder
