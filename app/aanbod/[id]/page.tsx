@@ -208,8 +208,4 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
     </div>
   );
 }
- 
- 
- 
 
-Downloaded foto-route.ts Show in Finder
