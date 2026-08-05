@@ -1,15 +1,50 @@
+
+Cloud
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Db · TS
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
 import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
-
+ 
 // ------------------------------------------------------------------
 // Persistente datalaag voor de MVP — schrijft naar ./data/db.json.
 // Zonder externe database, dus dit draait overal out-of-the-box.
 // Vervang later door Postgres + Prisma (zelfde functies eromheen).
 // ------------------------------------------------------------------
-
+ 
 interface DB {
   users: User[];
   listings: Listing[];
@@ -29,14 +64,14 @@ interface DB {
   resetTokens?: { token: string; userId: string; expires: number }[];
   seq: number;
 }
-
+ 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const DB_FILE = path.join(DATA_DIR, "db.json");
-
+ 
 function ensureDir() {
   if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 }
-
+ 
 function seed(): DB {
   const now = new Date().toISOString();
   const beheerder: User = {
@@ -53,7 +88,7 @@ function seed(): DB {
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
   return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], seq: 100 };
 }
-
+ 
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
 // bestaande database (bijv. de Railway-Volume). Idempotent — draait op id.
 const DEMO_LISTING_IDS = ["1", "2", "3", "4", "5", "6"];
@@ -61,7 +96,7 @@ const DEMO_USER_IDS = ["u-anouk", "u-org"];
 const DEMO_LEAD_IDS = ["l1", "l2"];
 const DEMO_ENQUETE_IDS = ["enq-1"];
 const DEMO_HM_IDS = ["hm-1", "hm-2", "hm-3", "hm-4"];
-
+ 
 function removeDemoData(db: DB): boolean {
   let changed = false;
   const cut = <T>(arr: T[], keep: (x: T) => boolean): T[] => {
@@ -76,9 +111,9 @@ function removeDemoData(db: DB): boolean {
   db.huusmeesters = cut(db.huusmeesters, (h) => !DEMO_HM_IDS.includes(h.id));
   return changed;
 }
-
+ 
 let cache: DB | null = null;
-
+ 
 // Zorgt dat het Luyten-account en het Luyten-aanbod aanwezig zijn.
 // Idempotent (op id), dus veilig op zowel een verse als bestaande database.
 function ensureLmData(db: DB): boolean {
@@ -104,16 +139,30 @@ function ensureLmData(db: DB): boolean {
   const voor = db.listings.length;
   db.listings = db.listings.filter((l) => !(l.id.startsWith("lm-") && !validIds.has(l.id)));
   if (db.listings.length !== voor) changed = true;
-
+ 
   for (const l of LM_LISTINGS) {
-    if (!db.listings.some((x) => x.id === l.id)) {
+    const bestaand = db.listings.find((x) => x.id === l.id);
+    if (!bestaand) {
       db.listings.push({ ...l, ownerId: LM_OWNER.id, source: "luyten", aangemaakt: new Date().toISOString() });
       changed = true;
+    } else {
+      // Bestaande Luyten-woning bijwerken met de nieuwste gegevens uit de bron
+      // (video's, foto's, kenmerken) — maar door de beheerder ingestelde velden
+      // (status, uitgelicht) en de aanmaakdatum behouden.
+      const before = JSON.stringify(bestaand);
+      Object.assign(bestaand, l, {
+        ownerId: LM_OWNER.id,
+        source: "luyten",
+        aangemaakt: bestaand.aangemaakt,
+        status: bestaand.status,
+        uitgelicht: bestaand.uitgelicht,
+      });
+      if (JSON.stringify(bestaand) !== before) changed = true;
     }
   }
   return changed;
 }
-
+ 
 function load(): DB {
   if (cache) return cache;
   ensureDir();
@@ -142,18 +191,18 @@ function load(): DB {
   if (fresh || removed || added || migrated) save();
   return cache;
 }
-
+ 
 function save() {
   ensureDir();
   fs.writeFileSync(DB_FILE, JSON.stringify(cache, null, 2), "utf8");
 }
-
+ 
 function nextId(prefix: string): string {
   const db = load();
   db.seq += 1;
   return `${prefix}${db.seq}`;
 }
-
+ 
 // ---------- Users ----------
 export function getUsers(): User[] {
   return load().users;
@@ -206,7 +255,7 @@ export function addUser(data: {
   save();
   return user;
 }
-
+ 
 export function updateUser(id: string, patch: Partial<User>): User | undefined {
   const db = load();
   const u = db.users.find((x) => x.id === id);
@@ -223,7 +272,7 @@ export function checkWachtwoord(id: string, wachtwoord: string): boolean {
   const u = getUser(id);
   return !!u && bcrypt.compareSync(wachtwoord, u.wachtwoordHash);
 }
-
+ 
 // ---------- Wachtwoord-reset tokens ----------
 function genToken(): string {
   return Array.from({ length: 40 }, () => "abcdefghijklmnopqrstuvwxyz0123456789"[Math.floor(Math.random() * 36)]).join("");
@@ -247,7 +296,7 @@ export function gebruikResetToken(token: string): User | undefined {
   save();
   return db.users.find((u) => u.id === rec.userId);
 }
-
+ 
 // ---------- Listings ----------
 export function getListings(opts?: { status?: string }): Listing[] {
   const all = load().listings;
@@ -292,7 +341,7 @@ export function updateListing(id: string, patch: Partial<Listing>): Listing | un
 export function getFeedListings(source: string): Listing[] {
   return load().listings.filter((l) => l.source === source);
 }
-
+ 
 export function upsertFeedListing(source: string, externalId: string, data: Partial<Listing>): Listing {
   const db = load();
   const bestaand = db.listings.find((l) => l.source === source && l.externalId === externalId);
@@ -327,7 +376,7 @@ export function upsertFeedListing(source: string, externalId: string, data: Part
   save();
   return listing;
 }
-
+ 
 // Zet woningen van deze bron die niet meer in de feed voorkomen op offline.
 export function sweepFeed(source: string, seenExternalIds: string[]): number {
   const db = load();
@@ -342,7 +391,7 @@ export function sweepFeed(source: string, seenExternalIds: string[]): number {
   if (n) save();
   return n;
 }
-
+ 
 export function deleteListing(id: string): boolean {
   const db = load();
   const i = db.listings.findIndex((x) => x.id === id);
@@ -351,7 +400,7 @@ export function deleteListing(id: string): boolean {
   save();
   return true;
 }
-
+ 
 // ---------- Leads ----------
 export function getLeads(listingId?: string): Lead[] {
   const all = load().leads;
@@ -369,7 +418,7 @@ export function addLead(data: Omit<Lead, "id" | "datum">): Lead {
   save();
   return lead;
 }
-
+ 
 // ---------- Payments ----------
 export function getPayments(): Payment[] {
   return load().payments;
@@ -402,7 +451,7 @@ export function updatePayment(id: string, patch: Partial<Payment>): Payment | un
   save();
   return p;
 }
-
+ 
 // ---------- Emails ----------
 export function getEmails(): EmailRecord[] {
   return load().emails;
@@ -417,7 +466,7 @@ export function addEmail(data: Omit<EmailRecord, "id" | "datum">): EmailRecord {
   save();
   return email;
 }
-
+ 
 // ---------- Huusmeesters ----------
 export function getHuusmeesters(): Huusmeester[] {
   return load().huusmeesters;
@@ -429,7 +478,7 @@ export function addHuusmeester(data: Omit<Huusmeester, "id" | "datum">): Huusmee
   save();
   return hm;
 }
-
+ 
 // ---------- Zoekopdrachten (woning-alerts) ----------
 export function getZoekopdrachten(): Zoekopdracht[] {
   const db = load();
@@ -458,7 +507,7 @@ export function matchtZoekopdracht(z: Zoekopdracht, l: Listing): boolean {
 export function zoekopdrachtenVoorWoning(l: Listing): Zoekopdracht[] {
   return getZoekopdrachten().filter((z) => z.alerts && matchtZoekopdracht(z, l));
 }
-
+ 
 // ---------- Enquêtes ----------
 export function getEnquetes(): Enquete[] {
   return load().enquetes;
@@ -470,7 +519,7 @@ export function addEnquete(data: Omit<Enquete, "id" | "datum">): Enquete {
   save();
   return enq;
 }
-
+ 
 // ---------- Reviews (openbare beoordelingen) ----------
 export function getReviews(): Review[] {
   // Alleen goedgekeurde, nieuwste eerst.
@@ -510,7 +559,7 @@ export function deleteReview(id: string): boolean {
   save();
   return true;
 }
-
+ 
 // ---------- Nieuwsbrief ----------
 export function addNieuwsbriefLid(email: string): { nieuw: boolean } {
   const db = load();
@@ -547,7 +596,7 @@ export function setLaatsteMaandrapportMaand(m: string): void {
   db.laatsteMaandrapportMaand = m;
   save();
 }
-
+ 
 // ---------- Partner-kliks (doorklikmeting) ----------
 export function addPartnerklik(partner: string, url: string): PartnerKlik {
   const db = load();
@@ -561,7 +610,7 @@ export function getPartnerkliks(): PartnerKlik[] {
 }
 // ---------- Statistieken (eigen, privacyvriendelijke pageview-tracking) ----------
 const PAGEVIEW_CAP = 20000; // rollend venster, houdt db.json compact
-
+ 
 export function addPageview(data: { path: string; ref: string; device: Pageview["device"]; vid: string }): void {
   const db = load();
   const pv: Pageview = {
@@ -576,11 +625,11 @@ export function addPageview(data: { path: string; ref: string; device: Pageview[
   if (db.pageviews.length > PAGEVIEW_CAP) db.pageviews = db.pageviews.slice(0, PAGEVIEW_CAP);
   save();
 }
-
+ 
 export function getPageviews(): Pageview[] {
   return load().pageviews;
 }
-
+ 
 // Statistiek per advertentie: weergaven (uit pageviews) en leads.
 export function getListingStats(listingId: string): { weergaven: number; leads: number } {
   const db = load();
@@ -589,7 +638,7 @@ export function getListingStats(listingId: string): { weergaven: number; leads: 
   const leads = db.leads.filter((l) => l.listingId === listingId).length;
   return { weergaven, leads };
 }
-
+ 
 // ---------- Postcode → coördinaten (cache van geocoderesultaten) ----------
 export function normaliseerPostcode(pc: string): string {
   return pc.toUpperCase().replace(/\s+/g, "").slice(0, 6);
@@ -610,7 +659,7 @@ export function setPostcodeGeo(pc: string, lat: number, lon: number): boolean {
   save();
   return true;
 }
-
+ 
 export interface AnalyticsSamenvatting {
   totaalWeergaven: number;
   totaalBezoekers: number;
@@ -624,14 +673,14 @@ export interface AnalyticsSamenvatting {
   herkomst: { ref: string; aantal: number }[];
   apparaat: { mobiel: number; tablet: number; desktop: number };
 }
-
+ 
 export function analyticsSamenvatting(): AnalyticsSamenvatting {
   const pvs = load().pageviews;
   const nu = Date.now();
   const dag = 24 * 60 * 60 * 1000;
   const startVandaag = new Date(new Date().toDateString()).getTime();
   const week = nu - 7 * dag;
-
+ 
   const bezoekersSet = new Set<string>();
   const vandaagV = new Set<string>();
   const weekV = new Set<string>();
@@ -640,10 +689,10 @@ export function analyticsSamenvatting(): AnalyticsSamenvatting {
   const herkomst = new Map<string, number>();
   const apparaat = { mobiel: 0, tablet: 0, desktop: 0 };
   const perDagMap = new Map<string, { w: number; v: Set<string> }>();
-
+ 
   // sessies per bezoeker voor duurschatting
   const perVid = new Map<string, number[]>();
-
+ 
   for (const pv of pvs) {
     const t = new Date(pv.datum).getTime();
     bezoekersSet.add(pv.vid);
@@ -652,15 +701,15 @@ export function analyticsSamenvatting(): AnalyticsSamenvatting {
     if (pv.device in apparaat) (apparaat as any)[pv.device] += 1;
     if (t >= startVandaag) { vandaagW += 1; vandaagV.add(pv.vid); }
     if (t >= week) { weekW += 1; weekV.add(pv.vid); }
-
+ 
     const dagKey = pv.datum.slice(0, 10);
     const pd = perDagMap.get(dagKey) || { w: 0, v: new Set<string>() };
     pd.w += 1; pd.v.add(pv.vid); perDagMap.set(dagKey, pd);
-
+ 
     const arr = perVid.get(pv.vid) || [];
     arr.push(t); perVid.set(pv.vid, arr);
   }
-
+ 
   // Gemiddelde sessieduur: splits per bezoeker in sessies (gap > 30 min).
   const sessieDuren: number[] = [];
   for (const tijden of Array.from(perVid.values())) {
@@ -677,7 +726,7 @@ export function analyticsSamenvatting(): AnalyticsSamenvatting {
     sessieDuren.push(vorige - sessieStart);
   }
   const gemMs = sessieDuren.length ? sessieDuren.reduce((s, d) => s + d, 0) / sessieDuren.length : 0;
-
+ 
   // Laatste 14 dagen als reeks (ook lege dagen).
   const perDag: { dag: string; weergaven: number; bezoekers: number }[] = [];
   for (let i = 13; i >= 0; i--) {
@@ -686,10 +735,10 @@ export function analyticsSamenvatting(): AnalyticsSamenvatting {
     const pd = perDagMap.get(key);
     perDag.push({ dag: key, weergaven: pd?.w || 0, bezoekers: pd?.v.size || 0 });
   }
-
+ 
   const top = (m: Map<string, number>, n: number) =>
     Array.from(m.entries()).map(([k, v]) => ({ k, v })).sort((a, b) => b.v - a.v).slice(0, n);
-
+ 
   return {
     totaalWeergaven: pvs.length,
     totaalBezoekers: bezoekersSet.size,
@@ -704,7 +753,7 @@ export function analyticsSamenvatting(): AnalyticsSamenvatting {
     apparaat,
   };
 }
-
+ 
 export function partnerklikTotalen(): { partner: string; aantal: number; laatste?: string }[] {
   const kliks = load().partnerkliks;
   const map = new Map<string, { aantal: number; laatste?: string }>();
@@ -718,3 +767,5 @@ export function partnerklikTotalen(): { partner: string; aantal: number; laatste
     .map(([partner, v]) => ({ partner, aantal: v.aantal, laatste: v.laatste }))
     .sort((a, b) => b.aantal - a.aantal);
 }
+ 
+
