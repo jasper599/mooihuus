@@ -19,6 +19,3 @@ export async function GET(_req: Request, { params }: { params: { name: string } 
     headers: { "Content-Type": type, "Cache-Control": "public, max-age=31536000, immutable" },
   });
 }
- 
-
-Downloaded foto-route.ts Show in Finder
