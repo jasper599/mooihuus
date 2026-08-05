@@ -18,6 +18,7 @@ type SeedListing = Omit<Listing, "ownerId" | "aangemaakt">;
 export const LM_LISTINGS: SeedListing[] = [
   {
     "id": "lm-hall-voorstondensestraat-7-a",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4060879/127129937/$xl/unknown.jpeg",
     "videoUrl": "https://youtu.be/sMKNWDCxnYU",
     "titel": "Exclusieve recreatievilla op Havezate Hall",
     "type": "Vrijstaand vakantiehuis",
@@ -56,6 +57,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-239",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4191272/131887471/$xl/187535617_topparken_park_recreatiewoning_first_design_20260706_8f689f.jpg",
     "videoUrl": "https://youtu.be/nGzMJdGfA_o",
     "titel": "Stijlvol vakantiehuis aan het water in Berkhout",
     "type": "Vrijstaand vakantiehuis",
@@ -93,6 +95,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-vuursche-koudelaan-ref-453",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4161454/130714670/$xl/luyten01.jpg",
     "videoUrl": "https://youtu.be/U8BDmm203wA",
     "titel": "Duurzame ecolodge met wellness in Lage Vuursche",
     "type": "Vrijstaand vakantiehuis",
@@ -130,6 +133,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-leuvenumse-beek-1",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4050215/126408793/$xl/183729610_landal_greenpar_begane_grond_first_design_20260327_e804d6%20(1).jpg",
     "videoUrl": "https://youtu.be/UdcdjJc3M2s",
     "titel": "Gelijkvloerse vakantiewoning aan het Veluwemeer",
     "type": "Bungalow",
@@ -167,6 +171,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-568",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4131265/129536896/$xl/185711197_europarcs_de_ut_begane_grond_first_design_20260515_a52d0a.jpg",
     "videoUrl": "https://youtu.be/rGd68h0ngYY",
     "titel": "Moderne recreatiewoning op de Utrechtse Heuvelrug",
     "type": "Bungalow",
@@ -205,6 +210,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-500",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3199414/95504417/$xl/casa%20di%20rialto%206p.jpg",
     "videoUrl": "https://youtu.be/GHAssH-M2EI",
     "titel": "Ruime recreatiewoning in het Limburgse Schin op Geul",
     "type": "Bungalow",
@@ -241,6 +247,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-75a",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3233725/96711154/$xl/981783511.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=KI_Yw9ay5Cg",
     "titel": "Instapklare bosbungalow in Ede",
     "type": "Bungalow",
@@ -277,6 +284,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-20",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3026641/89647348/$xl/module%20basis%202d.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=Mmzn91mzjvg",
     "titel": "Moderne vakantiewoning in Schin op Geul",
     "type": "Bungalow",
@@ -312,6 +320,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-613a",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3169658/94476180/$xl/133359282_topparken_beekb_begane_grond_first_design_20240328_317a82.jpg",
     "videoUrl": "https://youtu.be/PTtcGJ0RDlc",
     "titel": "Vakantiewoning met jacuzzi op de Veluwe",
     "type": "Bungalow",
@@ -492,6 +501,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-garderen-putterweg-68-309",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3371639/101609082/$xl/gard%20309%202d.png",
     "videoUrl": "https://youtu.be/QuuHhdD90MU",
     "titel": "Luxe vakantiewoning in de bossen van Garderen",
     "type": "Bungalow",
@@ -565,6 +575,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-607",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3628740/110726316/$xl/hackfort%206p%20links%202d%20(1)%20(1).jpg",
     "videoUrl": "https://youtu.be/yzbJ7aNvksA",
     "titel": "Vrijstaande vakantiewoning met dijkzicht in Biddinghuizen",
     "type": "Vrijstaand vakantiehuis",
@@ -603,6 +614,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-b10",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4225574/133264513/$xl/187987639_rsidence_de_le_begane_grond_first_design_20260728_ff81fd.jpg",
     "videoUrl": "https://youtu.be/KAKBwy13bO0",
     "titel": "Sfeervolle bungalow op Résidence de Leuvert in Cromvoirt",
     "type": "Bungalow",
@@ -640,6 +652,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-workum-suderseleane-27-20",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4181362/131497672/$xl/luyten01.jpg",
     "videoUrl": "https://youtu.be/Iphka6miACs",
     "titel": "Nieuwe vrijstaande vakantievilla aan het water in Workum",
     "type": "Vrijstaand vakantiehuis",
@@ -677,6 +690,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-37",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4027586/125526853/$xl/183226078_topparken_park_first_floor_first_design_20260311_52aef7.jpg",
     "videoUrl": "https://youtu.be/0UhPVGyxhyk",
     "titel": "Vrijstaande waterwoning op Park Westerkogge in Berkhout",
     "type": "Vrijstaand vakantiehuis",
@@ -714,6 +728,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-leuvenumse-beek-1-145",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4073295/127291309/$xl/184413067_landal_greenpar_begane_grond_first_design_20260415_c2725a.jpg",
     "videoUrl": "https://youtu.be/9o3QMGJTsHU",
     "titel": "Luxe recreatiewoning aan het water op Landal Waterparc Veluwemeer",
     "type": "Bungalow",
@@ -751,6 +766,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-a22-ref-437",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4129840/129481034/$xl/184583407_rsidence_de_le_begane_grond_first_design_20260421_9736dd.jpg",
     "videoUrl": "https://youtu.be/RjLBnwr5NWk",
     "titel": "Gezellige recreatiewoning Casa di Rialto op Résidence de Leuvert",
     "type": "Bungalow",
@@ -788,6 +804,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-364",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4120092/129102243/$xl/185712139_bospark_ede_364_begane_grond_first_design_20260516_78e22b.jpg",
     "videoUrl": "https://youtu.be/pv3EEhWIAyw",
     "titel": "Instapklare recreatiewoning op Bospark Ede aan de Veluwe",
     "type": "Chalet",
@@ -825,6 +842,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-hulshorst-varelseweg-211-ha04",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4092197/128019651/$xl/plattegrond%20bho%2004%202d.png",
     "titel": "Sfeervolle 6-persoons recreatiewoning aan het Veluwemeer",
     "type": "Bungalow",
     "doel": "koop",
@@ -861,6 +879,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-k16",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3818329/117781275/$xl/plattegrond%20leuvert%20k16%202d.png",
     "videoUrl": "https://youtu.be/WGGY0Q46xw4",
     "titel": "Ruime recreatiewoning met haard op Résidence de Leuvert",
     "type": "Bungalow",
@@ -899,6 +918,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-613",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3583678/109104145/$xl/ferox%20basis%205p%20%20rechts%202d.jpg",
     "videoUrl": "https://youtu.be/Ftnv9cW3n2Y",
     "titel": "Luxe recreatiewoning met sauna en jacuzzi op Landgoed de Scheleberg",
     "type": "Bungalow",
@@ -936,6 +956,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-a6",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4071880/127236512/$xl/184480720_rsidence_de_le_begane_grond_first_design_20260414_baf380.jpg",
     "videoUrl": "https://youtu.be/UFt4WiU9ukA",
     "titel": "Warme, gezellige recreatiewoning op Résidence de Leuvert",
     "type": "Bungalow",
@@ -1076,6 +1097,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-ref-53",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/2930464/86411570/$xl/913296206.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=vzTaYG1VqPE",
     "titel": "Luxe vakantievilla met wellness voor 12 personen in de Achterhoek",
     "type": "Vrijstaand vakantiehuis",
@@ -1151,6 +1173,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-den-oever-akkerweg-41-028",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3638966/111097708/$xl/plattegrond%20rdw28%202d.png",
     "videoUrl": "https://youtu.be/fBOrBstNsMk",
     "titel": "Sfeervol 6-persoons chalet met vrij uitzicht in Den Oever",
     "type": "Chalet",
@@ -1188,6 +1211,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-82",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3918451/121406824/$xl/180429622_topparken_park_begane_grond_first_design_20251216_f22dfc.jpg",
     "videoUrl": "https://youtu.be/w0vf5qMdKMc",
     "titel": "Luxe waterchalet op TopParken Westerkogge in Berkhout",
     "type": "Chalet",
@@ -1225,6 +1249,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-d17",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3814609/117554489/$xl/module%20special%20rechts%202d.jpg",
     "videoUrl": "https://youtu.be/EakOTn9QJS0",
     "titel": "Recreatiewoning met sauna en jacuzzi op Résidence de Leuvert",
     "type": "Vrijstaand vakantiehuis",
@@ -1262,6 +1287,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-311",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4023480/125370037/$xl/183042058_europarcs_resor_begane_grond_first_design_20260309_917bfd.jpg",
     "videoUrl": "https://youtu.be/zsHHJ_Xeiw8",
     "titel": "Ruime villa aan het Veluwemeer op EuroParcs Zuiderzee",
     "type": "Vrijstaand vakantiehuis",
@@ -1299,6 +1325,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-1130",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4113177/128834212/$xl/plattegrond%20epuh%201130%20beneden%202d.png",
     "videoUrl": "https://youtu.be/qNy9yNeWuTY",
     "titel": "Tiny House op de Utrechtse Heuvelrug in Maarn",
     "type": "Tiny house",
@@ -1336,6 +1363,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-164",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3485838/105610702/$xl/module%20special%206p%202d.png",
     "videoUrl": "https://youtu.be/nRVJFdOrbtM",
     "titel": "Luxe recreatiewoning met sauna aan het water in Lichtenvoorde",
     "type": "Bungalow",
@@ -1373,6 +1401,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-26",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3230152/96582280/$xl/module%202%20(1).jpg",
     "videoUrl": "https://youtu.be/PeCLrAjjKGg",
     "titel": "Instapklare recreatiewoning op Park Westerkogge in Berkhout",
     "type": "Bungalow",
@@ -1410,6 +1439,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-520",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3102776/92185001/$xl/casa%20di%20rialto%206p.jpg",
     "videoUrl": "https://youtu.be/u13u1dXNUS8",
     "titel": "Vakantiewoning Casa di Rialto in het Heuvelland bij Valkenburg",
     "type": "Bungalow",
@@ -1446,6 +1476,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-b2",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3121760/92834522/$xl/casa%20di%20rialto%20rechts%202d.jpeg",
     "videoUrl": "https://youtu.be/S9xIWbmoPXg",
     "titel": "Sfeervolle recreatiewoning met eigen grond op Résidence de Leuvert",
     "type": "Bungalow",
@@ -1518,6 +1549,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-214",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3779966/116271989/$xl/plattegrond%20epuh%201130%20beneden%202d%20(1).png",
     "videoUrl": "https://youtu.be/QVf1oCa0oZk",
     "titel": "Recent opgeleverd Tiny House op de Utrechtse Heuvelrug",
     "type": "Tiny house",
@@ -1627,6 +1659,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-48a",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3780066/116276392/$xl/module%20special%20deluxe.png",
     "videoUrl": "https://youtu.be/ZcKYgu_bLf8",
     "titel": "Luxe deluxe recreatiewoning met hottub in Lichtenvoorde",
     "type": "Bungalow",
@@ -1664,6 +1697,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ruinen-ref-83",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/2930491/86412259/$xl/3486170837.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=ym0C4GZcWBk",
     "titel": "Ruime gelijkvloerse vakantiewoning op EuroParcs Ruinen",
     "type": "Bungalow",
@@ -1738,6 +1772,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kampen-flevoweg-90-310",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3656526/111743523/$xl/3363860482.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=bs_86usu4sk",
     "titel": "Vrijstaande waterwoning Just Nature op EuroParcs De IJssel Eilanden",
     "type": "Vrijstaand vakantiehuis",
@@ -1775,6 +1810,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-814",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3986813/123980906/$xl/141872460_europarcs_zuide_first_floor_first_design_20260205_bf9786.jpg",
     "videoUrl": "https://youtu.be/5QleMg_iZLQ",
     "titel": "Sfeervolle 6-persoons recreatiewoning op EuroParcs Zuiderzee",
     "type": "Bungalow",
@@ -1812,6 +1848,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-harderwijk-korhoenlaan-2-393",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3417010/103170093/$xl/plattegrond%20ck%20393%202d.png",
     "videoUrl": "https://youtu.be/F5BOmGxU5lc",
     "titel": "Moderne recreatiewoning in de bossen bij Harderwijk",
     "type": "Bungalow",
@@ -1849,6 +1886,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-24",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4063677/126923657/$xl/184273018_topparken_rec_first_floor_first_design_20260409_ae3a64.jpg",
     "videoUrl": "https://youtu.be/2geTQnq5VDo",
     "titel": "Luxe vakantiewoning met privé jacuzzi in Beekbergen",
     "type": "Bungalow",
@@ -1886,6 +1924,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-786a",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4142957/129992684/$xl/luten01.jpg",
     "videoUrl": "https://youtu.be/0T0MLUlia1I",
     "titel": "Stijlvolle 6-persoons vakantiewoning De Velthorst",
     "type": "Bungalow",
@@ -1923,6 +1962,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-94",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4082864/127659156/$xl/184644106_residence_licht_begane_grond_first_design_20260422_71d791.jpg",
     "videoUrl": "https://youtu.be/9v_u3B6vBGU",
     "titel": "Landhuis Deluxe aan het water in Lichtenvoorde",
     "type": "Bungalow",
@@ -1960,6 +2000,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-213",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4113234/128836672/$xl/plattegrond%20lds%20213%202d.png",
     "videoUrl": "https://youtu.be/KlDhgohP-SQ",
     "titel": "Blokhut als oase van rust op de Veluwe",
     "type": "Chalet",
@@ -1997,6 +2038,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-229",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4084227/127712328/$xl/luyten01.jpg",
     "videoUrl": "https://youtu.be/PPvNE_8QYZk",
     "titel": "Ruime 6-persoons recreatiewoning op Park Westerkogge",
     "type": "Bungalow",
@@ -2034,6 +2076,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-695",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3425539/103465079/$xl/module%20basis%202d%20keuken%20rechts%20(1).png",
     "videoUrl": "https://www.youtube.com/watch?v=0FzaepL8WZE",
     "titel": "Instapklare recreatiewoning in de bossen van Lunteren",
     "type": "Bungalow",
@@ -2071,6 +2114,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-323a",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3230158/96582491/$xl/kopie%20van%20casa%20di%20rialto%20rechts%202d.jpeg",
     "videoUrl": "https://youtu.be/CeJTKzR5hIk",
     "titel": "Charmante recreatiewoning Rialto op de Veluwe",
     "type": "Bungalow",
@@ -2108,6 +2152,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-37",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3671497/112344424/$xl/plattegrond%20module%20special%20beek%202d%20(1).png",
     "videoUrl": "https://youtu.be/RANxswcCNOg",
     "titel": "Moderne recreatiewoning in bosrijk Beekbergen",
     "type": "Bungalow",
@@ -2145,6 +2190,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-62",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3728771/114405930/$xl/rietparel%2062a.jpeg",
     "videoUrl": "https://youtu.be/zXaC2y4_k3I",
     "titel": "Ruime recreatiewoning met overkapping op Westerkogge",
     "type": "Bungalow",
@@ -2219,6 +2265,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-98-ref-369",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3766551/115774290/$xl/wk%2098%20-%20plattegrond.jpg",
     "videoUrl": "https://youtu.be/ybmkgTZSxDQ",
     "titel": "Stijlvolle recreatiewoning direct aan het water",
     "type": "Bungalow",
@@ -2256,6 +2303,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-ref-73",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/2930480/86411994/$xl/806085722.jpg",
     "titel": "Luxe wellness-recreatiewoning met sauna en jacuzzi",
     "type": "Chalet",
     "doel": "koop",
@@ -2367,6 +2415,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-165",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3986812/123980887/$xl/181880452_europarcs_resor_recreatiewoning_first_design_20260205_0c42c4.jpg",
     "videoUrl": "https://youtu.be/FDmaSAIv2EQ",
     "titel": "Ruime recreatiewoning aan het Veluwemeer",
     "type": "Vrijstaand vakantiehuis",
@@ -2404,6 +2453,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-140",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3690324/112988406/$xl/3099_bg.jpg",
     "videoUrl": "https://youtu.be/LucsBXQvHS0",
     "titel": "Comfortabele recreatiebungalow bij Hoorn",
     "type": "Bungalow",
@@ -2441,6 +2491,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-noordwijk-kraaierslaan-7-155",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4151563/130328429/$xl/luyten01.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=efgu3BMa-1g",
     "titel": "Gerenoveerd vakantiehuis nabij strand en bos",
     "type": "Bungalow",
@@ -2478,6 +2529,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-813",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4141500/129935852/$xl/begane%20grond%20-%202d.jpg",
     "videoUrl": "https://youtu.be/tT1V7BafTUY",
     "titel": "Eigentijdse recreatiewoning aan het Veluwemeer",
     "type": "Vrijstaand vakantiehuis",
@@ -2515,6 +2567,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-c14",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4081406/127602682/$xl/184580920_rsidence_de_le_begane_grond_first_design_20260419_f2d0a0.jpg",
     "videoUrl": "https://youtu.be/sdAKgIeOQe0",
     "titel": "Instapklare boswoning bij De IJzeren Man",
     "type": "Bungalow",
@@ -2552,6 +2605,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-vuursche-koudelaan-14-d26",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4014264/125021763/$xl/182585611_topparken_rsid_begane_grond_first_design_20260227_929674.jpg",
     "videoUrl": "https://youtu.be/Yl2U4Q5mspw",
     "titel": "Duurzame eco-lodge in Lage Vuursche",
     "type": "Vrijstaand vakantiehuis",
@@ -2589,6 +2643,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-nunspeet-randmeerweg-8-214",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3691656/113038157/$xl/plattegrond%20214.jpg",
     "videoUrl": "https://youtu.be/BJhmVw696XQ",
     "titel": "Luxe watervilla aan het Veluwemeer",
     "type": "Vrijstaand vakantiehuis",
@@ -2626,6 +2681,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-694",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3425530/103464784/$xl/casa%20di%20rialto%20rechts.jpg",
     "videoUrl": "https://youtu.be/e0v-qgW2hhs",
     "titel": "Moderne boswoning op Landgoed de Scheleberg",
     "type": "Bungalow",
@@ -2663,6 +2719,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-109",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3614309/110199041/$xl/module%20special%20(hoekkeuken)%202d.jpg",
     "videoUrl": "https://youtu.be/Ry3G31-nWCs",
     "titel": "Stijlvolle vakantiewoning met jacuzzi op de Veluwe",
     "type": "Bungalow",
@@ -2701,6 +2758,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-8",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3578988/108934392/$xl/bpe%208.png",
     "videoUrl": "https://youtu.be/aetIEX8I3_w",
     "titel": "Luxe vakantiewoning midden in de natuur",
     "type": "Bungalow",
@@ -2738,6 +2796,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-garderen-putterweg-70-10",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3578865/108930495/$xl/1.png",
     "videoUrl": "https://youtu.be/zF3V_Pz0rhM",
     "titel": "Luxe vakantiewoning met sauna in het bos",
     "type": "Vrijstaand vakantiehuis",
@@ -2812,6 +2871,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-garderen-putterweg-70-47a",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3759605/115518520/$xl/gard%20309%202d.png",
     "videoUrl": "https://youtu.be/O3bWn_j1mXg",
     "titel": "Luxe vrijstaande vakantiewoning in Garderen",
     "type": "Vrijstaand vakantiehuis",
@@ -2849,6 +2909,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-119",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3027667/89682040/$xl/module%20special%20(hoekkeuken%20links)%202d%20(1).jpg",
     "videoUrl": "https://youtu.be/TFpjW5NFNGo",
     "titel": "Luxe recreatiewoning aan de bosrand",
     "type": "Bungalow",
@@ -2922,6 +2983,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kampen-reeveweg-154",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3125026/92945647/$xl/4047329127.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=2Xgo4M8GKsQ",
     "titel": "Ultra luxe watervilla voor 10 personen",
     "type": "Vrijstaand vakantiehuis",
@@ -2995,6 +3057,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-vuursche-koudelaan-25-g4",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3779996/116273358/$xl/plattegrond%20vuur%20d12%202d%20(1).png",
     "videoUrl": "https://youtu.be/p2igvMBN_ZI",
     "titel": "Luxe lodge aan de bosrand in Lage Vuursche",
     "type": "Vrijstaand vakantiehuis",
@@ -3032,6 +3095,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-518",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4151518/130326578/$xl/luyten01.jpg",
     "videoUrl": "https://youtu.be/XIZCdwwgi40",
     "titel": "Ruime luxe villa op landgoed in Lunteren",
     "type": "Vrijstaand vakantiehuis",
@@ -3069,6 +3133,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-arnhem-koningsweg-14-a49",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3474923/105219111/$xl/plattegrond%20beganegrond.jpg",
     "titel": "Charmante villa aan de Hoge Veluwe bij Arnhem",
     "type": "Vrijstaand vakantiehuis",
     "doel": "koop",
@@ -3105,6 +3170,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-velsen-zuid-buitenhuizerweg-2-451",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3505914/106328705/$xl/plattegrond%20epbu%20451%202d.png",
     "videoUrl": "https://youtu.be/WzkNq80zlvc",
     "titel": "Duurzame bungalow aan het water bij Velsen-Zuid",
     "type": "Bungalow",
@@ -3142,6 +3208,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-223",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3962184/123048923/$xl/181357972_topparken_rec_begane_grond_first_design_20260120_79bc30.jpg",
     "videoUrl": "https://youtu.be/_MSiqEriqVo",
     "titel": "Bungalow aan het water in Beekbergen",
     "type": "Bungalow",
@@ -3180,6 +3247,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-46",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4081454/127604513/$xl/begane%20grond%20-%202d%20kopie%20copy.jpg",
     "videoUrl": "https://youtu.be/CWWEJNktfm8",
     "titel": "Verzorgde recreatiewoning in de bossen bij Ede",
     "type": "Bungalow",
@@ -3217,6 +3285,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-679",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3697925/113268177/$xl/plattegrond%20lds%20module%20enkel.jpg",
     "videoUrl": "https://youtu.be/Qa1QOKQUJeo",
     "titel": "Gezellige recreatiewoning op landgoed in Lunteren",
     "type": "Bungalow",
@@ -3254,6 +3323,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-ref-54",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/2930466/86411620/$xl/2349808301.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=-ha0mibo9kY",
     "titel": "Instapklare recreatiewoning in de bossen bij Ede",
     "type": "Bungalow",
@@ -3290,6 +3360,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-velsen-zuid-buitenhuizerweg-2-123",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3599912/109782452/$xl/epbh%20123.jpg",
     "videoUrl": "https://youtu.be/DcLymOk-r8M",
     "titel": "Stijlvol L-vormig chalet aan het water bij Velsen-Zuid",
     "type": "Chalet",
@@ -3327,6 +3398,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-96",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3591005/109782453/$xl/rl%2094.jpg",
     "videoUrl": "https://youtu.be/W7RfPLE8PvI",
     "titel": "Rolstoelvriendelijk chalet in Lichtenvoorde",
     "type": "Chalet",
@@ -3401,6 +3473,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-016",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3505924/106329063/$xl/plattegrond%20epuh%20016.png",
     "videoUrl": "https://youtu.be/rlqEeqa5r1Q",
     "titel": "Vakantiewoning met hottub op de Utrechtse Heuvelrug",
     "type": "Bungalow",
@@ -3511,6 +3584,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-aalst-zaaiwaard-3-108a",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3462725/104783032/$xl/bosparel%202d%20(correcte%20maten).png",
     "videoUrl": "https://youtu.be/uqn0KHqby9M",
     "titel": "Instapklare waterwoning bij de Biesbosch in Aalst",
     "type": "Bungalow",
@@ -3548,6 +3622,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-a28",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4192801/131947902/$xl/187630363_rsidence_de_le_begane_grond_first_design_20260709_83675f.jpg",
     "videoUrl": "https://youtu.be/ClNMSC7xYyQ",
     "titel": "Instapklare recreatiewoning in Cromvoirt",
     "type": "Vrijstaand vakantiehuis",
@@ -3585,6 +3660,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-noordwijk-zh-kraaierslaan-7-178",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3999789/124471635/$xl/plattegrond%20beachhouse%20171%202d.png",
     "videoUrl": "https://youtu.be/oNgSzsjVD_s",
     "titel": "Stijlvol beach house bij de duinen in Noordwijk",
     "type": "Vrijstaand vakantiehuis",
@@ -3622,6 +3698,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-704",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4150015/130268783/$xl/186612094_europarcs_de_ut_recreatiewoning_first_design_20260608_655515.jpg",
     "videoUrl": "https://youtu.be/6Ifz4_JKP2s",
     "titel": "Moderne bosbungalow op de Utrechtse Heuvelrug",
     "type": "Bungalow",
@@ -3659,6 +3736,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-k13",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3265969/97827903/$xl/497876959.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=4IWqP4whGGE",
     "titel": "Nieuwbouw recreatiewoning in Cromvoirt",
     "type": "Vrijstaand vakantiehuis",
@@ -3696,6 +3774,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-cromvoirt-loverensestraat-11-d4",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3084612/91603039/$xl/job%205.jpg",
     "videoUrl": "https://youtu.be/8jeCPcdM6zo",
     "titel": "Luxe waterwoning op Résidence de Leuvert",
     "type": "Vrijstaand vakantiehuis",
@@ -3732,6 +3811,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-74",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4080119/127553268/$xl/begane%20grond%20-%202d%20kopie%20copy.jpg",
     "videoUrl": "https://youtu.be/vMDvKnRbb2Y",
     "titel": "Vakantiewoning met sauna op de Veluwe",
     "type": "Bungalow",
@@ -3769,6 +3849,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-29",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4081408/127602730/$xl/luyten01.jpg",
     "videoUrl": "https://youtu.be/SVfcn-sYQk0",
     "titel": "Lichte recreatiewoning in Beekbergen",
     "type": "Bungalow",
@@ -3806,6 +3887,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-644a",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3014511/89236017/$xl/recreatiepark_beekbergen_688_2d.jpeg",
     "videoUrl": "https://youtu.be/1Rn4zn9_FQA",
     "titel": "Recreatiewoning in de bossen van Lunteren",
     "type": "Bungalow",
@@ -3843,6 +3925,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-3",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3131638/93171814/$xl/casa%20di%20rialto%202d%20links.jpeg",
     "videoUrl": "https://youtu.be/za1znbY5eJk",
     "titel": "Gezellige vakantiewoning in de bossen van Ede",
     "type": "Bungalow",
@@ -3879,6 +3962,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-loosdrecht-nieuw-loosdrechtsedijk-215-15",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4017017/125125505/$xl/182882965_project_marinap_begane_grond_first_design_20260302_983705.jpg",
     "videoUrl": "https://youtu.be/bbYEcU4dNY4",
     "titel": "Luxe watervilla aan de Loosdrechtse Plassen",
     "type": "Vrijstaand vakantiehuis",
@@ -3916,6 +4000,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-154",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3618846/110364675/$xl/casa%20di%20rialto%20rechts%202d.jpeg",
     "videoUrl": "https://youtu.be/YxdUgdo2LyA",
     "titel": "Vakantiewoning in het Limburgse heuvelland",
     "type": "Bungalow",
@@ -3986,6 +4071,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-mierde-wellenseind-9-26",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3749287/115166314/$xl/plattegrond.jpeg",
     "videoUrl": "https://youtu.be/nYTv7ZnMhWE",
     "titel": "Volledig gerenoveerde bungalow in de Brabantse Kempen",
     "type": "Bungalow",
@@ -4097,6 +4183,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-372",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3114300/92580266/$xl/3966130600.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=POMae5OVHNU",
     "titel": "Riante recreatiewoning op EuroParcs Zuiderzee",
     "type": "Bungalow",
@@ -4133,6 +4220,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-404",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4192770/131946662/$xl/187601476_europarcs_de_ut_recreatiewoning_first_design_20260709_c77710.jpg",
     "videoUrl": "https://youtu.be/R0Fm3n5XVo0",
     "titel": "Eigentijdse bungalow op de Utrechtse Heuvelrug",
     "type": "Bungalow",
@@ -4170,6 +4258,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-west-graftdijk-burgemeester-dalenbergstraat-50-406",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4027585/125526825/$xl/183252967_vakantiepark_de_begane_grond_first_design_20260312_0549d2.jpg",
     "videoUrl": "https://youtu.be/q9-pKV5TGgo",
     "titel": "Moderne vakantievilla in West-Graftdijk",
     "type": "Vrijstaand vakantiehuis",
@@ -4207,6 +4296,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-biddinghuizen-spijkweg-15-288",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4149976/130267379/$xl/186654778_europarcs_resor_first_floor_first_design_20260608_926001.jpg",
     "videoUrl": "https://youtu.be/x9GRWQhhxXg",
     "titel": "Design vakantiewoning aan de Zuiderzee",
     "type": "Vrijstaand vakantiehuis",
@@ -4245,6 +4335,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-27",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4082840/127657936/$xl/luyten01.jpg",
     "videoUrl": "https://youtu.be/FwPNQUc-vhc",
     "titel": "Gelijkvloerse recreatiewoning op de Veluwe",
     "type": "Bungalow",
@@ -4319,6 +4410,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-beekbergen-kuiltjesweg-44-100",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4103536/128458204/$xl/3718708813.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=1ijBvwsVHdk",
     "titel": "Luxe vakantiewoning met sauna in Beekbergen",
     "type": "Bungalow",
@@ -4355,6 +4447,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-berkhout-lijsbeth-tijsweg-7-73",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4063638/126922494/$xl/schermafbeelding%202026-04-09%20om%2012.45.37.png",
     "titel": "Ruime vakantiewoning nabij Hoorn",
     "type": "Bungalow",
     "doel": "koop",
@@ -4389,6 +4482,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-629",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3363830/101292437/$xl/module%20special%20(hoekkeuken)%202d.jpg",
     "videoUrl": "https://youtu.be/qGCX5kasxSk",
     "titel": "Luxe chalet met jacuzzi op de Veluwe",
     "type": "Chalet",
@@ -4426,6 +4520,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-1",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3129283/93088289/$xl/casa%20di%20rialto%202d%20links.jpeg",
     "videoUrl": "https://youtu.be/mQDE4z8Wfp0",
     "titel": "Gezellige recreatiewoning op de Veluwe",
     "type": "Bungalow",
@@ -4462,6 +4557,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lage-vuursche-koudelaan-25-d18",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3829554/118104760/$xl/plattegrond%20vuur%20d12%202d.png",
     "videoUrl": "https://youtu.be/ajMPYLTtBEE",
     "titel": "Duurzame luxe lodge in Lage Vuursche",
     "type": "Bungalow",
@@ -4499,6 +4595,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-147",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3818277/117688013/$xl/residence%20valkenburg_532_2d.jpg",
     "videoUrl": "https://youtu.be/craQo8LlMrs",
     "titel": "Instapklare vakantiewoning met sauna in Limburg",
     "type": "Bungalow",
@@ -4573,6 +4670,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-223",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/2939556/86720787/$xl/westerkogge_56_2d.jpeg",
     "videoUrl": "https://www.youtube.com/watch?v=ao1m_7NyC94",
     "titel": "Sfeervolle vakantiewoning in het Geuldal",
     "type": "Bungalow",
@@ -4683,6 +4781,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kerkdriel-zandstraat-8",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3263633/97745444/$xl/floor%20plan%20(2).jpg",
     "videoUrl": "https://youtu.be/qt_TP9GJ-gs",
     "titel": "Recreatiewoning met waterzicht in Kerkdriel",
     "type": "Vrijstaand vakantiehuis",
@@ -4719,6 +4818,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-uitdam-zeedijk-2-327",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4192726/131944571/$xl/plattegrond%20eppa%20327%20beneden%202d.png",
     "videoUrl": "https://youtu.be/WoNsglc4Zis",
     "titel": "Recreatiewoning aan het water in Uitdam",
     "type": "Bungalow",
@@ -4756,6 +4856,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-402",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4143002/129995257/$xl/begane%20grond%20-%202d.jpg",
     "videoUrl": "https://youtu.be/789iivpp0Gs",
     "titel": "Stijlvolle boswoning op de Utrechtse Heuvelrug",
     "type": "Bungalow",
@@ -4793,6 +4894,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-379",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3743508/114950082/$xl/plattegrond%20bpe%20379%202d.png",
     "videoUrl": "https://youtu.be/vTXxTHCpFfU",
     "titel": "Moderne boswoning met hottub in Ede",
     "type": "Bungalow",
@@ -4830,6 +4932,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-372",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4132777/129594571/$xl/181988284_landgoed_de_sch_recreatie_wonin_first_design_20260528_b43e1b.jpg",
     "videoUrl": "https://youtu.be/xCZ-rSDjkUw",
     "titel": "Moderne boslodge op Landgoed de Scheleberg",
     "type": "Bungalow",
@@ -4867,6 +4970,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kaatsheuvel-van-haestrechtstraat-24-174",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3786091/116501257/$xl/tiny%20cottage%20.png",
     "videoUrl": "https://youtu.be/mbvPCdMRZ0A",
     "titel": "Sfeervolle tiny house bij de Efteling",
     "type": "Tiny house",
@@ -4904,6 +5008,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kaatsheuvel-van-haestrechtstraat-24-538",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3628741/110725882/$xl/plattegrond%20epkh%20538%202d.png",
     "videoUrl": "https://youtu.be/0nakx_4ykcs",
     "titel": "Instapklare recreatiewoning aan het water in Kaatsheuvel",
     "type": "Tiny house",
@@ -4941,6 +5046,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-halfweg-zuiderweg-2-21",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4078617/127495512/$xl/184009168_europarcs_spaar_begane_grond_first_design_20260407_132665.jpg",
     "videoUrl": "https://youtu.be/Q0OitNq5ViY",
     "titel": "Architectonische Cube Elite aan het water in Halfweg",
     "type": "Vrijstaand vakantiehuis",
@@ -4978,6 +5084,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-72",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3986811/123980865/$xl/181988284_landgoed_de_sch_recreatie_wonin_first_design_20260205_2f5af5.jpg",
     "videoUrl": "https://youtu.be/WIesNDFqXzo",
     "titel": "Luxe wellnessvilla in de bossen van Lunteren",
     "type": "Bungalow",
@@ -5015,6 +5122,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-barteweg-15-32",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3945307/122404370/$xl/180861226_recreatiepark_begane_grond_first_design_20260107_bbf46f.jpg",
     "videoUrl": "https://youtu.be/5mBSC1MgX80",
     "titel": "Verzorgde recreatiewoning in het bos bij Ede",
     "type": "Bungalow",
@@ -5052,6 +5160,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-254",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3160716/94169708/$xl/154747146_topparken_resi_first_floor_first_design_20240321_63aa7d.jpg",
     "videoUrl": "https://youtu.be/DgX_7r7o1gI",
     "titel": "Luxe vakantiewoning met wellness in Schin op Geul",
     "type": "Vrijstaand vakantiehuis",
@@ -5163,6 +5272,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-553",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/2938529/86686126/$xl/145571031_topparken_resi_first_floor_first_design_20230829_d3420e.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=djHB1ZP_3aI",
     "titel": "Wellnesswoning met sauna en jacuzzi in Schin op Geul",
     "type": "Bungalow",
@@ -5273,6 +5383,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ijmuiden-kennemermeer-27-11",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4132844/129597451/$xl/186264103_basecamp_ijmuid_eerste_verdiepi_first_design_20260528_4df3a9.jpg",
     "videoUrl": "https://youtu.be/BR9hEX0_dVk",
     "titel": "Duurzame designloft aan zee in IJmuiden",
     "type": "Vrijstaand vakantiehuis",
@@ -5309,6 +5420,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-ref-74",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/2930483/86412060/$xl/1807577600.jpg",
     "videoUrl": "https://www.youtube.com/watch?v=AB1FdfyP8zQ",
     "titel": "Modern boshuisje op de Veluwe in Lunteren",
     "type": "Bungalow",
@@ -5380,6 +5492,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-maarn-laan-van-laag-kanje-1-1144",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/4023479/125370011/$xl/183149230_europarcs_de_ut_begane_grond_first_design_20260310_6d83ce.jpg",
     "videoUrl": "https://youtu.be/-MsepmTLdMY",
     "titel": "Scandinavisch tiny house in de bossen van Maarn",
     "type": "Tiny house",
@@ -5417,6 +5530,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lichtenvoorde-boschlaan-26-47",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3590973/109369401/$xl/casa%20di%20rialto%206p%202d.jpg",
     "videoUrl": "https://youtu.be/uIVz6auvQBc",
     "titel": "Instapklare 6-persoons bungalow in de Achterhoek",
     "type": "Bungalow",
@@ -5454,6 +5568,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-ede-zonneoordlaan-47-149",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3470561/105062996/$xl/plattegrond%20bpe%20149%202d.png",
     "videoUrl": "https://youtu.be/DBIgteNzSZM",
     "titel": "Stijlvolle bosrijke recreatiewoning in Ede",
     "type": "Bungalow",
@@ -5491,6 +5606,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-schin-op-geul-valkenburgerweg-128-141",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3596378/109560439/$xl/casa%20di%20rialto%202d%20rechts.png",
     "videoUrl": "https://youtu.be/LOZmreHAusU",
     "titel": "Instapklaar vakantiehuis in het Heuvelland",
     "type": "Bungalow",
@@ -5528,6 +5644,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-lunteren-immenweg-15-619",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3233690/96709909/$xl/ferox%20basis%205p.%20links%202d.jpg",
     "videoUrl": "https://youtu.be/3lnTIc7uH50",
     "titel": "Ruime bungalow op Landgoed de Scheleberg",
     "type": "Bungalow",
@@ -5565,6 +5682,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-susteren-hommelweg-2-671",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3584918/109149015/$xl/epli671%20beneden.jpg",
     "videoUrl": "https://youtu.be/mSDBkSj0qfo",
     "titel": "Ruime groepsvilla voor 10 personen in Susteren",
     "type": "Vrijstaand vakantiehuis",
@@ -5708,6 +5826,7 @@ export const LM_LISTINGS: SeedListing[] = [
   },
   {
     "id": "lm-kaatsheuvel-van-haestrechtstraat-24-411",
+    "plattegrond": "https://haywebattachments.blob.core.windows.net/public/2899/3628786/110727701/$xl/plattegrond%20epkh%20411%202d.png",
     "videoUrl": "https://youtu.be/Vlxm24o2eUo",
     "titel": "Sfeervolle 6-persoons recreatiewoning in Kaatsheuvel",
     "type": "Vrijstaand vakantiehuis",
