@@ -178,6 +178,4 @@ export function BewerkForm({ listing }: { listing: Listing }) {
     </form>
   );
 }
- 
 
-Downloaded foto-route.ts Show in Finder
