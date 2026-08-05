@@ -40,6 +40,4 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const updated = updateListing(params.id, patch);
   return NextResponse.json({ ok: true, id: updated?.id });
 }
- 
 
-Downloaded foto-route.ts Show in Finder
