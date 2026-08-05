@@ -1,10 +1,11 @@
+
 export type Doel = "koop" | "huur";
 export type Pakket = "Basis" | "Plus" | "Premium";
 export type ListingStatus = "concept" | "wacht_op_betaling" | "live" | "verkocht" | "offline";
 export type PaymentStatus = "open" | "paid" | "failed";
 export type Rol = "eigenaar" | "beheerder";
 export type AccountType = "particulier" | "zakelijk";
-
+ 
 export interface User {
   id: string;
   naam: string;
@@ -25,7 +26,7 @@ export interface User {
   standaardPakket?: Pakket; // pakket voor woningen die via een feed (Kolibri) binnenkomen
   aangemaakt: string;
 }
-
+ 
 export interface Listing {
   id: string;
   ownerId: string;
@@ -50,6 +51,7 @@ export interface Listing {
   promotedAt?: string;
   fotos?: string[];
   videoUrl?: string; // YouTube/Vimeo/Matterport-link voor rondleiding
+  plattegrond?: string; // optionele plattegrond (PDF of afbeelding) — URL naar /api/foto/…
   openhuisDatum?: string; // yyyy-mm-dd van een open huis
   openhuisVan?: string; // "13:00"
   openhuisTot?: string; // "16:00"
@@ -62,7 +64,7 @@ export interface Listing {
   energielabel?: string;
   aangemaakt: string;
 }
-
+ 
 export interface Huusmeester {
   id: string;
   bedrijf: string;
@@ -72,7 +74,7 @@ export interface Huusmeester {
   email: string;
   datum: string;
 }
-
+ 
 export interface Lead {
   id: string;
   listingId: string;
@@ -81,7 +83,7 @@ export interface Lead {
   bericht: string;
   datum: string;
 }
-
+ 
 export interface Payment {
   id: string;
   listingId: string;
@@ -99,7 +101,7 @@ export interface Payment {
   aangemaakt: string;
   betaaldOp?: string;
 }
-
+ 
 export interface Zoekopdracht {
   id: string;
   naam: string;
@@ -112,7 +114,7 @@ export interface Zoekopdracht {
   alerts: boolean; // e-mail bij een match
   datum: string;
 }
-
+ 
 export interface Enquete {
   id: string;
   userId?: string;
@@ -122,19 +124,19 @@ export interface Enquete {
   opmerking: string;
   datum: string;
 }
-
+ 
 export interface NieuwsbriefLid {
   id: string;
   email: string;
   datum: string;
 }
-
+ 
 export interface PostcodeGeo {
   pc: string; // genormaliseerd, bijv. "1234AB" of "1234"
   lat: number;
   lon: number;
 }
-
+ 
 export interface Pageview {
   id: string;
   path: string;
@@ -143,14 +145,14 @@ export interface Pageview {
   vid: string; // anonieme bezoeker-id (localStorage, geen cookie)
   datum: string;
 }
-
+ 
 export interface PartnerKlik {
   id: string;
   partner: string; // naam van de partner
   url: string;
   datum: string;
 }
-
+ 
 export interface Review {
   id: string;
   naam: string;
@@ -160,7 +162,7 @@ export interface Review {
   goedgekeurd: boolean; // zichtbaar op de site
   datum: string;
 }
-
+ 
 export interface EmailRecord {
   id: string;
   aan: string;
@@ -170,3 +172,5 @@ export interface EmailRecord {
   verzondenVia: "smtp" | "preview";
   datum: string;
 }
+ 
+
