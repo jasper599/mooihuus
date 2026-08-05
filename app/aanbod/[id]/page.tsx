@@ -1,4 +1,4 @@
-
+ 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -128,6 +128,20 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             );
           })()}
  
+          {listing.plattegrond && (
+            <div className="mt-6">
+              <h2 className="font-display font-bold text-lg text-bosgroen-dk mb-2">📐 Plattegrond</h2>
+              {/\.pdf($|\?)/i.test(listing.plattegrond) ? (
+                <a href={listing.plattegrond} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">Plattegrond bekijken (PDF)</a>
+              ) : (
+                <a href={listing.plattegrond} target="_blank" rel="noopener noreferrer" className="block">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={listing.plattegrond} alt={`Plattegrond ${listing.titel}`} className="rounded-2xl border border-lijn max-h-[520px] w-auto" />
+                </a>
+              )}
+            </div>
+          )}
+ 
           {(() => {
             const rows: [string, string][] = [];
             rows.push(["Type", listing.type]);
@@ -195,4 +209,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
   );
 }
  
+ 
+ 
 
+Downloaded foto-route.ts Show in Finder
