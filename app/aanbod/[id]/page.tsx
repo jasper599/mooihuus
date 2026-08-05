@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -13,9 +14,10 @@ import { FavButton } from "@/components/FavButton";
 import { BezichtigingForm } from "@/components/BezichtigingForm";
 import { MaandlastenCalculator } from "@/components/MaandlastenCalculator";
 import { VertaalOmschrijving } from "@/components/VertaalOmschrijving";
-
+import { FotoGalerij } from "@/components/FotoGalerij";
+ 
 export const dynamic = "force-dynamic";
-
+ 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const l = getListing(params.id);
   if (!l) return { title: "Woning niet gevonden" };
@@ -35,7 +37,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     },
   };
 }
-
+ 
 export default function ListingDetail({ params }: { params: { id: string } }) {
   const listing = getListing(params.id);
   if (!listing) return notFound();
@@ -43,7 +45,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
   const owner = getUser(listing.ownerId);
   const zakelijk = owner?.type === "zakelijk";
   const aanbieder = zakelijk ? owner?.bedrijfsnaam || owner?.naam : undefined;
-
+ 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -58,18 +60,14 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
       url: `${COMPANY.website}/aanbod/${listing.id}`,
     },
   };
-
+ 
   return (
     <div>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <Link href={localeHref(locale, "/")} className="text-sm text-bosgroen hover:underline">{t(locale, "listing.back")}</Link>
       <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr] mt-3">
         <div>
-          <div className="h-64 rounded-2xl relative overflow-hidden" style={{ background: gradient(listing.kleur) }}>
-            {listing.fotos && listing.fotos[0] && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={listing.fotos[0]} alt={listing.titel} className="absolute inset-0 w-full h-full object-cover" />
-            )}
+          <FotoGalerij fotos={listing.fotos ?? []} titel={listing.titel} bg={gradient(listing.kleur)}>
             <span className={`absolute top-3 left-3 text-white font-display font-semibold text-xs px-3 py-1 rounded-full ${listing.status === "verkocht" ? "bg-oranje" : "bg-bosgroen"}`}>
               {listing.status === "verkocht" ? "Verkocht" : listing.doel === "huur" ? t(locale, "home.huur") : t(locale, "home.koop")}
             </span>
@@ -82,15 +80,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
                 {grondInfo(listing.grond)!.eigen ? "🌳 Eigen grond" : `🔑 ${grondInfo(listing.grond)!.label}`}
               </span>
             )}
-          </div>
-          {listing.fotos && listing.fotos.length > 1 && (
-            <div className="grid grid-cols-3 gap-2 mt-2">
-              {listing.fotos.slice(1).map((f, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={f} alt={`${listing.titel} foto ${i + 2}`} loading="lazy" className="w-full h-24 object-cover rounded-xl" />
-              ))}
-            </div>
-          )}
+          </FotoGalerij>
           <h1 className="font-display font-extrabold text-2xl text-bosgroen-dk mt-4">{listing.titel}</h1>
           <div className="text-grijs">{listing.type} · {listing.park} · {listing.provincie}</div>
           {aanbieder && (
@@ -116,9 +106,9 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
               </div>
             );
           })()}
-
+ 
           <VertaalOmschrijving text={listing.omschrijving} />
-
+ 
           {(() => {
             const embed = embedVideoUrl(listing.videoUrl);
             if (!embed) return null;
@@ -137,7 +127,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
               </div>
             );
           })()}
-
+ 
           {(() => {
             const rows: [string, string][] = [];
             rows.push(["Type", listing.type]);
@@ -178,7 +168,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             );
           })()}
         </div>
-
+ 
         <aside>
           <div className="card">
             <div className="font-display font-extrabold text-2xl text-oranje-dk">
@@ -204,3 +194,5 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
     </div>
   );
 }
+ 
+
