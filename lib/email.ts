@@ -121,6 +121,8 @@ export function renderLead(lead: Lead, listing: Listing, ownerNaam: string): { o
           <td style="background:${BRAND.creme};padding:12px 16px;font-weight:bold;">${lead.naam}</td></tr>
       <tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};font-size:13px;color:${BRAND.grijs};">E-mail</td>
           <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};"><a href="mailto:${lead.email}" style="color:${BRAND.bosgroen};">${lead.email}</a></td></tr>
+      ${lead.telefoon ? `<tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};font-size:13px;color:${BRAND.grijs};">Telefoon</td>
+          <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};"><a href="tel:${lead.telefoon}" style="color:${BRAND.bosgroen};">${lead.telefoon}</a></td></tr>` : ""}
       <tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};font-size:13px;color:${BRAND.grijs};vertical-align:top;">Bericht</td>
           <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.6;">“${lead.bericht}”</td></tr>
     </table>
@@ -372,11 +374,32 @@ export async function sendEmail(opts: {
   html: string;
 }): Promise<EmailRecord> {
   const smtpHost = process.env.SMTP_HOST;
+  const resendKey = process.env.RESEND_API_KEY;
+  const from = process.env.MAIL_FROM || "Mooihuus <noreply@mooihuus.nl>";
   let via: EmailRecord["verzondenVia"] = "preview";
 
-  if (smtpHost) {
+  // 1) Voorkeur: Resend — verstuurt via een beveiligde HTTPS-API, dus werkt
+  //    ook vanaf hosts waar SMTP-poorten geblokkeerd worden (zoals Railway).
+  if (resendKey) {
     try {
-      // Echte verzending. Vereist SMTP_* env-variabelen.
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 9000);
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from, to: opts.aan, subject: opts.onderwerp, html: opts.html }),
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      if (res.ok) via = "smtp";
+    } catch {
+      /* val terug op SMTP/preview */
+    }
+  }
+
+  // 2) SMTP (nodemailer) — alleen als Resend niet is ingesteld of niet lukte.
+  if (via !== "smtp" && smtpHost) {
+    try {
       const nodemailer = await import("nodemailer");
       const transport = nodemailer.createTransport({
         host: smtpHost,
@@ -389,14 +412,14 @@ export async function sendEmail(opts: {
         socketTimeout: 10000,
       });
       await transport.sendMail({
-        from: process.env.MAIL_FROM || "Mooihuus <info@mooihuus.nl>",
+        from,
         to: opts.aan,
         subject: opts.onderwerp,
         html: opts.html,
       });
       via = "smtp";
     } catch (e) {
-      via = "preview";
+      /* val terug op preview */
     }
   }
 

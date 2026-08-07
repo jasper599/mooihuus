@@ -80,6 +80,7 @@ export interface Lead {
   listingId: string;
   naam: string;
   email: string;
+  telefoon?: string;
   bericht: string;
   datum: string;
 }
