@@ -23,25 +23,32 @@ export default async function BetalingPage({ params }: { params: { id: string } 
 
   const listing = getListing(payment.listingId);
   const isOpvaller = payment.soort === "opvaller";
+  const isFactuur = payment.soort === "makelaar-factuur";
+  const waarvoor = payment.omschrijving || "Advertentie op Mooihuus";
 
   if (payment.status === "paid") {
     return (
       <div className="max-w-md mx-auto text-center">
         <div className="text-5xl mb-3">{isOpvaller ? "🚀" : "✅"}</div>
         <h1 className="font-display font-extrabold text-2xl text-bosgroen-dk">
-          {isOpvaller ? "Betaald — je opvaller staat aan!" : "Betaald — je huus staat online!"}
+          {isFactuur ? "Betaald — bedankt!" : isOpvaller ? "Betaald — je opvaller staat aan!" : "Betaald — je huus staat online!"}
         </h1>
         <p className="text-grijs mt-2">
-          We hebben een betalingsbewijs ({payment.factuurnummer}) naar je e-mail gestuurd.{" "}
-          {isOpvaller ? (
-            <>De opvaller <strong>“{payment.omschrijving}”</strong> is geactiveerd voor <strong>“{listing?.titel}”</strong>.</>
+          {isFactuur ? (
+            <>We hebben de factuur ({payment.factuurnummer}) voor <strong>“{waarvoor}”</strong> naar je e-mail gestuurd.</>
           ) : (
-            <>Je advertentie <strong>“{listing?.titel}”</strong> is nu live.</>
+            <>We hebben een betalingsbewijs ({payment.factuurnummer}) naar je e-mail gestuurd.{" "}
+              {isOpvaller ? (
+                <>De opvaller <strong>“{payment.omschrijving}”</strong> is geactiveerd voor <strong>“{listing?.titel}”</strong>.</>
+              ) : (
+                <>Je advertentie <strong>“{listing?.titel}”</strong> is nu live.</>
+              )}
+            </>
           )}
         </p>
         <div className="mt-5 flex gap-3 justify-center">
-          <Link href="/dashboard" className="btn">Naar mijn dashboard</Link>
-          {listing && <Link href={`/aanbod/${listing.id}`} className="btn btn-ghost">Bekijk advertentie</Link>}
+          <Link href={isFactuur ? "/" : "/dashboard"} className="btn">{isFactuur ? "Naar Mooihuus" : "Naar mijn dashboard"}</Link>
+          {listing && !isFactuur && <Link href={`/aanbod/${listing.id}`} className="btn btn-ghost">Bekijk advertentie</Link>}
         </div>
       </div>
     );
@@ -57,12 +64,14 @@ export default async function BetalingPage({ params }: { params: { id: string } 
           </div>
           <h1 className="font-display font-extrabold text-2xl text-bosgroen-dk">Betaal met iDEAL</h1>
           <p className="text-grijs text-sm mt-1">
-            {isOpvaller ? <>Opvaller {payment.omschrijving} · {listing?.titel}</> : <>Advertentie: {listing?.titel}</>}
+            {isFactuur ? waarvoor : isOpvaller ? <>Opvaller {payment.omschrijving} · {listing?.titel}</> : <>Advertentie: {listing?.titel}</>}
           </p>
         </div>
 
         <div className="bg-creme border border-lijn rounded-xl p-4 my-4">
-          {isOpvaller ? (
+          {isFactuur ? (
+            <div className="flex justify-between text-sm py-1"><span>{waarvoor}</span><span>{euroCents(payment.bedrag)}</span></div>
+          ) : isOpvaller ? (
             <div className="flex justify-between text-sm py-1"><span>Opvaller {payment.omschrijving}</span><span>{euroCents(payment.bedrag)}</span></div>
           ) : payment.kortingPct ? (
             <>
