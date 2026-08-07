@@ -129,6 +129,24 @@ export function renderLead(lead: Lead, listing: Listing, ownerNaam: string): { o
   return { onderwerp: `Nieuwe interesse in “${listing.titel}”`, html: layout("Nieuwe lead", inner) };
 }
 
+// Automatische bevestiging naar de aanvrager zelf.
+export function renderLeadBevestiging(lead: Lead, listing: Listing): { onderwerp: string; html: string } {
+  const url = `${COMPANY.website}/aanbod/${listing.id}`;
+  const inner = `
+    <span style="display:inline-block;background:${BRAND.bosgroen};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Aanvraag ontvangen ✅</span>
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Bedankt voor je bericht, ${lead.naam.split(" ")[0]}!</h1>
+    <p style="line-height:1.6;">We hebben je aanvraag voor <strong>“${listing.titel}”</strong> goed ontvangen en rechtstreeks doorgestuurd naar de aanbieder. Die neemt zo snel mogelijk contact met je op.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
+      <tr><td style="background:${BRAND.creme};padding:12px 16px;font-size:13px;color:${BRAND.grijs};width:120px;">Woning</td>
+          <td style="background:${BRAND.creme};padding:12px 16px;font-weight:bold;">${listing.titel}</td></tr>
+      <tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};font-size:13px;color:${BRAND.grijs};vertical-align:top;">Jouw bericht</td>
+          <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.6;">“${lead.bericht}”</td></tr>
+    </table>
+    <p style="margin:22px 0;">${btn(url, "Bekijk de woning")}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Dit is een automatische bevestiging van Mooihuus.nl — je hoeft hier niet op te reageren. Vragen? Mail info@mooihuus.nl.</p>`;
+  return { onderwerp: `We hebben je aanvraag ontvangen — ${listing.titel}`, html: layout("Aanvraag ontvangen", inner) };
+}
+
 export function renderContact(d: {
   naam: string;
   email: string;
@@ -365,6 +383,10 @@ export async function sendEmail(opts: {
         port: Number(process.env.SMTP_PORT || 587),
         secure: process.env.SMTP_SECURE === "true",
         auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+        // Timeouts, zodat een onbereikbare SMTP-server het verzoek nooit laat hangen.
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000,
       });
       await transport.sendMail({
         from: process.env.MAIL_FROM || "Mooihuus <info@mooihuus.nl>",
