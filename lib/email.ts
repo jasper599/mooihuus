@@ -326,6 +326,32 @@ export function renderMakelaarFactuur(d: {
   return { onderwerp: `Factuur ${d.factuurnummer} — advertenties op Mooihuus`, html: layout("Factuur Mooihuus", inner) };
 }
 
+// Factuur/betaalbewijs dat ná een geslaagde betaling wordt verstuurd.
+export function renderFactuurBetaald(p: Payment, kantoor: string): { onderwerp: string; html: string } {
+  const excl = p.bedrag / 1.21;
+  const btw = p.bedrag - excl;
+  const oms = p.omschrijving || "Advertentie op Mooihuus";
+  const rij = (k: string, v: string, opts: { top?: boolean; strong?: boolean; grijs?: boolean } = {}) =>
+    `<tr><td style="padding:12px 16px;${opts.top ? `border-top:2px solid ${BRAND.bosgroen};` : `border-top:1px solid ${BRAND.lijn};`}font-size:13px;color:${BRAND.grijs};">${k}</td>
+        <td style="padding:12px 16px;${opts.top ? `border-top:2px solid ${BRAND.bosgroen};font-weight:bold;color:${BRAND.bosgroenDk};` : `border-top:1px solid ${BRAND.lijn};`}${opts.strong ? "font-weight:bold;" : ""}${opts.grijs ? `color:${BRAND.grijs};font-size:13px;` : ""}text-align:right;">${v}</td></tr>`;
+  const inner = `
+    <span style="display:inline-block;background:${BRAND.bosgroen};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Betaald ✓</span>
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Bedankt — je betaling is ontvangen</h1>
+    <p style="line-height:1.6;">Hierbij je factuur en betaalbewijs voor <strong>${oms}</strong>.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
+      <tr><td style="background:${BRAND.creme};padding:12px 16px;font-size:13px;color:${BRAND.grijs};">Factuurnummer</td>
+          <td style="background:${BRAND.creme};padding:12px 16px;font-size:13px;text-align:right;font-weight:bold;color:${BRAND.inkt};">${p.factuurnummer}</td></tr>
+      ${rij("Omschrijving", oms)}
+      ${rij("Bedrag excl. btw", euroCents(excl))}
+      ${rij("21% btw", euroCents(btw), { grijs: true })}
+      ${rij("Totaal betaald", euroCents(p.bedrag), { top: true })}
+      ${rij("Betaalmethode", p.methode, { grijs: true })}
+      ${rij("Betaald op", p.betaaldOp ? new Date(p.betaaldOp).toLocaleString("nl-NL") : "-", { grijs: true })}
+    </table>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bewaar deze mail als betaalbewijs. Vragen over deze factuur? Mail info@mooihuus.nl.</p>`;
+  return { onderwerp: `Factuur ${p.factuurnummer} — betaald`, html: layout("Factuur betaald", inner) };
+}
+
 export function renderNieuwsbrief(
   post: { titel: string; intro: string; categorie: string; emoji: string; slug: string },
   opts: { afmeldUrl?: string; koop?: Listing[]; huur?: Listing[] } = {}

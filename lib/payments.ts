@@ -1,5 +1,6 @@
 import { getPayment, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning } from "./db";
-import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, sendEmail } from "./email";
+import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, sendEmail } from "./email";
+import { COMPANY } from "./company";
 
 // Markeer een betaling als betaald. Idempotent — dubbel aanroepen (bijv.
 // webhook + redirect) doet niets extra's.
@@ -13,15 +14,15 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
   const nu = new Date().toISOString();
   updatePayment(payment.id, { status: "paid", methode, betaaldOp: nu });
 
-  // Makelaar-factuur: alleen betaald markeren + korte bevestiging, geen woninglogica.
+  // Makelaar-/losse factuur: ná betaling de échte factuur + betaalbewijs sturen
+  // naar de betaler, met een kopie naar Mooihuus.
   if (payment.soort === "makelaar-factuur") {
     const kantoor = getUser(payment.userId);
     if (kantoor) {
-      const inner = `<h1 style="font-size:22px;color:#1F4E32;margin:0 0 10px;">Betaling ontvangen — bedankt!</h1>
-        <p style="line-height:1.6;">We hebben je betaling van factuur <strong>${payment.factuurnummer}</strong> ontvangen. Je recreatiewoningen blijven live op Mooihuus.</p>`;
-      const { renderSimpel } = await import("./email");
-      const mail = renderSimpel("Betaling ontvangen — Mooihuus", inner);
-      await sendEmail({ aan: kantoor.email, onderwerp: mail.onderwerp, soort: "betalingsbewijs", html: mail.html });
+      const updated = getPayment(payment.id)!;
+      const mail = renderFactuurBetaald(updated, kantoor.bedrijfsnaam || kantoor.naam);
+      await sendEmail({ aan: kantoor.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
+      await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie: ${mail.onderwerp}`, soort: "factuur", html: mail.html });
     }
     return true;
   }
@@ -44,6 +45,7 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
       const updated = getPayment(payment.id)!;
       const mail = renderOpvallerBewijs(updated, listing, owner.naam);
       await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "betalingsbewijs", html: mail.html });
+      await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie: ${mail.onderwerp}`, soort: "betalingsbewijs", html: mail.html });
     }
     return true;
   }
@@ -64,6 +66,7 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
     const updated = getPayment(payment.id)!;
     const mail = renderBetalingsbewijs(updated, listing, owner.naam);
     await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "betalingsbewijs", html: mail.html });
+    await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie: ${mail.onderwerp}`, soort: "betalingsbewijs", html: mail.html });
   }
   return true;
 }
