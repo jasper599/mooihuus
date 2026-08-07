@@ -92,3 +92,62 @@ export async function maakMakelaarFactuur(ownerId: string): Promise<{
 
   return { ok: true, aantal: objecten.length, bedrag, betaalUrl, factuurnummer: updated.factuurnummer };
 }
+
+// Losse factuur met een eigen bedrag + omschrijving (bijv. een eenmalige
+// advertentie). Maakt een Mollie-betaallink en (optioneel) mailt de factuur.
+export async function maakLosseFactuur(args: {
+  ownerId: string;
+  nettoBedrag: number; // bedrag excl. btw
+  btw: boolean; // 21% btw toevoegen?
+  omschrijving: string;
+  mailen: boolean;
+}): Promise<{ ok: boolean; reden?: string; bedrag?: number; betaalUrl?: string; factuurnummer?: string; paymentId?: string }> {
+  const owner = getUser(args.ownerId);
+  if (!owner) return { ok: false, reden: "Profiel niet gevonden." };
+  const netto = Math.round(Number(args.nettoBedrag) * 100) / 100;
+  if (!(netto > 0)) return { ok: false, reden: "Vul een geldig bedrag in." };
+  const bedrag = args.btw ? Math.round(netto * 1.21 * 100) / 100 : netto;
+  const kantoor = owner.bedrijfsnaam || owner.naam;
+  const omschrijving = (args.omschrijving || "").trim() || "Advertentie op Mooihuus";
+
+  const payment = addPayment({
+    listingId: `factuur-${args.ownerId}`,
+    userId: args.ownerId,
+    pakket: "Premium",
+    bedrag,
+    status: "open",
+    methode: "iDEAL",
+    soort: "makelaar-factuur",
+    omschrijving,
+  });
+
+  let betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
+  if (mollieEnabled()) {
+    try {
+      const { mollieId, checkoutUrl } = await createMolliePayment({
+        bedrag,
+        beschrijving: `Mooihuus — ${omschrijving} (${kantoor})`,
+        redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
+        webhookUrl: `${baseUrl()}/api/webhook/mollie`,
+      });
+      updatePayment(payment.id, { mollieId });
+      betaalUrl = checkoutUrl || betaalUrl;
+    } catch {
+      // val terug op de interne betaalpagina
+    }
+  }
+
+  if (args.mailen) {
+    const mail = renderMakelaarFactuur({
+      kantoor,
+      factuurnummer: payment.factuurnummer,
+      objecten: [{ titel: omschrijving }],
+      prijsPerObject: bedrag,
+      totaal: bedrag,
+      betaalUrl,
+    });
+    await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
+  }
+
+  return { ok: true, bedrag, betaalUrl, factuurnummer: payment.factuurnummer, paymentId: payment.id };
+}
