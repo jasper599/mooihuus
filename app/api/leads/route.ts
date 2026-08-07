@@ -15,6 +15,7 @@ export async function POST(req: Request) {
     listingId: String(body.listingId),
     naam: String(body.naam),
     email: String(body.email),
+    telefoon: body.telefoon ? String(body.telefoon).slice(0, 40) : undefined,
     bericht: String(body.bericht ?? ""),
   });
 
