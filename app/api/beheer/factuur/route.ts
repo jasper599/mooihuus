@@ -13,13 +13,17 @@ export async function POST(req: Request) {
   }
   const body = await req.json().catch(() => ({}));
 
-  // 1) Een betaling handmatig op betaald/open zetten (vangnet voor
-  //    betalingen die buiten de iDEAL-link om binnenkomen).
-  if (body.paymentId && body.markeerBetaald !== undefined) {
-    const patch =
-      body.markeerBetaald === false
-        ? { status: "open" as const, betaaldOp: undefined }
-        : { status: "paid" as const, betaaldOp: new Date().toISOString(), methode: "Handmatig" };
+  // 1) Betaalstatus handmatig zetten: betaald (vangnet voor betalingen buiten
+  //    de iDEAL-link om), terug naar open, of crediteren (annuleren — mailt
+  //    niemand, telt niet meer mee als omzet/uitgefactureerd).
+  if (body.paymentId && body.actie) {
+    const now = new Date().toISOString();
+    const patch: any =
+      body.actie === "betaald"
+        ? { status: "paid", betaaldOp: now, methode: "Handmatig" }
+        : body.actie === "crediteer"
+        ? { status: "failed", betaaldOp: undefined, methode: "Gecrediteerd" }
+        : { status: "open", betaaldOp: undefined };
     const updated = updatePayment(String(body.paymentId), patch);
     if (!updated) return NextResponse.json({ error: "Betaling niet gevonden." }, { status: 404 });
     return NextResponse.json({ ok: true, status: updated.status });
