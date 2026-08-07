@@ -11,6 +11,7 @@ import { ReviewModeratie } from "@/components/ReviewModeratie";
 import { NieuwsbriefVerstuur } from "@/components/NieuwsbriefVerstuur";
 import { FeedImportKnop } from "@/components/FeedImportKnop";
 import { MakelaarFactuurKnop } from "@/components/MakelaarFactuurKnop";
+import { BetalingStatusKnop } from "@/components/BetalingStatusKnop";
 
 export const dynamic = "force-dynamic";
 
@@ -216,12 +217,12 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
             <tr><Td>—</Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td></tr>
           ) : payments.slice().reverse().map((p) => (
             <tr key={p.id} className="border-t border-lijn">
-              <Td>{p.factuurnummer}</Td>
+              <Td><Link href={`/factuur/${p.id}`} className="text-bosgroen underline hover:text-bosgroen-dk">{p.factuurnummer}</Link></Td>
               <Td>{getUser(p.userId)?.naam ?? "—"}</Td>
               <Td>{p.pakket}</Td>
               <Td>{euroCents(p.bedrag)}</Td>
               <Td>{p.methode}</Td>
-              <Td>{p.status === "paid" ? <span className="text-bosgroen font-semibold">Betaald ✓</span> : <span className="text-oranje-dk">Open</span>}</Td>
+              <Td><BetalingStatusKnop paymentId={p.id} status={p.status} /></Td>
             </tr>
           ))}
         </Table>
