@@ -9,7 +9,7 @@ export function MakelaarFactuurKnop({ ownerId }: { ownerId: string }) {
   const [bedrag, setBedrag] = useState("");
   const [omschrijving, setOmschrijving] = useState("Eenmalige advertentie op Mooihuus");
   const [btw, setBtw] = useState(true);
-  const [mailen, setMailen] = useState(false);
+  const [mailen, setMailen] = useState(true);
   const [link, setLink] = useState("");
 
   // Losse factuur met eigen bedrag → maakt een iDEAL-betaallink.
@@ -66,7 +66,7 @@ export function MakelaarFactuurKnop({ ownerId }: { ownerId: string }) {
           <input className="field text-xs" type="number" min="0" step="0.01" placeholder="Bedrag excl. btw (bijv. 250)" value={bedrag} onChange={(e) => setBedrag(e.target.value)} />
           <input className="field text-xs" placeholder="Omschrijving" value={omschrijving} onChange={(e) => setOmschrijving(e.target.value)} />
           <label className="text-xs flex items-center gap-1.5 text-inkt"><input type="checkbox" checked={btw} onChange={(e) => setBtw(e.target.checked)} /> 21% btw toevoegen</label>
-          <label className="text-xs flex items-center gap-1.5 text-inkt"><input type="checkbox" checked={mailen} onChange={(e) => setMailen(e.target.checked)} /> Factuur + link e-mailen naar profiel</label>
+          <label className="text-xs flex items-center gap-1.5 text-inkt"><input type="checkbox" checked={mailen} onChange={(e) => setMailen(e.target.checked)} /> Factuur + link e-mailen (profiel + kopie Mooihuus)</label>
           {totaal > 0 && <div className="text-xs text-grijs">Totaal te betalen: <b className="text-bosgroen-dk">€ {totaal.toFixed(2)}</b></div>}
           <button onClick={aanmaken} disabled={busy} className="btn text-xs py-1">{busy ? "Bezig…" : "Maak betaallink"}</button>
         </div>
