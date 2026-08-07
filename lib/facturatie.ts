@@ -89,6 +89,7 @@ export async function maakMakelaarFactuur(ownerId: string): Promise<{
     betaalUrl,
   });
   await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
+  await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie — ${mail.onderwerp}`, soort: "factuur", html: mail.html });
 
   return { ok: true, aantal: objecten.length, bedrag, betaalUrl, factuurnummer: updated.factuurnummer };
 }
@@ -146,7 +147,9 @@ export async function maakLosseFactuur(args: {
       totaal: bedrag,
       betaalUrl,
     });
+    // Naar de betaler (het profiel) én een kopie naar Mooihuus zelf.
     await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
+    await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie — ${mail.onderwerp}`, soort: "factuur", html: mail.html });
   }
 
   return { ok: true, bedrag, betaalUrl, factuurnummer: payment.factuurnummer, paymentId: payment.id };

@@ -322,7 +322,7 @@ export function renderMakelaarFactuur(d: {
     </table>
     <p style="margin:22px 0 8px;">${btn(d.betaalUrl, "Betaal deze factuur")}</p>
     <p style="line-height:1.5;color:${BRAND.grijs};font-size:12px;word-break:break-all;">Werkt de knop niet? Betaal via: ${d.betaalUrl}</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;margin-top:14px;">Je betaalt eenvoudig en direct via iDEAL. Na betaling ontvang je automatisch een bevestiging.</p>`;
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;margin-top:14px;">Betaal bij voorkeur via de knop hierboven (iDEAL) — dan is je betaling meteen verwerkt en geregistreerd. Maak het bedrag a.u.b. niet handmatig over.</p>`;
   return { onderwerp: `Factuur ${d.factuurnummer} — advertenties op Mooihuus`, html: layout("Factuur Mooihuus", inner) };
 }
 
