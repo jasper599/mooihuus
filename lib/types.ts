@@ -103,6 +103,25 @@ export interface Payment {
   betaaldOp?: string;
 }
  
+export type SocialStatus = "wachtrij" | "ingepland" | "geplaatst" | "mislukt";
+
+export interface SocialPost {
+  id: string;
+  listingId: string;
+  kanaal: "instagram";
+  prioriteit: boolean;       // betaalde 'Social spotlight' krijgt voorrang
+  status: SocialStatus;
+  bron: "bestelling" | "handmatig";
+  paymentId?: string;
+  tekst?: string;            // voorgestelde caption
+  fotoUrl?: string;          // eerste foto van de woning
+  metricoolId?: string;      // id bij Metricool na inplannen
+  ingeplandVoor?: string;    // ISO datum/tijd van de geplande post
+  notitie?: string;
+  aangemaakt: string;
+  geplaatstOp?: string;
+}
+
 export interface Zoekopdracht {
   id: string;
   naam: string;

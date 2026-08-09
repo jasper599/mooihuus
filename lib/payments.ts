@@ -1,6 +1,7 @@
-import { getPayment, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning } from "./db";
+import { getPayment, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning, addSocialPost, updateSocialPost } from "./db";
 import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, sendEmail } from "./email";
 import { COMPANY } from "./company";
+import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
 
 // Markeer een betaling als betaald. Idempotent — dubbel aanroepen (bijv.
 // webhook + redirect) doet niets extra's.
@@ -38,8 +39,27 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
         updateListing(listing.id, { uitgelicht: true, promotedAt: nu });
       } else if (id === "Omhoog" || id === "Dagtopper") {
         updateListing(listing.id, { promotedAt: nu });
+      } else if (id === "Social spotlight") {
+        // Betaalde social-post → met VOORRANG in de Instagram-wachtrij.
+        const publishAt = volgendeSlot(true, new Date());
+        const post = addSocialPost({
+          listingId: listing.id,
+          kanaal: "instagram",
+          prioriteit: true,
+          status: "wachtrij",
+          bron: "bestelling",
+          paymentId: payment.id,
+          tekst: `${listing.titel} — nu te ${listing.doel === "huur" ? "huur" : "koop"} op Mooihuus.nl 🌲`,
+          fotoUrl: listing.fotos?.[0],
+        });
+        // Direct inplannen als Metricool gekoppeld is; anders blijft 'ie in de
+        // wachtrij (met voorrang) voor handmatige plaatsing vanuit de backoffice.
+        if (metricoolEnabled()) {
+          const r = await scheduleInstagramPost({ tekst: post.tekst || listing.titel, fotoUrl: post.fotoUrl, publishAt });
+          if (r.ok) updateSocialPost(post.id, { status: "ingepland", metricoolId: r.id, ingeplandVoor: publishAt });
+          else updateSocialPost(post.id, { notitie: `Metricool: ${r.error || "inplannen mislukt"}` });
+        }
       }
-      // "Social spotlight": geen wijziging aan de advertentie, wordt handmatig gepost.
     }
     if (owner && listing) {
       const updated = getPayment(payment.id)!;

@@ -2,8 +2,9 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
+import { PARQIO_OWNER, PARQIO_LISTINGS } from "./parqio-listings";
  
 // ------------------------------------------------------------------
 // Persistente datalaag voor de MVP — schrijft naar ./data/db.json.
@@ -25,6 +26,7 @@ interface DB {
   pageviews: Pageview[];
   postcodegeo: PostcodeGeo[];
   nieuwsbrief: NieuwsbriefLid[];
+  socialPosts: SocialPost[];
   laatsteNieuwsbriefSlug?: string;
   laatsteMaandrapportMaand?: string; // "yyyy-mm" van de laatst verstuurde ronde
   resetTokens?: { token: string; userId: string; expires: number }[];
@@ -52,7 +54,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], socialPosts: [], seq: 100 };
 }
  
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -129,6 +131,49 @@ function ensureLmData(db: DB): boolean {
   return changed;
 }
  
+// Zorgt dat het Parqio-account en het Parqio-aanbod aanwezig zijn.
+// Idempotent (op id), spiegelt ensureLmData maar dan voor bron "parqio".
+function ensureParqioData(db: DB): boolean {
+  let changed = false;
+  if (!db.users.some((u) => u.id === PARQIO_OWNER.id)) {
+    db.users.push({
+      id: PARQIO_OWNER.id,
+      naam: PARQIO_OWNER.naam,
+      email: PARQIO_OWNER.email,
+      wachtwoordHash: bcrypt.hashSync(PARQIO_OWNER.wachtwoord, 10),
+      rol: "eigenaar",
+      type: "zakelijk",
+      bedrijfsnaam: PARQIO_OWNER.bedrijfsnaam,
+      aangemaakt: new Date().toISOString(),
+    });
+    changed = true;
+  }
+  // Verwijder oude Parqio-imports die niet meer in de set staan.
+  const validIds = new Set(PARQIO_LISTINGS.map((l) => l.id));
+  const voor = db.listings.length;
+  db.listings = db.listings.filter((l) => !(l.id.startsWith("pq-") && !validIds.has(l.id)));
+  if (db.listings.length !== voor) changed = true;
+
+  for (const l of PARQIO_LISTINGS) {
+    const bestaand = db.listings.find((x) => x.id === l.id);
+    if (!bestaand) {
+      db.listings.push({ ...l, ownerId: PARQIO_OWNER.id, source: "parqio", aangemaakt: new Date().toISOString() });
+      changed = true;
+    } else {
+      const before = JSON.stringify(bestaand);
+      Object.assign(bestaand, l, {
+        ownerId: PARQIO_OWNER.id,
+        source: "parqio",
+        aangemaakt: bestaand.aangemaakt,
+        status: bestaand.status,
+        uitgelicht: bestaand.uitgelicht,
+      });
+      if (JSON.stringify(bestaand) !== before) changed = true;
+    }
+  }
+  return changed;
+}
+
 function load(): DB {
   if (cache) return cache;
   ensureDir();
@@ -152,9 +197,11 @@ function load(): DB {
     if (!l.source) { l.source = l.id.startsWith("lm-") ? "luyten" : "eigen"; migrated = true; }
   }
   if (!Array.isArray(cache.nieuwsbrief)) { cache.nieuwsbrief = []; migrated = true; }
+  if (!Array.isArray(cache.socialPosts)) { cache.socialPosts = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
-  if (fresh || removed || added || migrated) save();
+  const addedPq = ensureParqioData(cache);
+  if (fresh || removed || added || addedPq || migrated) save();
   return cache;
 }
  
@@ -419,6 +466,39 @@ export function updatePayment(id: string, patch: Partial<Payment>): Payment | un
 }
  
 // ---------- Emails ----------
+// ---- Social posts (Instagram-wachtrij, voorrang voor betaalde spotlights) ----
+export function getSocialPosts(): SocialPost[] {
+  const db = load();
+  // Voorrang eerst, daarna oudste eerst. 'geplaatst' zakt naar onderen.
+  const rang = (s: SocialPost) => (s.status === "geplaatst" ? 1 : 0);
+  return db.socialPosts.slice().sort((a, b) => {
+    if (rang(a) !== rang(b)) return rang(a) - rang(b);
+    if (a.prioriteit !== b.prioriteit) return a.prioriteit ? -1 : 1;
+    return a.aangemaakt.localeCompare(b.aangemaakt);
+  });
+}
+
+export function getSocialPost(id: string): SocialPost | undefined {
+  return load().socialPosts.find((s) => s.id === id);
+}
+
+export function addSocialPost(data: Omit<SocialPost, "id" | "aangemaakt">): SocialPost {
+  const db = load();
+  const post: SocialPost = { ...data, id: nextId("sp"), aangemaakt: new Date().toISOString() };
+  db.socialPosts.push(post);
+  save();
+  return post;
+}
+
+export function updateSocialPost(id: string, patch: Partial<SocialPost>): SocialPost | undefined {
+  const db = load();
+  const post = db.socialPosts.find((s) => s.id === id);
+  if (!post) return undefined;
+  Object.assign(post, patch);
+  save();
+  return post;
+}
+
 export function getEmails(): EmailRecord[] {
   return load().emails;
 }
