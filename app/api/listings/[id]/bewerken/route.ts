@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getListing, updateListing } from "@/lib/db";
 import { Doel } from "@/lib/types";
+import { handhaafHuisregels } from "@/lib/huisregels";
  
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -36,7 +37,24 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (typeof b.openhuisTot === "string") patch.openhuisTot = b.openhuisTot.slice(0, 5);
   if (typeof b.omschrijving === "string") patch.omschrijving = b.omschrijving.slice(0, 4000);
   if (Array.isArray(b.fotos)) patch.fotos = b.fotos.filter((f: any) => typeof f === "string").slice(0, 20);
- 
+
+  // Huisregels handhaven op de (mogelijk gewijzigde) titel/omschrijving.
+  if (patch.titel !== undefined || patch.omschrijving !== undefined) {
+    const check = await handhaafHuisregels({
+      titel: patch.titel ?? listing.titel,
+      omschrijving: patch.omschrijving ?? listing.omschrijving,
+    });
+    if (!check.ok) {
+      return NextResponse.json(
+        {
+          error: "De aangepaste tekst voldoet niet aan de huisregels:\n• " + check.problemen.join("\n• "),
+          huisregels: check.problemen,
+        },
+        { status: 422 }
+      );
+    }
+  }
+
   const updated = updateListing(params.id, patch);
   return NextResponse.json({ ok: true, id: updated?.id });
 }
