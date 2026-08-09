@@ -461,6 +461,7 @@ export async function sendEmail(opts: {
   onderwerp: string;
   soort: EmailRecord["soort"];
   html: string;
+  attachments?: { filename: string; content: string; contentType?: string }[]; // content = base64
 }): Promise<EmailRecord> {
   const smtpHost = process.env.SMTP_HOST;
   const resendKey = process.env.RESEND_API_KEY;
@@ -476,7 +477,10 @@ export async function sendEmail(opts: {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from, to: opts.aan, subject: opts.onderwerp, html: opts.html }),
+        body: JSON.stringify({
+          from, to: opts.aan, subject: opts.onderwerp, html: opts.html,
+          ...(opts.attachments?.length ? { attachments: opts.attachments.map((a) => ({ filename: a.filename, content: a.content })) } : {}),
+        }),
         signal: ctrl.signal,
       });
       clearTimeout(timer);
@@ -505,6 +509,7 @@ export async function sendEmail(opts: {
         to: opts.aan,
         subject: opts.onderwerp,
         html: opts.html,
+        attachments: opts.attachments?.map((a) => ({ filename: a.filename, content: Buffer.from(a.content, "base64"), contentType: a.contentType })),
       });
       via = "smtp";
     } catch (e) {
