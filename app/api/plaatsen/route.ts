@@ -5,6 +5,7 @@ import { addListing, addPayment, updatePayment, getListings, getListingsByOwner 
 import { prijsMetKorting } from "@/lib/money";
 import { Doel, Pakket } from "@/lib/types";
 import { mollieEnabled, createMolliePayment } from "@/lib/mollie";
+import { handhaafHuisregels } from "@/lib/huisregels";
 
 function baseUrl(req: Request): string {
   return process.env.NEXTAUTH_URL || new URL(req.url).origin;
@@ -20,9 +21,24 @@ export async function POST(req: Request) {
   const b = await req.json();
   const pakket = (["Basis", "Plus", "Premium"].includes(b.pakket) ? b.pakket : "Basis") as Pakket;
 
+  const titel = String(b.titel || `${b.type} in ${b.provincie}`);
+  const omschrijving = String(b.omschrijving || "");
+
+  // Huisregels automatisch handhaven vóór plaatsing.
+  const check = await handhaafHuisregels({ titel, omschrijving });
+  if (!check.ok) {
+    return NextResponse.json(
+      {
+        error: "Je advertentie voldoet nog niet aan de huisregels:\n• " + check.problemen.join("\n• "),
+        huisregels: check.problemen,
+      },
+      { status: 422 }
+    );
+  }
+
   const listing = addListing({
     ownerId: userId,
-    titel: String(b.titel || `${b.type} in ${b.provincie}`),
+    titel,
     type: String(b.type || "Chalet"),
     doel: (b.doel === "huur" ? "huur" : "koop") as Doel,
     provincie: String(b.provincie || "Nederland"),
@@ -33,7 +49,7 @@ export async function POST(req: Request) {
     prijsSuffix: b.prijsSuffix ? String(b.prijsSuffix).slice(0, 24) : undefined,
     grond: b.grond ? String(b.grond).slice(0, 60) : undefined,
     videoUrl: b.videoUrl ? String(b.videoUrl).slice(0, 300) : undefined,
-    omschrijving: String(b.omschrijving || ""),
+    omschrijving,
     kleur: getListings().length % 6,
     pakket,
     status: "wacht_op_betaling",
