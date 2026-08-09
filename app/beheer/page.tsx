@@ -4,14 +4,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
   getUsers, getListings, getLeads, getPayments, getEmails, getUser, getListing, getEnquetes, getAllReviews,
-  partnerklikTotalen, getPartnerkliks, analyticsSamenvatting, getNieuwsbriefLeden,
+  partnerklikTotalen, getPartnerkliks, analyticsSamenvatting, getNieuwsbriefLeden, getSocialPosts,
 } from "@/lib/db";
 import { euro, euroCents } from "@/lib/money";
+import { metricoolEnabled } from "@/lib/metricool";
 import { ReviewModeratie } from "@/components/ReviewModeratie";
 import { NieuwsbriefVerstuur } from "@/components/NieuwsbriefVerstuur";
 import { FeedImportKnop } from "@/components/FeedImportKnop";
 import { MakelaarFactuurKnop } from "@/components/MakelaarFactuurKnop";
 import { BetalingStatusKnop } from "@/components/BetalingStatusKnop";
+import { SocialWachtrij } from "@/components/SocialWachtrij";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +23,7 @@ const TABS = [
   { key: "profielen", label: "Profielen" },
   { key: "advertenties", label: "Advertenties" },
   { key: "betalingen", label: "Betalingen" },
+  { key: "social", label: "Social" },
   { key: "leads", label: "Leads" },
   { key: "mailbox", label: "Mailbox" },
   { key: "enquetes", label: "Enquêtes" },
@@ -226,6 +229,23 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
             </tr>
           ))}
         </Table>
+      )}
+
+      {tab === "social" && (
+        <SocialWachtrij
+          metricool={metricoolEnabled()}
+          posts={getSocialPosts().map((s) => ({
+            id: s.id,
+            titel: getListing(s.listingId)?.titel ?? "—",
+            status: s.status,
+            prioriteit: s.prioriteit,
+            bron: s.bron,
+            tekst: s.tekst,
+            ingeplandVoor: s.ingeplandVoor,
+            notitie: s.notitie,
+            aangemaakt: s.aangemaakt,
+          }))}
+        />
       )}
 
       {tab === "leads" && (
