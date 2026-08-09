@@ -23,7 +23,7 @@ export default async function BetalingPage({ params }: { params: { id: string } 
 
   const listing = getListing(payment.listingId);
   const isOpvaller = payment.soort === "opvaller";
-  const isFactuur = payment.soort === "makelaar-factuur";
+  const isFactuur = payment.soort === "makelaar-factuur" || payment.soort === "verlenging";
   const waarvoor = payment.omschrijving || "Advertentie op Mooihuus";
 
   if (payment.status === "paid") {
