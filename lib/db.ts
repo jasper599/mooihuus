@@ -4,7 +4,6 @@ import path from "path";
 import bcrypt from "bcryptjs";
 import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
-import { PARQIO_OWNER, PARQIO_LISTINGS } from "./parqio-listings";
  
 // ------------------------------------------------------------------
 // Persistente datalaag voor de MVP — schrijft naar ./data/db.json.
@@ -131,49 +130,6 @@ function ensureLmData(db: DB): boolean {
   return changed;
 }
  
-// Zorgt dat het Parqio-account en het Parqio-aanbod aanwezig zijn.
-// Idempotent (op id), spiegelt ensureLmData maar dan voor bron "parqio".
-function ensureParqioData(db: DB): boolean {
-  let changed = false;
-  if (!db.users.some((u) => u.id === PARQIO_OWNER.id)) {
-    db.users.push({
-      id: PARQIO_OWNER.id,
-      naam: PARQIO_OWNER.naam,
-      email: PARQIO_OWNER.email,
-      wachtwoordHash: bcrypt.hashSync(PARQIO_OWNER.wachtwoord, 10),
-      rol: "eigenaar",
-      type: "zakelijk",
-      bedrijfsnaam: PARQIO_OWNER.bedrijfsnaam,
-      aangemaakt: new Date().toISOString(),
-    });
-    changed = true;
-  }
-  // Verwijder oude Parqio-imports die niet meer in de set staan.
-  const validIds = new Set(PARQIO_LISTINGS.map((l) => l.id));
-  const voor = db.listings.length;
-  db.listings = db.listings.filter((l) => !(l.id.startsWith("pq-") && !validIds.has(l.id)));
-  if (db.listings.length !== voor) changed = true;
-
-  for (const l of PARQIO_LISTINGS) {
-    const bestaand = db.listings.find((x) => x.id === l.id);
-    if (!bestaand) {
-      db.listings.push({ ...l, ownerId: PARQIO_OWNER.id, source: "parqio", aangemaakt: new Date().toISOString() });
-      changed = true;
-    } else {
-      const before = JSON.stringify(bestaand);
-      Object.assign(bestaand, l, {
-        ownerId: PARQIO_OWNER.id,
-        source: "parqio",
-        aangemaakt: bestaand.aangemaakt,
-        status: bestaand.status,
-        uitgelicht: bestaand.uitgelicht,
-      });
-      if (JSON.stringify(bestaand) !== before) changed = true;
-    }
-  }
-  return changed;
-}
-
 function load(): DB {
   if (cache) return cache;
   ensureDir();
@@ -200,8 +156,7 @@ function load(): DB {
   if (!Array.isArray(cache.socialPosts)) { cache.socialPosts = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
-  const addedPq = ensureParqioData(cache);
-  if (fresh || removed || added || addedPq || migrated) save();
+  if (fresh || removed || added || migrated) save();
   return cache;
 }
  
