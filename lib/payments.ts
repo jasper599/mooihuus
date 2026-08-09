@@ -1,7 +1,8 @@
 import { getPayment, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning, addSocialPost, updateSocialPost } from "./db";
-import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, sendEmail } from "./email";
+import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, renderVerlengBevestiging, sendEmail } from "./email";
 import { COMPANY } from "./company";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
+import { activeerVerlenging } from "./verlenging";
 
 // Markeer een betaling als betaald. Idempotent — dubbel aanroepen (bijv.
 // webhook + redirect) doet niets extra's.
@@ -23,6 +24,20 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
       const updated = getPayment(payment.id)!;
       const mail = renderFactuurBetaald(updated, kantoor.bedrijfsnaam || kantoor.naam);
       await sendEmail({ aan: kantoor.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
+      await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie: ${mail.onderwerp}`, soort: "factuur", html: mail.html });
+    }
+    return true;
+  }
+
+  // Verlenging: de woningen weer een jaar online zetten en bevestigen.
+  if (payment.soort === "verlenging") {
+    const ids = payment.listingIds || (payment.listingId ? [payment.listingId] : []);
+    activeerVerlenging(ids, new Date(nu));
+    const klant = getUser(payment.userId);
+    if (klant) {
+      const updated = getPayment(payment.id)!;
+      const mail = renderVerlengBevestiging(updated, klant.bedrijfsnaam || klant.naam, ids.length);
+      await sendEmail({ aan: klant.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
       await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie: ${mail.onderwerp}`, soort: "factuur", html: mail.html });
     }
     return true;
@@ -70,8 +85,8 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
     return true;
   }
 
-  // Advertentie: zet live.
-  if (listing) updateListing(listing.id, { status: "live" });
+  // Advertentie: zet live en start het advertentiejaar (voor de verlenging).
+  if (listing) updateListing(listing.id, { status: "live", periodeStart: nu });
 
   // Woning-alerts: mail zoekers met een passende zoekopdracht.
   if (listing) {

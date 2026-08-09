@@ -62,6 +62,10 @@ export interface Listing {
   grond?: string; // bijv. "Eigen grond" of "Erfpacht"
   kosten?: string; // bijv. "€ 1.250 servicekosten p/j"
   energielabel?: string;
+  // Looptijd/verlenging (advertentie is 1 jaar online).
+  periodeStart?: string;        // ISO: start van het huidige betaalde jaar
+  verlengHerinnerd?: string;    // ISO: wanneer de 30-dagen-herinnering is verstuurd (per periode)
+  verlengVerlopen?: string;     // ISO: wanneer de 'verlopen + offline'-mail is verstuurd
   aangemaakt: string;
 }
  
@@ -95,8 +99,9 @@ export interface Payment {
   factuurnummer: string;
   methode: string;
   kortingPct?: number;
-  soort?: "advertentie" | "opvaller" | "makelaar-factuur";
+  soort?: "advertentie" | "opvaller" | "makelaar-factuur" | "verlenging";
   aantalObjecten?: number; // bij een makelaar-factuur: aantal gefactureerde objecten
+  listingIds?: string[];   // bij een verlenging: welke woningen deze betaling verlengt
   omschrijving?: string;
   mollieId?: string;
   aangemaakt: string;

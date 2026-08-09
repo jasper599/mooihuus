@@ -352,6 +352,69 @@ export function renderFactuurBetaald(p: Payment, kantoor: string): { onderwerp: 
   return { onderwerp: `Factuur ${p.factuurnummer} — betaald`, html: layout("Factuur betaald", inner) };
 }
 
+// Verlengmail — 30 dagen vóór afloop van het advertentiejaar.
+export function renderVerlengHerinnering(d: {
+  naam: string;
+  woningen: { titel: string; verlooptOp: Date }[];
+  bedrag: number;
+  betaalUrl: string;
+  vervalDatum: Date;
+}): { onderwerp: string; html: string } {
+  const datum = d.vervalDatum.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+  const rows = d.woningen
+    .map(
+      (w) => `<tr><td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;">${w.titel}</td>
+      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;text-align:right;color:${BRAND.grijs};">verloopt ${w.verlooptOp.toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" })}</td></tr>`
+    )
+    .join("");
+  const meer = d.woningen.length > 1;
+  const inner = `
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 6px;">Je advertentie${meer ? "s" : ""} loop${meer ? "t" : "t"} bijna af</h1>
+    <p style="line-height:1.6;">Beste ${d.naam},</p>
+    <p style="line-height:1.6;">Je advertentie${meer ? "s" : ""} op Mooihuus staat al bijna een jaar online en loopt af rond <strong>${datum}</strong>. Wil je dat je woning${meer ? "en" : ""} zichtbaar blijf${meer ? "t" : "t"} voor kopers? Verleng dan eenvoudig met één klik voor nog een heel jaar.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:16px 0;">
+      ${rows}
+      <tr><td style="padding:12px 0 0;font-weight:bold;font-size:15px;">Verlengen (1 jaar)</td>
+          <td style="padding:12px 0 0;font-weight:bold;font-size:15px;text-align:right;color:${BRAND.oranjeDk};">${euroCents(d.bedrag)}</td></tr>
+    </table>
+    <p style="margin:20px 0 8px;">${btn(d.betaalUrl, "Verleng nu met iDEAL")}</p>
+    <p style="line-height:1.5;color:${BRAND.grijs};font-size:12px;word-break:break-all;">Werkt de knop niet? Verleng via: ${d.betaalUrl}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;margin-top:14px;">Het bedrag is gelijk aan wat je destijds betaalde. Verleng je niet, dan gaat je advertentie op de einddatum offline — je kunt daarna altijd opnieuw plaatsen.</p>`;
+  return { onderwerp: `Je advertentie op Mooihuus loopt bijna af — verleng vóór ${datum}`, html: layout("Verlengen", inner) };
+}
+
+// Verlengmail — op de einddatum, advertentie is offline gegaan.
+export function renderVerlengVerlopen(d: {
+  naam: string;
+  woningen: { titel: string }[];
+  bedrag: number;
+  betaalUrl: string;
+}): { onderwerp: string; html: string } {
+  const meer = d.woningen.length > 1;
+  const lijst = d.woningen.map((w) => `<li style="margin-bottom:4px;">${w.titel}</li>`).join("");
+  const inner = `
+    <span style="display:inline-block;background:${BRAND.oranjeDk};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Offline</span>
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Je advertentie${meer ? "s" : ""} staat nu offline</h1>
+    <p style="line-height:1.6;">Beste ${d.naam},</p>
+    <p style="line-height:1.6;">Het advertentiejaar is verlopen, dus onderstaande woning${meer ? "en zijn" : " is"} tijdelijk offline gehaald:</p>
+    <ul style="line-height:1.6;font-size:14px;padding-left:18px;">${lijst}</ul>
+    <p style="line-height:1.6;">Wil je weer zichtbaar zijn voor kopers? Verleng dan met één klik voor nog een jaar — je advertentie${meer ? "s gaan" : " gaat"} dan direct weer live.</p>
+    <p style="margin:20px 0 8px;">${btn(d.betaalUrl, `Weer online — verleng voor ${euroCents(d.bedrag)}`)}</p>
+    <p style="line-height:1.5;color:${BRAND.grijs};font-size:12px;word-break:break-all;">Werkt de knop niet? Verleng via: ${d.betaalUrl}</p>`;
+  return { onderwerp: `Je advertentie op Mooihuus is offline — verleng om weer live te gaan`, html: layout("Advertentie offline", inner) };
+}
+
+// Bevestiging ná een geslaagde verlenging.
+export function renderVerlengBevestiging(p: Payment, naam: string, aantal: number): { onderwerp: string; html: string } {
+  const inner = `
+    <span style="display:inline-block;background:${BRAND.bosgroen};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Verlengd ✓</span>
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Bedankt — je staat weer een jaar online</h1>
+    <p style="line-height:1.6;">Beste ${naam},</p>
+    <p style="line-height:1.6;">Je verlenging van <strong>${aantal} woning${aantal > 1 ? "en" : ""}</strong> is gelukt. ${aantal > 1 ? "Ze zijn" : "Die is"} weer live op Mooihuus voor nog een heel jaar. Factuurnr. <strong>${p.factuurnummer}</strong>, totaal ${euroCents(p.bedrag)} (incl. btw).</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bewaar deze mail als betaalbewijs. Vragen? Mail info@mooihuus.nl.</p>`;
+  return { onderwerp: `Verlenging gelukt — factuur ${p.factuurnummer}`, html: layout("Verlenging gelukt", inner) };
+}
+
 export function renderNieuwsbrief(
   post: { titel: string; intro: string; categorie: string; emoji: string; slug: string },
   opts: { afmeldUrl?: string; koop?: Listing[]; huur?: Listing[] } = {}
