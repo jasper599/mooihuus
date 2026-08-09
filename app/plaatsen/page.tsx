@@ -63,8 +63,11 @@ export default function Plaatsen() {
     setBusy(false);
   }
 
+  const [fout, setFout] = useState("");
+
   async function publiceer() {
     setBusy(true);
+    setFout("");
     const res = await fetch("/api/plaatsen", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -91,6 +94,11 @@ export default function Plaatsen() {
       return;
     }
     const data = await res.json();
+    if (!res.ok || data.error || !data.redirect) {
+      setFout(data.error || "Er ging iets mis bij het plaatsen. Probeer het opnieuw.");
+      setBusy(false);
+      return;
+    }
     if (data.extern) {
       window.location.href = data.redirect;
     } else {
@@ -276,6 +284,11 @@ export default function Plaatsen() {
           <div className="bg-[#EAF4EC] border border-[#CADFCF] rounded-xl p-3 mt-3 text-sm text-bosgroen-dk">
             🏷️ <strong>Volumekorting:</strong> vanaf 5 objecten krijg je automatisch 15% korting, vanaf 10 objecten 25% — handig voor organisaties en parken.
           </div>
+          {fout && (
+            <div className="bg-[#FBE9E7] border border-[#E5B4AB] text-[#8A2E22] rounded-xl p-3 mt-3 text-sm whitespace-pre-line">
+              {fout}
+            </div>
+          )}
           <div className="flex justify-between items-center mt-4">
             <button className="btn btn-ghost" onClick={() => setStep(3)}>← Terug</button>
             <button className="btn" onClick={publiceer} disabled={busy}>
@@ -283,7 +296,8 @@ export default function Plaatsen() {
             </button>
           </div>
           <p className="text-xs text-grijs mt-2">
-            Betaling is in de MVP gesimuleerd. Integratiepunt: Mollie (iDEAL) — zie README.
+            Door je huus te plaatsen ga je akkoord met onze{" "}
+            <a href="/voorwaarden" className="underline text-bosgroen">algemene voorwaarden en huisregels</a>.
           </p>
         </div>
       )}
