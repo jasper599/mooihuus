@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { beschikbareModellen, kiesModel } from "@/lib/anthropic";
+import { vraagAnthropic } from "@/lib/anthropic";
 
 export const runtime = "nodejs";
 
@@ -72,10 +72,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ vertaald: text, zonderKey: true });
   }
 
-  const modellen = await beschikbareModellen(key, Date.now());
-  const model = process.env.VERTAAL_MODEL || kiesModel(modellen, "sonnet");
-  if (!model) return NextResponse.json({ vertaald: text, fout: true });
-
   const doel = taal as "en" | "de";
   const system =
     `You are a professional real-estate translator for a Dutch marketplace of holiday homes ` +
@@ -90,29 +86,17 @@ export async function POST(req: Request) {
     `- Return ONLY the translation. No preamble, no quotes, no notes.` +
     glossaryHint(doel, text);
 
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 20000);
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model,
-        max_tokens: 1500,
-        temperature: 0.2,
-        system,
-        messages: [{ role: "user", content: text }],
-      }),
-    }).finally(() => clearTimeout(timer));
-    const data = await res.json();
-    let vertaald = data?.content?.[0]?.text;
-    if (typeof vertaald === "string" && vertaald.trim()) {
-      vertaald = vertaald.trim().replace(/^["'`]|["'`]$/g, "");
-      return NextResponse.json({ vertaald });
-    }
-    return NextResponse.json({ vertaald: text, fout: true });
-  } catch {
-    return NextResponse.json({ vertaald: text, fout: true });
+  const { text: vertaald, fout } = await vraagAnthropic(key, {
+    system,
+    messages: [{ role: "user", content: text }],
+    max_tokens: 1500,
+    temperature: 0.2,
+    voorkeur: "sonnet",
+    envModel: process.env.VERTAAL_MODEL,
+    timeoutMs: 20000,
+  });
+  if (vertaald && vertaald.trim()) {
+    return NextResponse.json({ vertaald: vertaald.trim().replace(/^["'`]|["'`]$/g, "") });
   }
+  return NextResponse.json({ vertaald: text, fout: true, reden: fout });
 }
