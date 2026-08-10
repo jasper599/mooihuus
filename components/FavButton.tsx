@@ -1,8 +1,10 @@
 "use client";
 
 import { useFavorites } from "./useFavorites";
+import { useT } from "./I18nProvider";
 
 export function FavButton({ id, variant = "overlay" }: { id: string; variant?: "overlay" | "inline" }) {
+  const t = useT();
   const { isFav, toggle } = useFavorites();
   const actief = isFav(id);
 
@@ -20,7 +22,7 @@ export function FavButton({ id, variant = "overlay" }: { id: string; variant?: "
         aria-pressed={actief}
         className={`btn text-sm ${actief ? "btn-green" : "btn-ghost"}`}
       >
-        {actief ? "❤️ Opgeslagen" : "🤍 Bewaar deze woning"}
+        {actief ? `❤️ ${t("fav.opgeslagen")}` : `🤍 ${t("fav.bewaar")}`}
       </button>
     );
   }

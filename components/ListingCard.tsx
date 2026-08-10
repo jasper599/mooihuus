@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Listing } from "@/lib/types";
 import { gradient, euro, prijsSuffix, grondInfo, openhuisInfo } from "@/lib/format";
-import { Locale, t, localeHref } from "@/lib/i18n";
+import { Locale, t, localeHref, vertaalType } from "@/lib/i18n";
 import { FavButton } from "./FavButton";
 
 export function ListingCard({ listing, locale = "nl" }: { listing: Listing; locale?: Locale }) {
@@ -22,7 +22,7 @@ export function ListingCard({ listing, locale = "nl" }: { listing: Listing; loca
         </span>
         {listing.uitgelicht && (
           <span className="absolute top-10 left-2.5 bg-oranje text-white font-display font-semibold text-[0.68rem] px-2.5 py-0.5 rounded-full">
-            ✨ Uitgelicht
+            ✨ {t(locale, "card.uitgelicht")}
           </span>
         )}
         <FavButton id={listing.id} />
@@ -32,19 +32,24 @@ export function ListingCard({ listing, locale = "nl" }: { listing: Listing; loca
               grondInfo(listing.grond)!.eigen ? "bg-bosgroen-dk" : "bg-inkt/80"
             }`}
           >
-            {grondInfo(listing.grond)!.eigen ? "🌳 Eigen grond" : `🔑 ${grondInfo(listing.grond)!.label}`}
+            {grondInfo(listing.grond)!.eigen ? `🌳 ${t(locale, "card.eigenGrond")}` : `🔑 ${grondInfo(listing.grond)!.label}`}
           </span>
         )}
         {(() => {
           const oh = openhuisInfo(listing);
           if (!oh || !oh.aankomend) return null;
-          return <span className="absolute bottom-2.5 right-2.5 bg-oranje text-white font-display font-semibold text-[0.66rem] px-2.5 py-0.5 rounded-full">🏠 Open huis</span>;
+          return <span className="absolute bottom-2.5 right-2.5 bg-oranje text-white font-display font-semibold text-[0.66rem] px-2.5 py-0.5 rounded-full">🏠 {t(locale, "card.openHuis")}</span>;
         })()}
       </div>
       <div className="p-3.5">
         <div className="font-display font-bold text-inkt">{listing.titel}</div>
         <div className="text-sm text-grijs">
-          {listing.type} · {listing.personen} {t(locale, "listing.persons")} · {listing.m2} m² · {listing.provincie}
+          {[
+            vertaalType(locale, listing.type),
+            listing.personen ? `${listing.personen} ${t(locale, "listing.persons")}` : null,
+            listing.m2 ? `${listing.m2} m²` : null,
+            listing.provincie,
+          ].filter(Boolean).join(" · ")}
         </div>
         <div className="font-display font-extrabold text-oranje-dk mt-1.5">
           {euro(listing.prijs)}
