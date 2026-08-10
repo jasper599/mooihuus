@@ -24,13 +24,49 @@ function veld(tekst: string, label: string): string {
   return m ? m[1].trim() : "";
 }
 
-export async function genereerBlogpost(
+const MODELLEN = [
+  process.env.BLOG_MODEL || process.env.CHAT_MODEL || "claude-3-5-sonnet-latest",
+  "claude-3-5-sonnet-20241022",
+  "claude-3-5-haiku-latest",
+];
+
+async function roepModelAan(model: string, key: string, system: string): Promise<{ text?: string; fout?: string }> {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 45000);
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model,
+        max_tokens: 2600,
+        temperature: 0.7,
+        system,
+        messages: [{ role: "user", content: "Schrijf het blogartikel van deze week." }],
+      }),
+    }).finally(() => clearTimeout(timer));
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const detail = data?.error?.message || JSON.stringify(data).slice(0, 200);
+      return { fout: `${model}: HTTP ${res.status} — ${detail}` };
+    }
+    const text = data?.content?.[0]?.text;
+    if (!text) return { fout: `${model}: geen tekst in antwoord — ${JSON.stringify(data).slice(0, 200)}` };
+    return { text };
+  } catch (e: any) {
+    return { fout: `${model}: ${e?.name === "AbortError" ? "time-out" : e?.message || "verbindingsfout"}` };
+  }
+}
+
+// Kern: probeert de modellen op volgorde en geeft het artikel of een reden terug.
+export async function genereerBlogpostMetReden(
   bestaandeTitels: string[],
   kleurIndex: number,
   nu: Date = new Date()
-): Promise<BlogPost | null> {
+): Promise<{ post: BlogPost | null; fout?: string }> {
   const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
+  if (!key) return { post: null, fout: "geen ANTHROPIC_API_KEY ingesteld" };
 
   const system =
     `Je bent de contentredacteur van Mooihuus.nl, hét onafhankelijke platform voor recreatiewoningen in Nederland. ` +
@@ -51,31 +87,25 @@ export async function genereerBlogpost(
     `<het volledige artikel in Markdown, met een paar "## " kopjes en waar passend een opsomming. Meerdere alinea's mag.>\n\n` +
     `Zet niets vóór TITEL en gebruik de labels exact zoals hierboven.`;
 
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 45000);
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: process.env.BLOG_MODEL || process.env.CHAT_MODEL || "claude-3-5-sonnet-latest",
-        max_tokens: 2600,
-        temperature: 0.7,
-        system,
-        messages: [{ role: "user", content: "Schrijf het blogartikel van deze week." }],
-      }),
-    }).finally(() => clearTimeout(timer));
-    const data = await res.json();
-    const raw: string = data?.content?.[0]?.text || "";
-    if (!raw.trim()) return null;
-
+  const foutmeldingen: string[] = [];
+  const gezien = new Set<string>();
+  for (const model of MODELLEN) {
+    if (gezien.has(model)) continue;
+    gezien.add(model);
+    const r = await roepModelAan(model, key, system);
+    if (r.fout) {
+      foutmeldingen.push(r.fout);
+      continue;
+    }
+    const raw = r.text || "";
     const titel = veld(raw, "TITEL");
     const bodyMatch = raw.match(/^\s*BODY\s*:\s*\n?([\s\S]*)$/im);
     const body = bodyMatch ? bodyMatch[1].trim() : "";
-    if (!titel || !body) return null;
-
-    return {
+    if (!titel || !body) {
+      foutmeldingen.push(`${model}: TITEL/BODY niet gevonden — begin: ${raw.slice(0, 120)}`);
+      continue;
+    }
+    const post: BlogPost = {
       slug: slugify(titel),
       titel: titel.slice(0, 140),
       categorie: (veld(raw, "CATEGORIE") || "Kennis").slice(0, 40),
@@ -85,7 +115,16 @@ export async function genereerBlogpost(
       intro: veld(raw, "INTRO").slice(0, 400),
       body,
     };
-  } catch {
-    return null;
+    return { post };
   }
+  return { post: null, fout: foutmeldingen.join(" | ") };
+}
+
+// Bestaande signatuur — gebruikt door de scheduler.
+export async function genereerBlogpost(
+  bestaandeTitels: string[],
+  kleurIndex: number,
+  nu: Date = new Date()
+): Promise<BlogPost | null> {
+  return (await genereerBlogpostMetReden(bestaandeTitels, kleurIndex, nu)).post;
 }
