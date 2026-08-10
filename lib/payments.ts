@@ -2,6 +2,7 @@ import { getPayment, updatePayment, getListing, updateListing, getUser, zoekopdr
 import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, renderVerlengBevestiging, sendEmail } from "./email";
 import { COMPANY } from "./company";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
+import { genereerSocialCaption } from "./social-caption";
 import { activeerVerlenging } from "./verlenging";
 
 // Markeer een betaling als betaald. Idempotent — dubbel aanroepen (bijv.
@@ -57,6 +58,7 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
       } else if (id === "Social spotlight") {
         // Betaalde social-post → met VOORRANG in de Instagram-wachtrij.
         const publishAt = volgendeSlot(true, new Date());
+        const caption = await genereerSocialCaption(listing);
         const post = addSocialPost({
           listingId: listing.id,
           kanaal: "instagram",
@@ -64,7 +66,7 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
           status: "wachtrij",
           bron: "bestelling",
           paymentId: payment.id,
-          tekst: `${listing.titel} — nu te ${listing.doel === "huur" ? "huur" : "koop"} op Mooihuus.nl 🌲`,
+          tekst: caption,
           fotoUrl: listing.fotos?.[0],
         });
         // Direct inplannen als Metricool gekoppeld is; anders blijft 'ie in de
