@@ -44,3 +44,56 @@ export function modelKandidaten(modellen: string[], voorkeur: "sonnet" | "haiku"
   for (const m of modellen) lijst.push(m);
   return Array.from(new Set(lijst));
 }
+
+// Robuuste aanroep van de Messages-API: probeert de beschikbare modellen op
+// volgorde tot er één lukt. Geeft de tekst terug, of een reden bij falen. Zo
+// werken vertaling/chat/huisregels net zo betrouwbaar als de blog-generator.
+export async function vraagAnthropic(
+  key: string,
+  opts: {
+    system: string;
+    messages: { role: string; content: string }[];
+    max_tokens: number;
+    temperature?: number;
+    voorkeur: "sonnet" | "haiku";
+    envModel?: string;
+    timeoutMs?: number;
+    nuMs?: number;
+  }
+): Promise<{ text?: string; fout?: string; model?: string }> {
+  const nuMs = opts.nuMs ?? Date.now();
+  const modellen = await beschikbareModellen(key, nuMs);
+  const kandidaten = modelKandidaten(modellen, opts.voorkeur, opts.envModel);
+  if (!kandidaten.length) return { fout: "geen modellen beschikbaar via /v1/models" };
+
+  const fouten: string[] = [];
+  for (const model of kandidaten) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 30000);
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model,
+          max_tokens: opts.max_tokens,
+          temperature: opts.temperature ?? 0.5,
+          system: opts.system,
+          messages: opts.messages,
+        }),
+      }).finally(() => clearTimeout(timer));
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        fouten.push(`${model}: HTTP ${res.status} ${(data?.error?.message || "").slice(0, 120)}`);
+        continue;
+      }
+      const text = data?.content?.[0]?.text;
+      if (typeof text === "string" && text.trim()) return { text, model };
+      fouten.push(`${model}: lege respons`);
+    } catch (e: any) {
+      fouten.push(`${model}: ${e?.name === "AbortError" ? "time-out" : e?.message || "verbindingsfout"}`);
+    }
+  }
+  return { fout: fouten.join(" | ") };
+}

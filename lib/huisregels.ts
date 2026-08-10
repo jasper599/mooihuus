@@ -9,7 +9,7 @@
 //
 // De regels sluiten aan op de algemene voorwaarden (sectie 4, huisregels).
 
-import { beschikbareModellen, kiesModel } from "./anthropic";
+import { vraagAnthropic } from "./anthropic";
 
 export type HuisregelResultaat = {
   ok: boolean;              // true = geen blokkerende overtredingen
@@ -104,9 +104,6 @@ function scan(tekst: string): HuisregelResultaat {
 async function scanAI(tekst: string): Promise<{ problemen: string[]; waarschuwingen: string[] }> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return { problemen: [], waarschuwingen: [] };
-  const modellen = await beschikbareModellen(key, Date.now());
-  const model = process.env.HUISREGELS_MODEL || kiesModel(modellen, "haiku");
-  if (!model) return { problemen: [], waarschuwingen: [] };
   const system =
     `Je bent de contentmoderator van Mooihuus, een platform voor recreatiewoningen. ` +
     `Beoordeel een advertentietekst tegen de huisregels en geef ALLEEN geldige JSON terug: ` +
@@ -118,23 +115,16 @@ async function scanAI(tekst: string): Promise<{ problemen: string[]; waarschuwin
     `of subtiele kantoorpromotie. Een prognose mét disclaimer is toegestaan (geen probleem, geen waarschuwing). ` +
     `Elke melding is één korte Nederlandse zin. Geen extra tekst buiten de JSON.`;
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model,
-        max_tokens: 400,
-        temperature: 0,
-        system,
-        messages: [{ role: "user", content: tekst.slice(0, 4000) }],
-      }),
-    }).finally(() => clearTimeout(timer));
-    const data = await res.json();
-    const raw = data?.content?.[0]?.text || "";
-    const m = raw.match(/\{[\s\S]*\}/);
+    const { text } = await vraagAnthropic(key, {
+      system,
+      messages: [{ role: "user", content: tekst.slice(0, 4000) }],
+      max_tokens: 400,
+      temperature: 0,
+      voorkeur: "haiku",
+      envModel: process.env.HUISREGELS_MODEL,
+      timeoutMs: 12000,
+    });
+    const m = (text || "").match(/\{[\s\S]*\}/);
     if (!m) return { problemen: [], waarschuwingen: [] };
     const parsed = JSON.parse(m[0]);
     const arr = (x: any) => (Array.isArray(x) ? x.filter((s) => typeof s === "string").slice(0, 8) : []);
