@@ -9,10 +9,15 @@ import fs from "fs";
 import path from "path";
 import { maakBackup } from "./backup";
 import { verwerkVerlopendeAdvertenties } from "./verlenging";
+import { getBlogPosts } from "./blog";
+import { addBlogPost } from "./db";
+import { genereerBlogpost } from "./blog-generator";
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const STAMP_FILE = path.join(DATA_DIR, "last-onderhoud.txt");
+const BLOG_STAMP = path.join(DATA_DIR, "last-blog.txt");
 const INTERVAL = 30 * 60 * 1000; // elke 30 minuten kijken of het al gedraaid is
+const WEEK = 7 * 24 * 60 * 60 * 1000;
 
 function vandaag(d = new Date()): string {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
@@ -35,6 +40,42 @@ function markeer(): void {
   }
 }
 
+// Wekelijkse blog: genereert één nieuw artikel als er ≥7 dagen zijn verstreken
+// sinds de laatste (of als er nog nooit een gegenereerd is).
+function blogNodig(nu: Date): boolean {
+  try {
+    if (!fs.existsSync(BLOG_STAMP)) return true;
+    const laatst = new Date(fs.readFileSync(BLOG_STAMP, "utf8").trim()).getTime();
+    return nu.getTime() - laatst >= WEEK;
+  } catch {
+    return true;
+  }
+}
+let bezigBlog = false;
+async function draaiBlog(nu: Date): Promise<void> {
+  if (bezigBlog || !blogNodig(nu)) return;
+  bezigBlog = true;
+  try {
+    await genereerEnBewaarBlog(nu);
+  } finally {
+    bezigBlog = false;
+  }
+}
+async function genereerEnBewaarBlog(nu: Date): Promise<void> {
+  const bestaand = getBlogPosts();
+  const titels = bestaand.map((p) => p.titel).slice(0, 40);
+  const post = await genereerBlogpost(titels, bestaand.length, nu);
+  if (post) {
+    addBlogPost(post);
+    try {
+      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+      fs.writeFileSync(BLOG_STAMP, nu.toISOString(), "utf8");
+    } catch {
+      /* niet fataal */
+    }
+  }
+}
+
 let bezig = false;
 async function draaiDagelijks(): Promise<void> {
   if (bezig || alGedraaidVandaag()) return;
@@ -42,18 +83,25 @@ async function draaiDagelijks(): Promise<void> {
   try {
     await maakBackup().catch(() => {});
     await verwerkVerlopendeAdvertenties().catch(() => {});
-    markeer(); // pas markeren als beide klaar zijn (crasht het eerder, dan retry volgende tick)
+    markeer(); // pas markeren als alles klaar is (crasht het eerder, dan retry volgende tick)
   } finally {
     bezig = false;
   }
+}
+
+// Eén tick: dagelijks onderhoud (back-up + verloop, 1×/dag) en de wekelijkse
+// blog (1×/week), elk met een eigen ritme.
+function tick(): void {
+  void draaiDagelijks();
+  void draaiBlog(new Date()).catch(() => {});
 }
 
 let gestart = false;
 export function startScheduler(): void {
   if (gestart) return;
   gestart = true;
-  // Korte vertraging na opstart, dan periodiek. De eerste run gebeurt dus vlak
-  // na deploy als er die dag nog niet is gedraaid.
-  setTimeout(() => { void draaiDagelijks(); }, 20000);
-  setInterval(() => { void draaiDagelijks(); }, INTERVAL);
+  // Korte vertraging na opstart, dan periodiek. De eerste blog wordt dus vlak
+  // na deploy gegenereerd als er die week nog geen is.
+  setTimeout(tick, 20000);
+  setInterval(tick, INTERVAL);
 }

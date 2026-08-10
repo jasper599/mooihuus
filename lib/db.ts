@@ -4,6 +4,7 @@ import path from "path";
 import bcrypt from "bcryptjs";
 import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
+import type { BlogPost } from "./blog";
  
 // ------------------------------------------------------------------
 // Persistente datalaag voor de MVP — schrijft naar ./data/db.json.
@@ -26,6 +27,7 @@ interface DB {
   postcodegeo: PostcodeGeo[];
   nieuwsbrief: NieuwsbriefLid[];
   socialPosts: SocialPost[];
+  blogPosts: BlogPost[];
   laatsteNieuwsbriefSlug?: string;
   laatsteMaandrapportMaand?: string; // "yyyy-mm" van de laatst verstuurde ronde
   resetTokens?: { token: string; userId: string; expires: number }[];
@@ -53,7 +55,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], socialPosts: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], socialPosts: [], blogPosts: [], seq: 100 };
 }
  
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -154,6 +156,7 @@ function load(): DB {
   }
   if (!Array.isArray(cache.nieuwsbrief)) { cache.nieuwsbrief = []; migrated = true; }
   if (!Array.isArray(cache.socialPosts)) { cache.socialPosts = []; migrated = true; }
+  if (!Array.isArray(cache.blogPosts)) { cache.blogPosts = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
   if (fresh || removed || added || migrated) save();
@@ -450,6 +453,20 @@ export function updateSocialPost(id: string, patch: Partial<SocialPost>): Social
   const post = db.socialPosts.find((s) => s.id === id);
   if (!post) return undefined;
   Object.assign(post, patch);
+  save();
+  return post;
+}
+
+// ---- Blogposts (automatisch gegenereerd, opgeslagen in de database) ----
+export function getExtraBlogPosts(): BlogPost[] {
+  return load().blogPosts;
+}
+
+export function addBlogPost(post: BlogPost): BlogPost {
+  const db = load();
+  const i = db.blogPosts.findIndex((p) => p.slug === post.slug);
+  if (i >= 0) db.blogPosts[i] = post;
+  else db.blogPosts.push(post);
   save();
   return post;
 }
