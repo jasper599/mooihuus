@@ -3,12 +3,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSocialPost, updateSocialPost, getListing } from "@/lib/db";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "@/lib/metricool";
+import { genereerSocialCaption } from "@/lib/social-caption";
 
 // Beheeracties op de social-wachtrij:
 //  - geplaatst    : markeer als handmatig geplaatst
 //  - wachtrij     : terug naar de wachtrij
 //  - inplannen    : (opnieuw) via Metricool inplannen
 //  - annuleren    : markeer als mislukt/geannuleerd
+//  - bewerken     : sla een aangepaste caption op
+//  - genereren    : laat de AI een nieuwe caption schrijven
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.rol !== "beheerder") {
@@ -31,6 +34,19 @@ export async function POST(req: Request) {
   if (actie === "annuleren") {
     const p = updateSocialPost(post.id, { status: "mislukt" });
     return NextResponse.json({ ok: true, status: p?.status });
+  }
+  if (actie === "bewerken") {
+    const tekst = String(b.tekst ?? "").trim();
+    if (!tekst) return NextResponse.json({ error: "Lege caption." }, { status: 400 });
+    const p = updateSocialPost(post.id, { tekst: tekst.slice(0, 2000) });
+    return NextResponse.json({ ok: true, tekst: p?.tekst });
+  }
+  if (actie === "genereren") {
+    const listing = getListing(post.listingId);
+    if (!listing) return NextResponse.json({ error: "Woning niet gevonden." }, { status: 404 });
+    const tekst = await genereerSocialCaption(listing);
+    const p = updateSocialPost(post.id, { tekst });
+    return NextResponse.json({ ok: true, tekst: p?.tekst });
   }
   if (actie === "inplannen") {
     if (!metricoolEnabled()) {
