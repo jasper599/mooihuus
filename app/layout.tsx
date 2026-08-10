@@ -91,13 +91,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Wordmark className="text-lg" />
                 <p className="mt-2 max-w-xl">{t(locale, "footer.tagline")}</p>
                 <div className="mt-4 max-w-md">
-                  <div className="font-display font-semibold text-bosgroen-dk mb-1">📬 Blijf op de hoogte</div>
-                  <p className="text-xs mb-2">Nieuwe woningen en handige tips in je inbox. Je kunt je altijd afmelden.</p>
+                  <div className="font-display font-semibold text-bosgroen-dk mb-1">📬 {t(locale, "footer.blijf")}</div>
+                  <p className="text-xs mb-2">{t(locale, "footer.blijfSub")}</p>
                   <NieuwsbriefForm />
                 </div>
                 <nav className="mt-4 flex gap-4 flex-wrap font-semibold text-bosgroen-dk">
-                  <Link href={localeHref(locale, "/te-koop")} className="hover:underline">Te koop per provincie</Link>
-                  <Link href={localeHref(locale, "/openhuizen")} className="hover:underline">Open huizen</Link>
+                  <Link href={localeHref(locale, "/te-koop")} className="hover:underline">{t(locale, "footer.teKoopProvincie")}</Link>
+                  <Link href={localeHref(locale, "/openhuizen")} className="hover:underline">{t(locale, "footer.openHuizen")}</Link>
                   <Link href={localeHref(locale, "/huusmeesters")} className="hover:underline">{t(locale, "nav.huusmeesters")}</Link>
                   <Link href={localeHref(locale, "/verkocht")} className="hover:underline">{t(locale, "nav.verkocht")}</Link>
                   <Link href={localeHref(locale, "/zoeker")} className="hover:underline">{t(locale, "nav.zoeker")}</Link>
@@ -111,7 +111,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Link href={localeHref(locale, "/disclaimer")} className="hover:underline">{t(locale, "footer.disclaimer")}</Link>
                 </nav>
                 <p className="mt-4 text-xs text-grijs">
-                  Mooihuus.nl is een dienst van <strong>Huus B.V.</strong> · {COMPANY.adres}, {COMPANY.postcode} · KvK {COMPANY.kvk} · btw {COMPANY.btw} · © {new Date().getFullYear()} Huus B.V.
+                  {t(locale, "footer.dienstVan")} <strong>Huus B.V.</strong> · {COMPANY.adres}, {COMPANY.postcode} · KvK {COMPANY.kvk} · btw {COMPANY.btw} · © {new Date().getFullYear()} Huus B.V.
                 </p>
               </div>
             </footer>
