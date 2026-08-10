@@ -7,6 +7,7 @@
 // veld-gescheiden tekstformaat dat we betrouwbaar kunnen parsen.
 
 import type { BlogPost } from "./blog";
+import { beschikbareModellen, modelKandidaten } from "./anthropic";
 
 function slugify(titel: string): string {
   return titel
@@ -23,12 +24,6 @@ function veld(tekst: string, label: string): string {
   const m = tekst.match(re);
   return m ? m[1].trim() : "";
 }
-
-const MODELLEN = [
-  process.env.BLOG_MODEL || process.env.CHAT_MODEL || "claude-3-5-sonnet-latest",
-  "claude-3-5-sonnet-20241022",
-  "claude-3-5-haiku-latest",
-];
 
 async function roepModelAan(model: string, key: string, system: string): Promise<{ text?: string; fout?: string }> {
   try {
@@ -87,11 +82,14 @@ export async function genereerBlogpostMetReden(
     `<het volledige artikel in Markdown, met een paar "## " kopjes en waar passend een opsomming. Meerdere alinea's mag.>\n\n` +
     `Zet niets vóór TITEL en gebruik de labels exact zoals hierboven.`;
 
+  const modellen = await beschikbareModellen(key, nu.getTime());
+  const kandidaten = modelKandidaten(modellen, "sonnet", process.env.BLOG_MODEL || process.env.CHAT_MODEL);
+  if (!kandidaten.length) {
+    return { post: null, fout: "geen modellen beschikbaar via /v1/models (check API-key/tegoed)" };
+  }
+
   const foutmeldingen: string[] = [];
-  const gezien = new Set<string>();
-  for (const model of MODELLEN) {
-    if (gezien.has(model)) continue;
-    gezien.add(model);
+  for (const model of kandidaten) {
     const r = await roepModelAan(model, key, system);
     if (r.fout) {
       foutmeldingen.push(r.fout);
