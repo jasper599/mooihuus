@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getBlogPosts } from "@/lib/blog";
-import { addBlogPost } from "@/lib/db";
+import { addBlogPost, removeBlogPost } from "@/lib/db";
 import { genereerBlogpostMetReden } from "@/lib/blog-generator";
 
 export const runtime = "nodejs";
@@ -23,6 +23,13 @@ async function run(req: Request) {
     if ((session?.user as any)?.rol === "beheerder") toegestaan = true;
   }
   if (!toegestaan) return NextResponse.json({ error: "Geen toegang." }, { status: 401 });
+
+  // ?verwijder=<slug> — verwijdert een (fout) artikel uit de database.
+  const teVerwijderen = url.searchParams.get("verwijder");
+  if (teVerwijderen) {
+    const weg = removeBlogPost(teVerwijderen);
+    return NextResponse.json({ ok: weg, verwijderd: weg ? teVerwijderen : null });
+  }
 
   const bestaand = getBlogPosts();
   const { post, fout } = await genereerBlogpostMetReden(bestaand.map((p) => p.titel).slice(0, 40), bestaand.length);
