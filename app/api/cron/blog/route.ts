@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getBlogPosts } from "@/lib/blog";
 import { addBlogPost } from "@/lib/db";
-import { genereerBlogpost } from "@/lib/blog-generator";
+import { genereerBlogpostMetReden } from "@/lib/blog-generator";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,9 +25,9 @@ async function run(req: Request) {
   if (!toegestaan) return NextResponse.json({ error: "Geen toegang." }, { status: 401 });
 
   const bestaand = getBlogPosts();
-  const post = await genereerBlogpost(bestaand.map((p) => p.titel).slice(0, 40), bestaand.length);
+  const { post, fout } = await genereerBlogpostMetReden(bestaand.map((p) => p.titel).slice(0, 40), bestaand.length);
   if (!post) {
-    return NextResponse.json({ error: "Genereren mislukt (geen ANTHROPIC_API_KEY of API-fout)." }, { status: 500 });
+    return NextResponse.json({ error: "Genereren mislukt", reden: fout || "onbekend" }, { status: 500 });
   }
   addBlogPost(post);
   return NextResponse.json({ ok: true, slug: post.slug, titel: post.titel });
