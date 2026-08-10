@@ -1,0 +1,41 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getBlogPosts } from "@/lib/blog";
+import { addBlogPost } from "@/lib/db";
+import { genereerBlogpost } from "@/lib/blog-generator";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+// Genereert direct één nieuw blogartikel (buiten het wekelijkse ritme om) en
+// slaat het op in de database. Beveiligd met CRON_SECRET of een beheerder.
+// Aanroepen: GET /api/cron/blog?key=CRON_SECRET
+async function run(req: Request) {
+  const secret = process.env.CRON_SECRET;
+  const url = new URL(req.url);
+  const key = url.searchParams.get("key") || req.headers.get("x-cron-key");
+
+  let toegestaan = false;
+  if (secret && key === secret) toegestaan = true;
+  if (!toegestaan) {
+    const session = await getServerSession(authOptions);
+    if ((session?.user as any)?.rol === "beheerder") toegestaan = true;
+  }
+  if (!toegestaan) return NextResponse.json({ error: "Geen toegang." }, { status: 401 });
+
+  const bestaand = getBlogPosts();
+  const post = await genereerBlogpost(bestaand.map((p) => p.titel).slice(0, 40), bestaand.length);
+  if (!post) {
+    return NextResponse.json({ error: "Genereren mislukt (geen ANTHROPIC_API_KEY of API-fout)." }, { status: 500 });
+  }
+  addBlogPost(post);
+  return NextResponse.json({ ok: true, slug: post.slug, titel: post.titel });
+}
+
+export async function GET(req: Request) {
+  return run(req);
+}
+export async function POST(req: Request) {
+  return run(req);
+}
