@@ -24,21 +24,40 @@ const LABEL: Record<string, { txt: string; cls: string }> = {
 export function SocialWachtrij({ posts, metricool }: { posts: Post[]; metricool: boolean }) {
   const [rows, setRows] = useState(posts);
   const [busy, setBusy] = useState("");
+  const [bewerkId, setBewerkId] = useState("");
+  const [concept, setConcept] = useState("");
 
-  async function doe(id: string, actie: string) {
+  async function doe(id: string, actie: string, extra?: Record<string, unknown>) {
     setBusy(id + actie);
     const res = await fetch("/api/beheer/social", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, actie }),
+      body: JSON.stringify({ id, actie, ...extra }),
     });
     const d = await res.json().catch(() => ({}));
     setBusy("");
     if (res.ok) {
-      setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status: d.status, ingeplandVoor: d.ingeplandVoor ?? r.ingeplandVoor } : r)));
+      setRows((rs) =>
+        rs.map((r) =>
+          r.id === id
+            ? {
+                ...r,
+                status: d.status ?? r.status,
+                ingeplandVoor: d.ingeplandVoor ?? r.ingeplandVoor,
+                tekst: d.tekst ?? r.tekst,
+              }
+            : r
+        )
+      );
+      if (typeof d.tekst === "string" && id === bewerkId) setConcept(d.tekst);
     } else {
       alert(d.error || "Er ging iets mis.");
     }
+  }
+
+  function openBewerk(p: Post) {
+    setBewerkId(p.id);
+    setConcept(p.tekst || "");
   }
 
   if (rows.length === 0) {
@@ -66,7 +85,49 @@ export function SocialWachtrij({ posts, metricool }: { posts: Post[]; metricool:
                   {p.bron === "bestelling" ? "Betaalde bestelling" : "Handmatig"} · <span className={l.cls}>{l.txt}</span>
                   {p.ingeplandVoor && <> · gepland: {new Date(p.ingeplandVoor).toLocaleString("nl-NL")}</>}
                 </div>
-                {p.tekst && <div className="text-sm mt-1 text-grijs italic">“{p.tekst}”</div>}
+                {bewerkId === p.id ? (
+                  <div className="mt-2">
+                    <textarea
+                      value={concept}
+                      onChange={(e) => setConcept(e.target.value)}
+                      rows={6}
+                      className="field w-full text-sm whitespace-pre-wrap"
+                      placeholder="Caption voor Instagram…"
+                    />
+                    <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                      <button
+                        onClick={() => doe(p.id, "bewerken", { tekst: concept })}
+                        disabled={!!busy || !concept.trim()}
+                        className="btn text-xs py-1 px-2"
+                      >
+                        {busy === p.id + "bewerken" ? "…" : "Opslaan"}
+                      </button>
+                      <button
+                        onClick={() => doe(p.id, "genereren")}
+                        disabled={!!busy}
+                        className="btn btn-ghost text-xs py-1 px-2"
+                        title="Laat de AI een nieuwe caption schrijven"
+                      >
+                        {busy === p.id + "genereren" ? "AI schrijft…" : "✨ AI opnieuw"}
+                      </button>
+                      <button onClick={() => setBewerkId("")} className="text-grijs text-xs underline">
+                        sluiten
+                      </button>
+                      <span className="text-[0.68rem] text-grijs ml-auto">{concept.length} tekens</span>
+                    </div>
+                  </div>
+                ) : (
+                  p.tekst && (
+                    <div className="mt-1">
+                      <div className="text-sm text-grijs italic whitespace-pre-wrap">“{p.tekst}”</div>
+                      {p.status !== "geplaatst" && (
+                        <button onClick={() => openBewerk(p)} className="text-bosgroen text-xs underline mt-0.5">
+                          ✏️ caption bewerken
+                        </button>
+                      )}
+                    </div>
+                  )
+                )}
                 {p.notitie && <div className="text-xs text-[#8A2E22] mt-1">{p.notitie}</div>}
               </div>
               <div className="flex flex-wrap gap-1.5 shrink-0">
