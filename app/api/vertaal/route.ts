@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { beschikbareModellen, kiesModel } from "@/lib/anthropic";
 
 export const runtime = "nodejs";
 
@@ -71,6 +72,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ vertaald: text, zonderKey: true });
   }
 
+  const modellen = await beschikbareModellen(key, Date.now());
+  const model = process.env.VERTAAL_MODEL || kiesModel(modellen, "sonnet");
+  if (!model) return NextResponse.json({ vertaald: text, fout: true });
+
   const doel = taal as "en" | "de";
   const system =
     `You are a professional real-estate translator for a Dutch marketplace of holiday homes ` +
@@ -93,8 +98,7 @@ export async function POST(req: Request) {
       headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
       signal: controller.signal,
       body: JSON.stringify({
-        // Sonnet vertaalt merkbaar accurater dan Haiku; overschrijfbaar via env.
-        model: process.env.VERTAAL_MODEL || process.env.CHAT_MODEL || "claude-3-5-sonnet-latest",
+        model,
         max_tokens: 1500,
         temperature: 0.2,
         system,
