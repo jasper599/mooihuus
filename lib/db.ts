@@ -471,6 +471,15 @@ export function addBlogPost(post: BlogPost): BlogPost {
   return post;
 }
 
+export function removeBlogPost(slug: string): boolean {
+  const db = load();
+  const voor = db.blogPosts.length;
+  db.blogPosts = db.blogPosts.filter((p) => p.slug !== slug);
+  const weg = db.blogPosts.length !== voor;
+  if (weg) save();
+  return weg;
+}
+
 export function getEmails(): EmailRecord[] {
   return load().emails;
 }

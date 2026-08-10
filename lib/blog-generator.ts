@@ -72,6 +72,10 @@ export async function genereerBlogpostMetReden(
     `verwijzing naar Mooihuus (je huus te koop/huur zetten) en/of de Huusmeesters (klus- en onderhoudshulp) — subtiel, ` +
     `geen schreeuwerige verkoop. Geef geen fiscaal/juridisch advies als absolute waarheid; noem bedragen en tarieven als ` +
     `indicatie en verwijs voor de eigen situatie naar een adviseur.\n\n` +
+    `BELANGRIJK over verwijzingen: de ENIGE website is Mooihuus.nl. De "Huusmeesters" zijn een dienst BINNEN Mooihuus ` +
+    `(de pagina mooihuus.nl/huusmeesters), GEEN losse website — verzin dus nooit een apart domein zoals huusmeesters.nl. ` +
+    `Verzin ook geen andere externe links, bronnen of URL's. Gebruik hooguit een link naar mooihuus.nl (of mooihuus.nl/huusmeesters); ` +
+    `noem namen verder gewoon in de tekst zonder link.\n\n` +
     `Kies een onderwerp dat duidelijk VERSCHILT van deze bestaande titels: ${bestaandeTitels.join(" | ")}.\n\n` +
     `Geef je antwoord EXACT in dit formaat, met deze labels op eigen regels:\n` +
     `TITEL: <de titel>\n` +
