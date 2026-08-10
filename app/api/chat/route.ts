@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { lokaalAntwoord, SYSTEM_PROMPT } from "@/lib/chat";
-import { beschikbareModellen, kiesModel } from "@/lib/anthropic";
+import { vraagAnthropic } from "@/lib/anthropic";
 
 // Chatbot-endpoint.
 // - Zonder ANTHROPIC_API_KEY: lokale, FAQ-gebaseerde antwoorden (werkt overal).
@@ -18,32 +18,16 @@ export async function POST(req: Request) {
 
   const key = process.env.ANTHROPIC_API_KEY;
   if (key) {
-    try {
-      const modellen = await beschikbareModellen(key, Date.now());
-      const model = process.env.CHAT_MODEL || kiesModel(modellen, "haiku");
-      if (!model) throw new Error("geen model beschikbaar");
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          "x-api-key": key,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: process.env.CHAT_MODEL || "claude-3-5-haiku-latest",
-          max_tokens: 400,
-          system: SYSTEM_PROMPT + `\n\nAntwoord in de taal van de gebruiker (locale: ${taal}).`,
-          messages: lijst
-            .filter((m) => m.role === "user" || m.role === "assistant")
-            .map((m) => ({ role: m.role, content: String(m.content) })),
-        }),
-      });
-      const data = await res.json();
-      const tekst = data?.content?.[0]?.text;
-      if (tekst) return NextResponse.json({ reply: tekst });
-    } catch {
-      // val terug op lokaal antwoord
-    }
+    const { text } = await vraagAnthropic(key, {
+      system: SYSTEM_PROMPT + `\n\nAntwoord in de taal van de gebruiker (locale: ${taal}).`,
+      messages: lijst
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .map((m) => ({ role: m.role, content: String(m.content) })),
+      max_tokens: 400,
+      voorkeur: "haiku",
+      envModel: process.env.CHAT_MODEL,
+    });
+    if (text && text.trim()) return NextResponse.json({ reply: text });
   }
 
   // Lokale (offline) fallback: Nederlands krijgt slimme FAQ-antwoorden;
