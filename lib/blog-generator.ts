@@ -1,6 +1,10 @@
 // Automatische blog-generator. Schrijft één nieuw artikel in Mooihuus-stijl met
 // de Anthropic-API (zelfde key als de chat/vertaling). Wordt aangeroepen door de
 // interne scheduler (wekelijks) en door /api/cron/blog (handmatig).
+//
+// Let op: we vragen bewust GEEN JSON terug. Een lang Markdown-artikel met echte
+// regeleindes in een JSON-string maakt de JSON ongeldig. Daarom een simpel
+// veld-gescheiden tekstformaat dat we betrouwbaar kunnen parsen.
 
 import type { BlogPost } from "./blog";
 
@@ -12,6 +16,12 @@ function slugify(titel: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
+}
+
+function veld(tekst: string, label: string): string {
+  const re = new RegExp(`^\\s*${label}\\s*:\\s*(.+)$`, "im");
+  const m = tekst.match(re);
+  return m ? m[1].trim() : "";
 }
 
 export async function genereerBlogpost(
@@ -27,16 +37,19 @@ export async function genereerBlogpost(
     `Schrijf één nieuw, origineel blogartikel in het Nederlands over recreatiewoningen — denk aan kopen, bezitten, ` +
     `onderhouden, verhuren, verzekeren, financieren, fiscaal (box 3), erfpacht/eigen grond, permanent wonen, parkkosten, ` +
     `duurzaamheid of inrichting.\n\n` +
-    `Toon: nuchter, behulpzaam, deskundig, je/jij. Gebruik Markdown met een paar "## " kopjes en waar passend een opsomming. ` +
-    `Lengte 500–800 woorden. Sluit af met een zachte, natuurlijke verwijzing naar Mooihuus (je huus te koop/huur zetten) ` +
-    `en/of de Huusmeesters (klus- en onderhoudshulp) — subtiel, geen schreeuwerige verkoop. ` +
-    `Geef geen fiscaal/juridisch advies als absolute waarheid; noem bedragen en tarieven als indicatie en verwijs voor de ` +
-    `eigen situatie naar een adviseur.\n\n` +
+    `Toon: nuchter, behulpzaam, deskundig, je/jij. Lengte 500–800 woorden. Sluit af met een zachte, natuurlijke ` +
+    `verwijzing naar Mooihuus (je huus te koop/huur zetten) en/of de Huusmeesters (klus- en onderhoudshulp) — subtiel, ` +
+    `geen schreeuwerige verkoop. Geef geen fiscaal/juridisch advies als absolute waarheid; noem bedragen en tarieven als ` +
+    `indicatie en verwijs voor de eigen situatie naar een adviseur.\n\n` +
     `Kies een onderwerp dat duidelijk VERSCHILT van deze bestaande titels: ${bestaandeTitels.join(" | ")}.\n\n` +
-    `Antwoord met ALLEEN geldige JSON, zonder tekst eromheen: ` +
-    `{"titel":"...","categorie":"...","emoji":"...","intro":"...","body":"..."}. ` +
-    `"body" is het volledige artikel in Markdown, "intro" een samenvatting van 1–2 zinnen, "emoji" één passende emoji, ` +
-    `"categorie" kort (bijv. Kennis, Verhuur, Financieel, Fiscaal, Tips & onderhoud, Kopen).`;
+    `Geef je antwoord EXACT in dit formaat, met deze labels op eigen regels:\n` +
+    `TITEL: <de titel>\n` +
+    `CATEGORIE: <één korte categorie, bijv. Kennis, Verhuur, Financieel, Fiscaal, Tips & onderhoud, Kopen>\n` +
+    `EMOJI: <één passende emoji>\n` +
+    `INTRO: <samenvatting van 1 à 2 zinnen>\n` +
+    `BODY:\n` +
+    `<het volledige artikel in Markdown, met een paar "## " kopjes en waar passend een opsomming. Meerdere alinea's mag.>\n\n` +
+    `Zet niets vóór TITEL en gebruik de labels exact zoals hierboven.`;
 
   try {
     const controller = new AbortController();
@@ -54,21 +67,23 @@ export async function genereerBlogpost(
       }),
     }).finally(() => clearTimeout(timer));
     const data = await res.json();
-    const raw = data?.content?.[0]?.text || "";
-    const m = raw.match(/\{[\s\S]*\}/);
-    if (!m) return null;
-    const o = JSON.parse(m[0]);
-    if (!o.titel || !o.body) return null;
+    const raw: string = data?.content?.[0]?.text || "";
+    if (!raw.trim()) return null;
+
+    const titel = veld(raw, "TITEL");
+    const bodyMatch = raw.match(/^\s*BODY\s*:\s*\n?([\s\S]*)$/im);
+    const body = bodyMatch ? bodyMatch[1].trim() : "";
+    if (!titel || !body) return null;
 
     return {
-      slug: slugify(String(o.titel)),
-      titel: String(o.titel).slice(0, 140),
-      categorie: String(o.categorie || "Kennis").slice(0, 40),
-      emoji: String(o.emoji || "🌲").slice(0, 6),
+      slug: slugify(titel),
+      titel: titel.slice(0, 140),
+      categorie: (veld(raw, "CATEGORIE") || "Kennis").slice(0, 40),
+      emoji: (veld(raw, "EMOJI") || "🌲").slice(0, 6),
       kleur: ((kleurIndex % 6) + 6) % 6,
       datum: nu.toISOString(),
-      intro: String(o.intro || "").slice(0, 400),
-      body: String(o.body),
+      intro: veld(raw, "INTRO").slice(0, 400),
+      body,
     };
   } catch {
     return null;
