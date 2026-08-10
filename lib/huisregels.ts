@@ -9,6 +9,8 @@
 //
 // De regels sluiten aan op de algemene voorwaarden (sectie 4, huisregels).
 
+import { beschikbareModellen, kiesModel } from "./anthropic";
+
 export type HuisregelResultaat = {
   ok: boolean;              // true = geen blokkerende overtredingen
   problemen: string[];      // blokkerend — plaatsen/opslaan wordt tegengehouden
@@ -102,6 +104,9 @@ function scan(tekst: string): HuisregelResultaat {
 async function scanAI(tekst: string): Promise<{ problemen: string[]; waarschuwingen: string[] }> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return { problemen: [], waarschuwingen: [] };
+  const modellen = await beschikbareModellen(key, Date.now());
+  const model = process.env.HUISREGELS_MODEL || kiesModel(modellen, "haiku");
+  if (!model) return { problemen: [], waarschuwingen: [] };
   const system =
     `Je bent de contentmoderator van Mooihuus, een platform voor recreatiewoningen. ` +
     `Beoordeel een advertentietekst tegen de huisregels en geef ALLEEN geldige JSON terug: ` +
@@ -120,7 +125,7 @@ async function scanAI(tekst: string): Promise<{ problemen: string[]; waarschuwin
       headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
       signal: controller.signal,
       body: JSON.stringify({
-        model: process.env.HUISREGELS_MODEL || process.env.CHAT_MODEL || "claude-3-5-haiku-latest",
+        model,
         max_tokens: 400,
         temperature: 0,
         system,
