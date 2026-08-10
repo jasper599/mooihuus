@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { lokaalAntwoord, SYSTEM_PROMPT } from "@/lib/chat";
+import { beschikbareModellen, kiesModel } from "@/lib/anthropic";
 
 // Chatbot-endpoint.
 // - Zonder ANTHROPIC_API_KEY: lokale, FAQ-gebaseerde antwoorden (werkt overal).
@@ -18,6 +19,9 @@ export async function POST(req: Request) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (key) {
     try {
+      const modellen = await beschikbareModellen(key, Date.now());
+      const model = process.env.CHAT_MODEL || kiesModel(modellen, "haiku");
+      if (!model) throw new Error("geen model beschikbaar");
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
