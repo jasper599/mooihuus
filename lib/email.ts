@@ -116,6 +116,15 @@ export function renderLead(lead: Lead, listing: Listing, ownerNaam: string): { o
     <span style="display:inline-block;background:${BRAND.oranje};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Nieuwe lead — rechtstreeks naar jou</span>
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Iemand heeft interesse in “${listing.titel}” 🎉</h1>
     <p style="line-height:1.6;">Hoi ${ownerNaam}, je hebt een nieuw bericht via Mooihuus. Reageer snel — een vlotte reactie maakt het verschil.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;background:${BRAND.creme};">
+      <tr><td style="padding:14px 16px;">
+        <div style="font-size:12px;color:${BRAND.grijs};text-transform:uppercase;letter-spacing:.03em;">Over welke woning</div>
+        <div style="font-weight:bold;color:${BRAND.bosgroenDk};font-size:16px;margin-top:4px;">${listing.titel}</div>
+        <div style="color:${BRAND.grijs};font-size:13px;margin-top:2px;">${[listing.type, listing.park, listing.provincie].filter(Boolean).join(" · ")}${listing.prijs ? " · " + euro(listing.prijs) : ""}</div>
+        <div style="color:${BRAND.grijs};font-size:12px;margin-top:2px;">Woning-ID: ${listing.id}</div>
+        <div style="margin-top:12px;">${btn(`${COMPANY.website}/aanbod/${listing.id}`, "Bekijk de woning")}</div>
+      </td></tr>
+    </table>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
       <tr><td style="background:${BRAND.creme};padding:12px 16px;font-size:13px;color:${BRAND.grijs};width:120px;">Van</td>
           <td style="background:${BRAND.creme};padding:12px 16px;font-weight:bold;">${lead.naam}</td></tr>
