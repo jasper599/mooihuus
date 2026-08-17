@@ -1,0 +1,79 @@
+import Link from "next/link";
+import { Listing } from "@/lib/types";
+import { gradient, euro, prijsSuffix, grondInfo, openhuisInfo } from "@/lib/format";
+import { Locale, t, localeHref, vertaalType } from "@/lib/i18n";
+import { FavButton } from "./FavButton";
+import { SafeImg } from "./SafeImg";
+
+export function ListingCard({ listing, locale = "nl" }: { listing: Listing; locale?: Locale }) {
+  const extern = !!listing.externalUrl;
+  const klass = `block bg-white border rounded-2xl overflow-hidden hover:shadow-md transition-shadow ${
+    listing.uitgelicht ? "border-oranje ring-1 ring-oranje/40" : "border-lijn"
+  }`;
+
+  const inhoud = (
+    <>
+      <div className="h-40 relative overflow-hidden" style={{ background: gradient(listing.kleur) }}>
+        <SafeImg src={listing.fotos?.[0]} alt={listing.titel} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+        <span className="absolute top-2.5 left-2.5 bg-bosgroen text-white font-display font-semibold text-[0.68rem] px-2.5 py-0.5 rounded-full">
+          {listing.doel === "huur" ? t(locale, "home.huur") : t(locale, "home.koop")}
+        </span>
+        {listing.uitgelicht && (
+          <span className="absolute top-10 left-2.5 bg-oranje text-white font-display font-semibold text-[0.68rem] px-2.5 py-0.5 rounded-full">
+            ✨ {t(locale, "card.uitgelicht")}
+          </span>
+        )}
+        <FavButton id={listing.id} />
+        {listing.bronLabel && (
+          <span className="absolute bottom-2.5 right-2.5 bg-inkt/80 text-white font-display font-semibold text-[0.66rem] px-2.5 py-0.5 rounded-full">
+            {listing.bronLabel}
+          </span>
+        )}
+        {grondInfo(listing.grond) && (
+          <span
+            className={`absolute bottom-2.5 left-2.5 font-display font-semibold text-[0.66rem] px-2.5 py-0.5 rounded-full text-white ${
+              grondInfo(listing.grond)!.eigen ? "bg-bosgroen-dk" : "bg-inkt/80"
+            }`}
+          >
+            {grondInfo(listing.grond)!.eigen ? `🌳 ${t(locale, "card.eigenGrond")}` : `🔑 ${grondInfo(listing.grond)!.label}`}
+          </span>
+        )}
+        {(() => {
+          const oh = openhuisInfo(listing);
+          if (!oh || !oh.aankomend) return null;
+          return <span className="absolute bottom-2.5 right-2.5 bg-oranje text-white font-display font-semibold text-[0.66rem] px-2.5 py-0.5 rounded-full">🏠 {t(locale, "card.openHuis")}</span>;
+        })()}
+      </div>
+      <div className="p-3.5">
+        <div className="font-display font-bold text-inkt">{listing.titel}</div>
+        <div className="text-sm text-grijs">
+          {[
+            vertaalType(locale, listing.type),
+            listing.personen ? `${listing.personen} ${t(locale, "listing.persons")}` : null,
+            listing.m2 ? `${listing.m2} m²` : null,
+            listing.provincie,
+          ].filter(Boolean).join(" · ")}
+        </div>
+        <div className="font-display font-extrabold text-oranje-dk mt-1.5">
+          {euro(listing.prijs)}
+          {prijsSuffix(listing) && <span className="text-grijs font-semibold text-sm ml-1">{prijsSuffix(listing)}</span>}
+        </div>
+      </div>
+    </>
+  );
+
+  // Affiliate-woning (Belvilla e.d.): rechtstreeks naar de partner, met een
+  // sponsored/nofollow-link. Anders: interne detailpagina.
+  if (extern) {
+    return (
+      <a href={listing.externalUrl} target="_blank" rel="sponsored nofollow noopener" className={klass}>
+        {inhoud}
+      </a>
+    );
+  }
+  return (
+    <Link href={localeHref(locale, `/aanbod/${listing.id}`)} className={klass}>
+      {inhoud}
+    </Link>
+  );
+}
