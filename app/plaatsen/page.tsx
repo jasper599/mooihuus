@@ -54,7 +54,7 @@ export default function Plaatsen() {
     const res = await fetch("/api/ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(f),
+      body: JSON.stringify({ ...f, uitjes }),
     });
     const data = await res.json();
     setAi(data);

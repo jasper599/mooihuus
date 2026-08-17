@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLiveListings } from "@/lib/db";
 import { PROVINCIES, provincieSlug } from "@/lib/provincies";
+import { WONINGTYPES, typeSlug, isType } from "@/lib/woningtypes";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -23,6 +24,17 @@ export default function TeKoopHub() {
           <Link key={p} href={`/te-koop/${provincieSlug(p)}`} className="card flex items-center justify-between hover:shadow-md transition-shadow">
             <span className="font-display font-bold text-bosgroen-dk">{p}</span>
             <span className="pill">{perProv(p)} woningen</span>
+          </Link>
+        ))}
+      </div>
+
+      <h2 className="font-display font-extrabold text-2xl text-bosgroen-dk mt-10">Zoek op type recreatiewoning</h2>
+      <p className="text-grijs mt-2 max-w-2xl mb-6">Op zoek naar een specifiek soort woning? Bekijk het aanbod per type — van chalet en bungalow tot tiny house en vrijstaand vakantiehuis.</p>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {WONINGTYPES.map((t) => (
+          <Link key={t.naam} href={`/type/${typeSlug(t.naam)}`} className="card flex items-center justify-between hover:shadow-md transition-shadow">
+            <span className="font-display font-bold text-bosgroen-dk">{t.mv}</span>
+            <span className="pill">{live.filter((l) => isType(l.type, t.naam)).length} woningen</span>
           </Link>
         ))}
       </div>

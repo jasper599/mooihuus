@@ -2,9 +2,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getListing, updateListing } from "@/lib/db";
+import { getListing, updateListing, zoekopdrachtenVoorWoning } from "@/lib/db";
 import { Doel } from "@/lib/types";
 import { handhaafHuisregels } from "@/lib/huisregels";
+import { renderPrijsdaling, sendEmail } from "@/lib/email";
  
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
@@ -55,7 +56,21 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     }
   }
 
+  const oudePrijs = listing.prijs;
   const updated = updateListing(params.id, patch);
+
+  // Prijsdaling-melding: bij een echte prijsverlaging de woning-alerts mailen.
+  try {
+    if (updated && updated.status === "live" && patch.prijs !== undefined && patch.prijs < oudePrijs) {
+      for (const z of zoekopdrachtenVoorWoning(updated)) {
+        const mail = renderPrijsdaling(z, updated, oudePrijs);
+        await sendEmail({ aan: z.email, onderwerp: mail.onderwerp, soort: "alert", html: mail.html });
+      }
+    }
+  } catch {
+    /* melding niet fataal voor het opslaan */
+  }
+
   return NextResponse.json({ ok: true, id: updated?.id });
 }
 

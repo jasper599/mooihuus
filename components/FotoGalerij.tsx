@@ -63,6 +63,7 @@ export function FotoGalerij({
           <img
             src={fotos[0]}
             alt={titel}
+            decoding="async"
             onClick={() => openAt(0)}
             className="absolute inset-0 w-full h-full object-cover cursor-pointer"
           />

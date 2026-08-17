@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getLiveListings } from "@/lib/db";
 import { getBlogPosts } from "@/lib/blog";
 import { PROVINCIES, provincieSlug } from "@/lib/provincies";
+import { WONINGTYPES, typeSlug } from "@/lib/woningtypes";
 import { COMPANY } from "@/lib/company";
 
 export const dynamic = "force-dynamic";
@@ -46,5 +47,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  return [...pages, ...seo, ...listings, ...blog];
+  const typeSeo: MetadataRoute.Sitemap = WONINGTYPES.map((t) => ({
+    url: `${base}/type/${typeSlug(t.naam)}`,
+    lastModified: nu,
+    changeFrequency: "daily",
+    priority: 0.7,
+  }));
+
+  return [...pages, ...seo, ...typeSeo, ...listings, ...blog];
 }

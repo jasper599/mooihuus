@@ -5,7 +5,7 @@ import Link from "next/link";
 import { getListing, getUser } from "@/lib/db";
 import { gradient, euro, prijsSuffix, grondInfo, embedVideoUrl, openhuisInfo } from "@/lib/format";
 import { getLocale } from "@/lib/i18n-server";
-import { t, localeHref } from "@/lib/i18n";
+import { t, localeHref, vertaalType } from "@/lib/i18n";
 import { COMPANY } from "@/lib/company";
 import { suggestUitjes } from "@/lib/uitjes";
 import { LeadForm } from "./LeadForm";
@@ -69,7 +69,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
         <div>
           <FotoGalerij fotos={listing.fotos ?? []} titel={listing.titel} bg={gradient(listing.kleur)}>
             <span className={`absolute top-3 left-3 text-white font-display font-semibold text-xs px-3 py-1 rounded-full ${listing.status === "verkocht" ? "bg-oranje" : "bg-bosgroen"}`}>
-              {listing.status === "verkocht" ? "Verkocht" : listing.doel === "huur" ? t(locale, "home.huur") : t(locale, "home.koop")}
+              {listing.status === "verkocht" ? t(locale, "card.verkocht") : listing.doel === "huur" ? t(locale, "home.huur") : t(locale, "home.koop")}
             </span>
             {grondInfo(listing.grond) && (
               <span
@@ -77,21 +77,21 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
                   grondInfo(listing.grond)!.eigen ? "bg-bosgroen-dk" : "bg-inkt/85"
                 }`}
               >
-                {grondInfo(listing.grond)!.eigen ? "🌳 Eigen grond" : `🔑 ${grondInfo(listing.grond)!.label}`}
+                {grondInfo(listing.grond)!.eigen ? `🌳 ${t(locale, "card.eigenGrond")}` : `🔑 ${grondInfo(listing.grond)!.label}`}
               </span>
             )}
           </FotoGalerij>
           <h1 className="font-display font-extrabold text-2xl text-bosgroen-dk mt-4">{listing.titel}</h1>
-          <div className="text-grijs">{listing.type} · {listing.park} · {listing.provincie}</div>
+          <div className="text-grijs">{vertaalType(locale, listing.type)} · {listing.park} · {listing.provincie}</div>
           {aanbieder && (
             <div className="text-sm text-grijs mt-1">
               {t(locale, "listing.aangebodenDoor")} <span className="font-semibold text-bosgroen-dk">{aanbieder}</span>
             </div>
           )}
           <div className="flex gap-2 flex-wrap mt-3">
-            <span className="pill">{listing.personen} {t(locale, "listing.persons")}</span>
-            <span className="pill">{listing.m2} m²</span>
-            <span className="pill">{listing.type}</span>
+            {listing.personen ? <span className="pill">{listing.personen} {t(locale, "listing.persons")}</span> : null}
+            {listing.m2 ? <span className="pill">{listing.m2} m²</span> : null}
+            <span className="pill">{vertaalType(locale, listing.type)}</span>
           </div>
           {(() => {
             const oh = openhuisInfo(listing);
@@ -100,8 +100,8 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
               <div className="mt-4 rounded-2xl bg-oranje text-white p-4 flex items-center gap-3 flex-wrap">
                 <div className="text-3xl">🏠</div>
                 <div>
-                  <div className="font-display font-extrabold text-lg">Open huis — {oh.label}</div>
-                  <div className="text-sm text-white/90">{oh.van && oh.tot ? `Loop binnen tussen ${oh.van} en ${oh.tot} uur.` : "Loop gerust binnen."} Je bent welkom — meld je even aan via het contactformulier.</div>
+                  <div className="font-display font-extrabold text-lg">{t(locale, "det.openHuis")} — {oh.label}</div>
+                  <div className="text-sm text-white/90">{oh.van && oh.tot ? t(locale, "det.openHuisTijd").replace("{van}", oh.van).replace("{tot}", oh.tot) : t(locale, "det.openHuisAlgemeen")} {t(locale, "det.openHuisAanmelden")}</div>
                 </div>
               </div>
             );
@@ -114,7 +114,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             if (!embed) return null;
             return (
               <div className="mt-6">
-                <h2 className="font-display font-bold text-lg text-bosgroen-dk mb-2">🎬 Video & rondleiding</h2>
+                <h2 className="font-display font-bold text-lg text-bosgroen-dk mb-2">🎬 {t(locale, "det.video")}</h2>
                 <div className="relative w-full rounded-2xl overflow-hidden border border-lijn" style={{ paddingTop: "56.25%" }}>
                   <iframe
                     src={embed}
@@ -130,13 +130,13 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
  
           {listing.plattegrond && (
             <div className="mt-6">
-              <h2 className="font-display font-bold text-lg text-bosgroen-dk mb-2">📐 Plattegrond</h2>
+              <h2 className="font-display font-bold text-lg text-bosgroen-dk mb-2">📐 {t(locale, "det.plattegrond")}</h2>
               {/\.pdf($|\?)/i.test(listing.plattegrond) ? (
-                <a href={listing.plattegrond} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">Plattegrond bekijken (PDF)</a>
+                <a href={listing.plattegrond} target="_blank" rel="noopener noreferrer" className="btn btn-ghost">{t(locale, "det.plattegrondPdf")}</a>
               ) : (
                 <a href={listing.plattegrond} target="_blank" rel="noopener noreferrer" className="block">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={listing.plattegrond} alt={`Plattegrond ${listing.titel}`} className="rounded-2xl border border-lijn max-h-[520px] w-auto" />
+                  <img src={listing.plattegrond} alt={`Plattegrond ${listing.titel}`} loading="lazy" decoding="async" className="rounded-2xl border border-lijn max-h-[520px] w-auto" />
                 </a>
               )}
             </div>
@@ -144,19 +144,19 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
  
           {(() => {
             const rows: [string, string][] = [];
-            rows.push(["Type", listing.type]);
-            if (listing.bouwjaar) rows.push(["Bouwjaar", String(listing.bouwjaar)]);
-            rows.push(["Woonoppervlakte", `${listing.m2} m²`]);
-            if (listing.perceel) rows.push(["Perceel", `${listing.perceel} m²`]);
-            if (listing.slaapkamers) rows.push(["Slaapkamers", String(listing.slaapkamers)]);
-            rows.push(["Max. personen", String(listing.personen)]);
-            if (listing.grond) rows.push(["Grond", listing.grond]);
+            rows.push([t(locale, "det.type"), vertaalType(locale, listing.type)]);
+            if (listing.bouwjaar) rows.push([t(locale, "det.bouwjaar"), String(listing.bouwjaar)]);
+            if (listing.m2) rows.push([t(locale, "det.woonopp"), `${listing.m2} m²`]);
+            if (listing.perceel) rows.push([t(locale, "det.perceel"), `${listing.perceel} m²`]);
+            if (listing.slaapkamers) rows.push([t(locale, "det.slaapkamers"), String(listing.slaapkamers)]);
+            if (listing.personen) rows.push([t(locale, "det.maxPersonen"), String(listing.personen)]);
+            if (listing.grond) rows.push([t(locale, "det.grond"), listing.grond]);
             if (listing.energielabel) rows.push(["Energielabel", listing.energielabel]);
             if (listing.kosten) rows.push(["Kosten", listing.kosten]);
-            rows.push(["Aangeboden als", listing.doel === "huur" ? "Te huur" : "Te koop"]);
+            rows.push([t(locale, "det.aangebodenAls"), listing.doel === "huur" ? t(locale, "det.teHuur") : t(locale, "det.teKoop")]);
             return (
               <div className="mt-6">
-                <h2 className="font-display font-bold text-lg text-bosgroen-dk mb-2">Kenmerken</h2>
+                <h2 className="font-display font-bold text-lg text-bosgroen-dk mb-2">{t(locale, "det.kenmerken")}</h2>
                 <dl className="bg-white border border-lijn rounded-2xl overflow-hidden">
                   {rows.map(([k, v], i) => (
                     <div key={k} className={`flex justify-between gap-4 px-4 py-2.5 text-sm ${i % 2 ? "bg-creme" : ""}`}>
@@ -201,6 +201,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
           <div className="card mt-4 flex flex-col gap-3">
             <FavButton id={listing.id} variant="inline" />
             <ShareButtons title={listing.titel} />
+            <Link href={localeHref(locale, `/aanbod/${listing.id}/brochure`)} className="btn btn-ghost text-sm">📄 {t(locale, "det.brochure")}</Link>
           </div>
           {listing.doel !== "huur" && <MaandlastenCalculator prijs={listing.prijs} />}
         </aside>

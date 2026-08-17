@@ -208,6 +208,21 @@ export function renderWoningAlert(z: Zoekopdracht, listing: Listing): { onderwer
   return { onderwerp: `Nieuwe match: ${listing.titel}`, html: layout("Nieuwe match", inner) };
 }
 
+// Prijsverlaging op een woning die bij een woning-alert past.
+export function renderPrijsdaling(z: Zoekopdracht, listing: Listing, oudePrijs: number): { onderwerp: string; html: string } {
+  const inner = `
+    <span style="display:inline-block;background:${BRAND.oranje};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Prijsverlaging 📉</span>
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Een woning uit je alert is in prijs gezakt</h1>
+    <p style="line-height:1.6;">Hoi ${z.naam || "daar"}, goed nieuws — deze woning die bij je zoekopdracht past is goedkoper geworden:</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
+      ${woningRegel(listing)}
+    </table>
+    <p style="line-height:1.6;font-size:16px;">Van <span style="text-decoration:line-through;color:${BRAND.grijs};">${euro(oudePrijs)}</span> naar <strong style="color:${BRAND.oranjeDk};">${euro(listing.prijs)}</strong>.</p>
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/aanbod/${listing.id}`, "Bekijk de woning")}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je ontvangt deze mail omdat je een woning-alert hebt ingesteld op Mooihuus. Reageren gaat rechtstreeks naar de aanbieder.</p>`;
+  return { onderwerp: `Prijsverlaging: ${listing.titel}`, html: layout("Prijsverlaging", inner) };
+}
+
 export function renderZoekBevestiging(z: Zoekopdracht, matches: Listing[]): { onderwerp: string; html: string } {
   const wensen = [
     z.doel && z.doel !== "alle" ? (z.doel === "huur" ? "te huur" : "te koop") : null,
