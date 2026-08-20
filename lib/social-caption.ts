@@ -49,12 +49,39 @@ export function socialCaptionTemplate(listing: Listing): string {
   return regels.join("\n");
 }
 
-// Ruimt AI-output op: strip omringende aanhalingstekens, knip te lang af, en
-// borg dat prijs, locatie en de merknaam echt in de caption staan.
+// Knipt tekst netjes in op ~max tekens: bij voorkeur op een zin-einde, anders
+// op een spatie — nooit middenin een woord.
+function nettInkorten(t: string, max: number): string {
+  if (t.length <= max) return t;
+  const stuk = t.slice(0, max);
+  const zinEinde = Math.max(stuk.lastIndexOf(". "), stuk.lastIndexOf("!\n"), stuk.lastIndexOf("!"), stuk.lastIndexOf("?"), stuk.lastIndexOf("\n"));
+  if (zinEinde > max * 0.5) return stuk.slice(0, zinEinde + 1).trim();
+  const spatie = stuk.lastIndexOf(" ");
+  return (spatie > 0 ? stuk.slice(0, spatie) : stuk).trim();
+}
+
+// Ruimt AI-output op: strip omringende aanhalingstekens en uitgeschreven of
+// afgekapte links, knip te lang netjes af, en borg dat prijs, locatie en de
+// merknaam echt in de caption staan.
 function normaliseer(tekst: string, listing: Listing): string {
   let t = (tekst || "").trim().replace(/^["'“”«»]+|["'“”«»]+$/g, "").trim();
   if (!t) return socialCaptionTemplate(listing);
-  if (t.length > MAX) t = t.slice(0, MAX).trim();
+
+  // Haal uitgeschreven links weg (ook halve/afgekapte): volledige URL's, www-
+  // adressen en domein-met-pad zoals "mooihuus.nl/aanbod/…". De kale merknaam
+  // "Mooihuus.nl" (zonder pad) blijft staan voor de nette CTA.
+  t = t
+    .replace(/https?:\/\/\S+/gi, "")
+    .replace(/\bwww\.\S+/gi, "")
+    .replace(/\b[a-z0-9-]+\.(?:nl|com|net|eu|be|de|org)\/\S*/gi, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/ +\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+  // Los verbindingswoordje dat kan achterblijven waar een link stond ("… op").
+  t = t.replace(/[ \t]*(?:\b(?:op|naar|via|bij|voor|op naar)\b)[ \t]*[.!:–—-]*$/i, "").trim();
+  if (!t) return socialCaptionTemplate(listing);
+  if (t.length > MAX) t = nettInkorten(t, MAX);
 
   const loc = locatie(listing);
   const extra: string[] = [];
@@ -98,15 +125,17 @@ export async function genereerSocialCaption(listing: Listing, nu: Date = new Dat
     `- Begin met ÉÉN korte, pakkende openingszin (max ~90 tekens) die op zichzelf al werkt. Instagram kapt de rest af, dus die eerste regel moet meteen prikkelen. Neem NIET klakkeloos de woningtitel over.\n` +
     `- Noem duidelijk de PRIJS en de LOCATIE (plaats/park/provincie).\n` +
     `- Kort en scanbaar: korte regels, hooguit een paar passende emoji (niet overdrijven).\n` +
-    `- Sluit af met een uitnodiging om de woning op Mooihuus.nl te bekijken ("link in bio").\n` +
-    `- GEEN hashtags. GEEN verzonnen kenmerken. GEEN beloftes over rendement of waardestijging. GEEN telefoonnummers of externe links.\n` +
+    `- Sluit af met een uitnodiging om de woning op Mooihuus.nl te bekijken, met exact de tekst "link in bio".\n` +
+    `- Schrijf NOOIT een volledige URL of webadres uit (dus niet "mooihuus.nl/..." of "https://..."). Noem alleen de merknaam "Mooihuus.nl" en "link in bio".\n` +
+    `- GEEN hashtags. GEEN verzonnen kenmerken. GEEN beloftes over rendement of waardestijging. GEEN telefoonnummers.\n` +
+    `- Maak elke zin volledig af; eindig niet halverwege een zin of woord.\n` +
     `- Maximaal ~110 woorden.\n\n` +
     `Geef ALLEEN de kale caption terug — geen aanhalingstekens, geen kop, geen toelichting.`;
 
   const r = await vraagAnthropic(key, {
     system,
     messages: [{ role: "user", content: `Woninggegevens:\n${feiten}\n\nSchrijf de caption.` }],
-    max_tokens: 400,
+    max_tokens: 600,
     temperature: 0.85,
     voorkeur: "haiku",
     envModel: process.env.SOCIAL_MODEL || process.env.CHAT_MODEL,
