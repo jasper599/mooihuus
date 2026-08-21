@@ -258,6 +258,9 @@ export const DICT: Record<Locale, Dict> = {
 // blokken hierboven ongewijzigd blijven.
 const EXTRA: Record<Locale, Dict> = {
   nl: {
+    "foto.homeTitel": "Professionele foto's, plattegrond én video",
+    "foto.homeSub": "Laat je recreatiewoning stralen: fotoshoot, plattegrond en een YouTube-rondleiding — compleet voor € 450.",
+    "foto.homeCta": "Bekijk het fotografiepakket",
     "footer.tagline": "Een idee van Luyten Makelaardij, om iedereen te helpen. Zelf de regie, nooit alleen.",
     "footer.blijf": "Blijf op de hoogte",
     "footer.blijfSub": "Nieuwe woningen en handige tips in je inbox. Je kunt je altijd afmelden.",
@@ -343,6 +346,9 @@ const EXTRA: Record<Locale, Dict> = {
     "type.tiny house": "Tiny house",
   },
   en: {
+    "foto.homeTitel": "Professional photos, floor plan & video",
+    "foto.homeSub": "Make your holiday home shine: photo shoot, floor plan and a YouTube tour — all-in for €450.",
+    "foto.homeCta": "See the photography package",
     "footer.tagline": "An initiative by Luyten Makelaardij, to help everyone. You're in control, never alone.",
     "footer.blijf": "Stay up to date",
     "footer.blijfSub": "New homes and handy tips in your inbox. You can unsubscribe anytime.",
@@ -428,6 +434,9 @@ const EXTRA: Record<Locale, Dict> = {
     "type.tiny house": "Tiny house",
   },
   de: {
+    "foto.homeTitel": "Professionelle Fotos, Grundriss & Video",
+    "foto.homeSub": "Bring dein Ferienhaus zum Strahlen: Fotoshooting, Grundriss und eine YouTube-Tour — komplett für 450 €.",
+    "foto.homeCta": "Zum Fotografie-Paket",
     "footer.tagline": "Eine Initiative von Luyten Makelaardij, um jedem zu helfen. Du behältst die Regie, nie allein.",
     "footer.blijf": "Bleib auf dem Laufenden",
     "footer.blijfSub": "Neue Objekte und praktische Tipps in deinem Postfach. Du kannst dich jederzeit abmelden.",
