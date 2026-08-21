@@ -60,6 +60,20 @@ export default function Home() {
         </div>
       </section>
 
+      <Link
+        href={localeHref(locale, "/fotografie")}
+        className="mt-8 block rounded-2xl bg-creme border border-salie p-5 sm:p-6 hover:shadow-md transition-shadow"
+      >
+        <div className="flex gap-4 items-center flex-wrap">
+          <div className="text-3xl">📸</div>
+          <div className="flex-1 min-w-[220px]">
+            <div className="font-display font-bold text-bosgroen-dk">{t(locale, "foto.homeTitel")}</div>
+            <div className="text-sm text-grijs">{t(locale, "foto.homeSub")}</div>
+          </div>
+          <span className="btn btn-green text-sm">{t(locale, "foto.homeCta")} →</span>
+        </div>
+      </Link>
+
       <ListingsBrowser listings={listings} locale={locale} />
     </div>
   );
