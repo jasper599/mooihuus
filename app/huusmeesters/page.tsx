@@ -39,6 +39,16 @@ export default function HuusmeestersPage() {
         <span className="btn btn-green text-sm">Bekijk het stappenplan →</span>
       </Link>
 
+      {/* Teaser: fotografiepakket */}
+      <Link href="/fotografie" className="mt-4 rounded-2xl bg-bosgroen text-white p-5 flex gap-4 items-center flex-wrap hover:shadow-md transition-shadow">
+        <div className="text-3xl">📸</div>
+        <div className="flex-1 min-w-[220px]">
+          <div className="font-display font-bold">Foto's, plattegrond én video — € 450</div>
+          <div className="text-sm text-salie-lt">Laat je recreatiewoning professioneel vastleggen: fotoshoot, plattegrond en een YouTube-rondleiding. Compleet pakket, vrijblijvend aan te vragen.</div>
+        </div>
+        <span className="btn text-sm">Bekijk het pakket →</span>
+      </Link>
+
       {/* Vaste partners */}
       <h2 className="font-display font-bold text-xl text-bosgroen-dk mt-8 mb-2">Onze partners</h2>
       <div className="grid gap-3 sm:grid-cols-2">
