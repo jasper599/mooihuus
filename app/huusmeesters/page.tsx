@@ -49,6 +49,16 @@ export default function HuusmeestersPage() {
         <span className="btn text-sm">Bekijk het pakket →</span>
       </Link>
 
+      {/* Teaser: Guest Experience (voor parken) */}
+      <Link href="/guest-experience" className="mt-3 rounded-2xl bg-creme border border-salie p-5 flex gap-4 items-center flex-wrap hover:shadow-md transition-shadow">
+        <div className="flex-1 min-w-[220px]">
+          <div className="text-xs font-semibold text-oranje-dk uppercase tracking-wide">Voor parken &amp; organisaties</div>
+          <div className="font-display font-bold text-bosgroen-dk mt-0.5">Guest Experience — anonieme gasttest</div>
+          <div className="text-sm text-grijs">Een anonieme gast test jullie complete beleving en levert een rapport met concrete verbeterpunten. Excl. boekings- en verblijfskosten.</div>
+        </div>
+        <span className="btn btn-green text-sm">Bekijk de dienst →</span>
+      </Link>
+
       {/* Vaste partners */}
       <h2 className="font-display font-bold text-xl text-bosgroen-dk mt-8 mb-2">Onze partners</h2>
       <div className="grid gap-3 sm:grid-cols-2">
