@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getLiveListings } from "@/lib/db";
 import { ListingsBrowser } from "@/components/ListingsBrowser";
-import { HuurPartners } from "@/components/HuurPartners";
 import { syncMarinaparkenIndienNodig } from "@/lib/marinaparken-feed";
 import { syncTradeTrackerIndienNodig } from "@/lib/tradetracker-feed";
 import { getLocale } from "@/lib/i18n-server";
@@ -23,9 +22,12 @@ export default function Home() {
   syncMarinaparkenIndienNodig();
   syncTradeTrackerIndienNodig();
 
-  // Alleen de eerste foto meesturen naar de overzichtskaarten (de kaart toont
-  // er maar één) — scheelt fors in paginagrootte bij 150+ woningen.
-  const listings = getLiveListings().map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined }));
+  // Homepage = alléén het verkoop-aanbod. Verhuur staat op de aparte pagina
+  // "Huusje Huren" (/verhuur). Alleen de eerste foto meesturen scheelt fors in
+  // paginagrootte.
+  const listings = getLiveListings()
+    .filter((l) => l.doel === "koop")
+    .map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined }));
   const locale = getLocale();
 
   return (
@@ -80,9 +82,22 @@ export default function Home() {
         </div>
       </Link>
 
-      <ListingsBrowser listings={listings} locale={locale} />
+      <ListingsBrowser listings={listings} locale={locale} modus="koop" />
 
-      <HuurPartners locale={locale} />
+      {/* Liever huren? Door naar de aparte verhuurpagina "Huusje Huren". */}
+      <Link
+        href={localeHref(locale, "/verhuur")}
+        className="mt-10 block rounded-2xl bg-bosgroen text-white p-5 sm:p-6 hover:shadow-md transition-shadow"
+      >
+        <div className="flex gap-4 items-center flex-wrap">
+          <div className="text-3xl">⛱️</div>
+          <div className="flex-1 min-w-[220px]">
+            <div className="font-display font-extrabold text-xl">Liever even weg? Huusje Huren</div>
+            <div className="text-salie-lt text-sm mt-0.5">Vakantiewoningen te huur op de mooiste parken van Nederland — via onze verhuurpartners.</div>
+          </div>
+          <span className="btn bg-white text-bosgroen-dk hover:bg-white/90 text-sm">Bekijk het huuraanbod →</span>
+        </div>
+      </Link>
     </div>
   );
 }
