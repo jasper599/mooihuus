@@ -67,7 +67,7 @@ export function ListingCard({ listing, locale = "nl" }: { listing: Listing; loca
   // Externe (affiliate) woning: rechtstreeks naar de partner, met sponsored/nofollow.
   if (extern) {
     return (
-      <a href={listing.externalUrl} target="_blank" rel="sponsored nofollow noopener" className={klass}>
+      <a href={`/api/klik?id=${encodeURIComponent(listing.id)}`} target="_blank" rel="sponsored nofollow noopener" className={klass}>
         {inhoud}
       </a>
     );
