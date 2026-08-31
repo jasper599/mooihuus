@@ -12,12 +12,16 @@ import { verwerkVerlopendeAdvertenties } from "./verlenging";
 import { getBlogPosts } from "./blog";
 import { addBlogPost } from "./db";
 import { genereerBlogpost } from "./blog-generator";
+import { syncMarinaparken } from "./marinaparken-feed";
+import { syncAlleTradeTracker } from "./tradetracker-feed";
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const STAMP_FILE = path.join(DATA_DIR, "last-onderhoud.txt");
 const BLOG_STAMP = path.join(DATA_DIR, "last-blog.txt");
+const FEED_STAMP = path.join(DATA_DIR, "last-feeds.txt");
 const INTERVAL = 30 * 60 * 1000; // elke 30 minuten kijken of het al gedraaid is
 const WEEK = 7 * 24 * 60 * 60 * 1000;
+const FEED_INTERVAL = 6 * 60 * 60 * 1000; // huurfeeds elke 6 uur verversen
 
 function vandaag(d = new Date()): string {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
@@ -76,6 +80,36 @@ async function genereerEnBewaarBlog(nu: Date): Promise<void> {
   }
 }
 
+// Huurfeeds (Marinaparken + TradeTracker/Glampings/TopParken) op de achtergrond
+// verversen — bewust NIET op een bezoekerspagina, zodat een grote of trage feed
+// nooit meer een verzoek of de healthcheck kan blokkeren.
+function feedsNodig(nu: Date): boolean {
+  try {
+    if (!fs.existsSync(FEED_STAMP)) return true;
+    const laatst = new Date(fs.readFileSync(FEED_STAMP, "utf8").trim()).getTime();
+    return nu.getTime() - laatst >= FEED_INTERVAL;
+  } catch {
+    return true;
+  }
+}
+let bezigFeeds = false;
+async function draaiFeeds(nu: Date): Promise<void> {
+  if (bezigFeeds || !feedsNodig(nu)) return;
+  bezigFeeds = true;
+  try {
+    await syncMarinaparken().catch(() => {});
+    await syncAlleTradeTracker().catch(() => {});
+    try {
+      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+      fs.writeFileSync(FEED_STAMP, nu.toISOString(), "utf8");
+    } catch {
+      /* niet fataal */
+    }
+  } finally {
+    bezigFeeds = false;
+  }
+}
+
 let bezig = false;
 async function draaiDagelijks(): Promise<void> {
   if (bezig || alGedraaidVandaag()) return;
@@ -94,6 +128,7 @@ async function draaiDagelijks(): Promise<void> {
 function tick(): void {
   void draaiDagelijks();
   void draaiBlog(new Date()).catch(() => {});
+  void draaiFeeds(new Date()).catch(() => {});
 }
 
 let gestart = false;
