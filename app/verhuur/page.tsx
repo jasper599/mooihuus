@@ -3,8 +3,6 @@ import { getLiveListings } from "@/lib/db";
 import { ListingsBrowser } from "@/components/ListingsBrowser";
 import { HuurPartners } from "@/components/HuurPartners";
 import { getLocale } from "@/lib/i18n-server";
-import { syncMarinaparkenIndienNodig } from "@/lib/marinaparken-feed";
-import { syncTradeTrackerIndienNodig } from "@/lib/tradetracker-feed";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +14,13 @@ export const metadata: Metadata = {
 };
 
 export default function VerhuurPage() {
-  // Huurfeeds bijwerken (throttled) — deze pagina leeft van het verhuuraanbod.
-  syncMarinaparkenIndienNodig();
-  syncTradeTrackerIndienNodig();
-
+  // De huurfeeds worden op de achtergrond ververst door de scheduler (elke ~6u),
+  // niet op deze pagina — zo blijft de pagina licht en snel.
   const listings = getLiveListings()
     .filter((l) => l.doel === "huur")
-    .map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined }));
+    // Alleen de eerste foto en géén (lange) omschrijving meesturen — scheelt
+    // fors in paginagrootte bij duizenden woningen.
+    .map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined, omschrijving: "" }));
   const locale = getLocale();
 
   return (
