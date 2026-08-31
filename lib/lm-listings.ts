@@ -3447,7 +3447,7 @@ export const LM_LISTINGS: SeedListing[] = [
     "prijs": 174999,
     "kleur": 1,
     "pakket": "Plus",
-    "status": "live",
+    "status": "verkocht",
     "fotos": [
       "https://haywebattachments.blob.core.windows.net/public/2899/3526489/107060015/$xl/img_6395.jpg",
       "https://haywebattachments.blob.core.windows.net/public/2899/3526489/107060022/$xl/img_6394.jpg",
@@ -3634,7 +3634,7 @@ export const LM_LISTINGS: SeedListing[] = [
     "prijs": 129000,
     "kleur": 0,
     "pakket": "Basis",
-    "status": "live",
+    "status": "verkocht",
     "fotos": [
       "https://haywebattachments.blob.core.windows.net/public/2899/4192801/131947900/$l/foto-1.jpg",
       "https://haywebattachments.blob.core.windows.net/public/2899/4192801/131947903/$xl/foto-5.jpg",
@@ -4232,7 +4232,7 @@ export const LM_LISTINGS: SeedListing[] = [
     "prijs": 95000,
     "kleur": 4,
     "pakket": "Basis",
-    "status": "live",
+    "status": "verkocht",
     "fotos": [
       "https://haywebattachments.blob.core.windows.net/public/2899/4192770/131946661/$xl/foto-2.jpg",
       "https://haywebattachments.blob.core.windows.net/public/2899/4192770/131946664/$xl/foto-3.jpg",
@@ -6103,5 +6103,51 @@ export const LM_LISTINGS: SeedListing[] = [
       "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211703/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2007.jpg",
       "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211704/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2008.jpg"
     ]
+  },
+  {
+    "id": "lm-biddinghuizen-spijkweg-15-568",
+    "videoUrl": "https://youtu.be/mkUeJlduvjo",
+    "titel": "Sfeervolle 6-persoons vakantiewoning type Cosy Unique op EuroParcs Zuiderzee",
+    "type": "Bungalow",
+    "doel": "koop",
+    "provincie": "Flevoland",
+    "park": "EuroParcs Zuiderzee",
+    "personen": 6,
+    "m2": 38,
+    "prijs": 149500,
+    "kleur": 0,
+    "pakket": "Basis",
+    "status": "live",
+    "fotos": [
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928382/$xl/foto-4.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928385/$xl/foto-6.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928386/$xl/foto-2.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928387/$xl/foto-7.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928388/$xl/foto-8.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928389/$xl/foto-9.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928390/$xl/foto-10.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928391/$xl/foto-15.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928392/$xl/foto-22.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928393/$xl/foto-23.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928394/$xl/foto-24.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928395/$xl/foto-18.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928396/$xl/foto-17.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928397/$xl/foto-12.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928398/$xl/foto-13.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928399/$xl/foto-14.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928400/$xl/foto-11.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928401/$xl/foto-16.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928402/$xl/foto-19.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928403/$xl/foto-20.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928404/$xl/foto-21.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928405/$xl/foto-25.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928406/$xl/foto-3.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928407/$xl/foto-5.jpg",
+      "https://haywebattachments.blob.core.windows.net/public/2899/4269218/134928408/$xl/foto-1.jpg"
+    ],
+    "omschrijving": "Sfeervolle en slim ingedeelde 6-persoons vakantiewoning van het type Cosy Unique op EuroParcs Zuiderzee. De woning beschikt over een centrale open woonruimte, twee slaapkamers met elk een eigen badkamer en airconditioning. Gelegen op eigen grond aan het water, ideaal voor eigen gebruik in combinatie met verhuur.",
+    "bouwjaar": 2020,
+    "slaapkamers": 2,
+    "perceel": 241
   }
 ];
