@@ -53,7 +53,6 @@ export function Nav() {
   // Secundaire links onder 'Meer'
   const meer = [
     { href: "/blog", label: t("nav.blog") },
-    { href: "/mantelzorg", label: t("nav.mantelzorg") },
     { href: "/verkocht", label: t("nav.verkocht") },
     { href: "/openhuizen", label: locale === "de" ? "Tage der offenen Tür" : locale === "en" ? "Open houses" : "Open huizen" },
     { href: "/reviews", label: t("footer.reviews") },
