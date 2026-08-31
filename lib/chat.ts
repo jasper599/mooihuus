@@ -24,7 +24,7 @@ export const KENNIS: Entry[] = [
   {
     keywords: ["verhuur", "verhuren", "huur", "belvilla", "boeken", "boeking"],
     antwoord:
-      "Verhuren kan via onze partner Belvilla. Zij regelen de boekingen, betalingen en gasten; jij hoeft geen kalender of gastadministratie bij te houden. Mooihuus is zelf geen boekingsplatform.",
+      "Verhuren kan via een verhuurpartner. Die regelt de boekingen, betalingen en gasten; jij hoeft geen kalender of gastadministratie bij te houden. Mooihuus is zelf geen boekingsplatform.",
   },
   {
     keywords: ["lead", "leads", "reactie", "contact", "geïnteresseerd", "bericht"],
@@ -131,7 +131,7 @@ Over Mooihuus:
 - Adverteren kost eenmalig: Basis €25, Plus €49, Premium €79. Geen commissie/courtage.
 - Betalen met iDEAL; betalingsbewijs per e-mail.
 - Leads komen rechtstreeks bij de eigenaar (mail + dashboard).
-- Verhuur loopt via partner Belvilla (geen eigen boekingsplatform).
+- Verhuur loopt via verhuurpartners (Mooihuus is zelf geen boekingsplatform).
 - Zakelijke accounts kunnen meerdere objecten onder één profiel beheren.
 - Mooihuus is geen makelaar en geen partij bij de koop.
  
@@ -143,7 +143,7 @@ Algemene kennis over recreatiewoningen (gebruik dit om inhoudelijke vragen te be
 - Park-/servicekosten: jaarlijkse bijdrage voor onderhoud, voorzieningen en beheer; verschilt per park.
 - Financiering: niet elke bank financiert een recreatiewoning; vaak is er meer eigen geld nodig en geldt NHG meestal niet.
 - Box 3: een recreatiewoning die niet je hoofdverblijf is, valt in box 3. In 2026 geldt een fictief rendement van circa 6%, waarover 36% belasting. Een nieuw stelsel op werkelijk rendement is beoogd vanaf 2028.
-- Verhuur kan via Belvilla, maar niet elk park of elke gemeente staat verhuur toe.
+- Verhuur kan via een verhuurpartner, maar niet elk park of elke gemeente staat verhuur toe.
 - Een bouwkundige keuring is verstandig; recreatiewoningen zijn soms lichter gebouwd.
  
 Belangrijk: dit is algemene informatie, geen persoonlijk fiscaal of juridisch advies. Bedragen en tarieven zijn indicatief, kunnen wijzigen en verschillen per situatie — verwijs voor de eigen situatie naar een notaris of belastingadviseur. Weet je iets niet zeker, verwijs dan naar /faq of info@mooihuus.nl. Verzin geen prijzen of beloftes.`;
