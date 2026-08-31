@@ -1,99 +1,139 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ContactForm } from "@/components/ContactForm";
+import { HuusmeesterForm } from "./HuusmeesterForm";
+import { HUUSMEESTERS_PARTNERS, HUUSMEESTERS_CATEGORIEEN } from "@/lib/partners";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Zorgwoning.nl — mantelzorgwoningen in de tuin | Mooihuus-partner",
+  title: "Huusmeesters — hulp & diensten voor je recreatiewoning | Mooihuus",
   description:
-    "Zorgwoning.nl is partner van Mooihuus voor mantelzorgwoningen: kant-en-klare zorgwoningen in de tuin, koop of huur, vaak vergunningvrij. Doe de gratis vergunningscheck.",
-  alternates: { canonical: "/huusmeesters/zorgwoning" },
+    "Alles rond je recreatiewoning op één plek: verzekering, hypotheek, schoonmaak, tuin, onderhoud, interieur, bergingen en wellness. Vertel ons waar je mee zit, wij helpen je verder.",
+  alternates: { canonical: "/huusmeesters" },
 };
 
-const KENMERKEN: { icon: string; titel: string; tekst: string }[] = [
-  { icon: "🏡", titel: "Compleet in de tuin", tekst: "Een volwaardige, zelfstandige woning naast je eigen huis — eigen voordeur, eigen plek, zorg dichtbij." },
-  { icon: "📐", titel: "12 modellen, 40–82,5 m²", tekst: "Van compact tot ruim, ook rolstoeltoegankelijk. Op maat aan te passen aan de situatie en de bewoner." },
-  { icon: "🔑", titel: "Koop of huur", tekst: "Kopen of huren kan allebei — je kiest wat past bij de duur van de zorg en je budget." },
-  { icon: "⏱️", titel: "Vaak in één dag geplaatst", tekst: "'s Ochtends een leeg erf, 's avonds een woning. Prefab gebouwd en in één keer geplaatst." },
-  { icon: "🌱", titel: "Energieneutraal", tekst: "Duurzaam en energiezuinig gebouwd, dus lage vaste lasten voor de bewoner." },
-  { icon: "🤝", titel: "Alles in eigen beheer", tekst: "Ontwerp, productie, transport en plaatsing in eigen hand — met één vast aanspreekpunt van begin tot eind." },
-];
-
-export default function ZorgwoningProfiel() {
-  const uit = "/api/uit?partner=" + encodeURIComponent("Zorgwoning.nl");
+export default function HuusmeestersPage() {
   return (
-    <div className="max-w-3xl mx-auto">
-      <Link href="/huusmeesters" className="text-sm text-grijs hover:text-bosgroen">← Terug naar Huusmeesters</Link>
-
-      {/* Hero */}
-      <div className="card mt-3 flex gap-4 items-start">
-        <div className="w-14 h-14 rounded-2xl bg-salie-lt flex items-center justify-center text-3xl shrink-0">🏡</div>
-        <div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="font-display font-extrabold text-2xl md:text-3xl text-bosgroen-dk">Zorgwoning.nl</h1>
-            <span className="inline-block bg-salie-lt text-bosgroen-dk font-display font-semibold text-xs px-3 py-1 rounded-full">Partner van Mooihuus</span>
-          </div>
-          <div className="text-xs font-semibold text-oranje-dk uppercase tracking-wide mt-1">Mantelzorgwoningen · zorgwoningen</div>
-          <p className="text-grijs mt-2">
-            Specialist in mantelzorg- en zorgwoningen: een complete, kant-en-klare woning in de tuin, zodat een
-            dierbare dichtbij kan wonen met behoud van eigen zelfstandigheid. Via Mooihuus regel je de eerste stap —
-            de gratis vergunningscheck — en Zorgwoning.nl helpt je verder van ontwerp tot plaatsing.
-          </p>
-        </div>
-      </div>
-
-      {/* Kenmerken */}
-      <h2 className="font-display font-bold text-xl text-bosgroen-dk mt-8 mb-2">Wat Zorgwoning.nl doet</h2>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {KENMERKEN.map((k) => (
-          <div key={k.titel} className="card flex gap-3 items-start">
-            <div className="w-11 h-11 rounded-xl bg-salie-lt flex items-center justify-center text-xl shrink-0">{k.icon}</div>
-            <div>
-              <div className="font-display font-bold text-bosgroen-dk">{k.titel}</div>
-              <div className="text-sm text-grijs mt-0.5">{k.tekst}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Vergunningscheck-CTA */}
-      <div className="card mt-8 bg-bosgroen text-white">
-        <div className="text-xs font-display font-semibold uppercase tracking-wider text-salie-lt">Gratis & indicatief</div>
-        <h2 className="font-display font-extrabold text-2xl mt-1">Mag een mantelzorgwoning vergunningvrij in jouw tuin?</h2>
-        <p className="text-salie-lt mt-1.5 max-w-xl">
-          Doe de gratis vergunningscheck van Mooihuus. In een paar vragen weet je of het waarschijnlijk vergunningvrij
-          mag. Kansrijk? Dan denkt Zorgwoning.nl met je mee over het ontwerp en de plaatsing.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Link href="/mantelzorg" className="btn bg-white text-bosgroen-dk hover:bg-white/90">Doe de vergunningscheck →</Link>
-          <a href={uit} target="_blank" rel="sponsored nofollow noopener noreferrer" className="btn btn-ghost text-[#EAF3EC] border border-white/40">
-            Bekijk het aanbod op zorgwoning.nl
-          </a>
-        </div>
-      </div>
-
-      {/* Prijsindicatie / partnerschap */}
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <div className="card">
-          <div className="font-display font-bold text-bosgroen-dk text-sm">Prijsindicatie</div>
-          <p className="text-sm text-grijs mt-0.5">
-            Een nieuwe zorgwoning start rond de € 66.550 incl. btw en loopt op afhankelijk van model, maatwerk en
-            afwerking. Ook tweedehands units en huur behoren tot de mogelijkheden.
-          </p>
-        </div>
-        <div className="card">
-          <div className="font-display font-bold text-bosgroen-dk text-sm">Zo werkt de samenwerking</div>
-          <p className="text-sm text-grijs mt-0.5">
-            Vraag je via de check advies aan, dan komt je aanvraag rechtstreeks bij Zorgwoning.nl binnen. Zij nemen
-            vrijblijvend contact met je op om de mogelijkheden, het inmeten en het ontwerp te bespreken.
-          </p>
-        </div>
-      </div>
-
-      <p className="text-xs text-grijs mt-6">
-        Zorgwoning.nl is een samenwerkingspartner van Mooihuus. De vergunningscheck is een indicatie op basis van de
-        landelijke regels voor vergunningvrij bouwen; de gemeente beslist definitief.
+    <div className="max-w-4xl mx-auto">
+      <span className="inline-block bg-salie-lt text-bosgroen-dk font-display font-semibold text-xs px-3 py-1 rounded-full">
+        Nieuw
+      </span>
+      <h1 className="font-display font-extrabold text-3xl md:text-4xl text-bosgroen-dk mt-2">
+        Huusmeesters
+      </h1>
+      <p className="text-grijs mt-2 max-w-2xl">
+        Je tweede huus op afstand? De Huusmeesters zijn er voor alles eromheen — van verzekering en
+        financiering tot schoonmaak, tuin, onderhoud, interieur, bergingen en wellness. We werken
+        samen met betrouwbare partners en vakmensen. Vertel ons waar je mee zit, dan brengen we je in
+        contact met de juiste persoon.
       </p>
+
+      {/* Teaser: U heeft uw woning verkocht. Wat nu?! */}
+      <Link href="/verkocht" className="mt-8 rounded-2xl bg-creme border border-salie p-5 flex gap-4 items-center flex-wrap hover:shadow-md transition-shadow">
+        <div className="text-3xl">🎉</div>
+        <div className="flex-1 min-w-[220px]">
+          <div className="font-display font-bold text-bosgroen-dk">U heeft uw woning verkocht. Wat nu?!</div>
+          <div className="text-sm text-grijs">Een helder stappenplan van notaris tot sleuteloverdracht — en contractuele begeleiding via Luyten als u dat wilt.</div>
+        </div>
+        <span className="btn btn-green text-sm">Bekijk het stappenplan →</span>
+      </Link>
+
+      {/* Teaser: fotografiepakket */}
+      <Link href="/fotografie" className="mt-4 rounded-2xl bg-bosgroen text-white p-5 flex gap-4 items-center flex-wrap hover:shadow-md transition-shadow">
+        <div className="text-3xl">📸</div>
+        <div className="flex-1 min-w-[220px]">
+          <div className="font-display font-bold">Foto's, plattegrond én video — € 450</div>
+          <div className="text-sm text-salie-lt">Laat je recreatiewoning professioneel vastleggen: fotoshoot, plattegrond en een YouTube-rondleiding. Compleet pakket, vrijblijvend aan te vragen.</div>
+        </div>
+        <span className="btn text-sm">Bekijk het pakket →</span>
+      </Link>
+
+      {/* Teaser: Guest Experience (voor parken) */}
+      <Link href="/guest-experience" className="mt-3 rounded-2xl bg-creme border border-salie p-5 flex gap-4 items-center flex-wrap hover:shadow-md transition-shadow">
+        <div className="flex-1 min-w-[220px]">
+          <div className="text-xs font-semibold text-oranje-dk uppercase tracking-wide">Voor parken &amp; organisaties</div>
+          <div className="font-display font-bold text-bosgroen-dk mt-0.5">Guest Experience — anonieme gasttest</div>
+          <div className="text-sm text-grijs">Een anonieme gast test jullie complete beleving en levert een rapport met concrete verbeterpunten. Excl. boekings- en verblijfskosten.</div>
+        </div>
+        <span className="btn btn-green text-sm">Bekijk de dienst →</span>
+      </Link>
+
+      {/* Vaste partners */}
+      <h2 className="font-display font-bold text-xl text-bosgroen-dk mt-8 mb-2">Onze partners</h2>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {HUUSMEESTERS_PARTNERS.map((p) => {
+          const inhoud = (
+            <>
+              <div className="w-11 h-11 rounded-xl bg-salie-lt flex items-center justify-center text-xl shrink-0">{p.emoji}</div>
+              <div className="flex-1">
+                <div className="font-display font-bold text-bosgroen-dk">{p.naam}</div>
+                <div className="text-xs font-semibold text-oranje-dk uppercase tracking-wide">{p.vak}</div>
+                <p className="text-sm text-grijs mt-1">{p.omschrijving}</p>
+                <span className="text-sm text-bosgroen font-semibold">{p.profiel ? "Bekijk profiel →" : "Bekijk partner →"}</span>
+              </div>
+            </>
+          );
+          return p.profiel ? (
+            <Link key={p.url} href={p.profiel} className="card flex gap-3 items-start hover:shadow-md transition-shadow">{inhoud}</Link>
+          ) : (
+            <a
+              key={p.url}
+              href={`/api/uit?partner=${encodeURIComponent(p.naam)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="card flex gap-3 items-start hover:shadow-md transition-shadow"
+            >
+              {inhoud}
+            </a>
+          );
+        })}
+      </div>
+
+      {/* Categorieën / diensten */}
+      <h2 className="font-display font-bold text-xl text-bosgroen-dk mt-8 mb-2">Waar we mee helpen</h2>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {HUUSMEESTERS_CATEGORIEEN.map((c) => {
+          const inhoud = (
+            <>
+              <div className="w-11 h-11 rounded-xl bg-salie-lt flex items-center justify-center text-xl shrink-0">{c.icon}</div>
+              <div>
+                <div className="font-display font-bold text-bosgroen-dk">{c.titel}</div>
+                <div className="text-sm text-grijs">{c.tekst}</div>
+                {c.href && <span className="text-sm text-bosgroen font-semibold">Doe de check →</span>}
+              </div>
+            </>
+          );
+          return c.href ? (
+            <Link key={c.titel} href={c.href} className="card flex gap-3 items-start hover:shadow-md transition-shadow">{inhoud}</Link>
+          ) : (
+            <div key={c.titel} className="card flex gap-3 items-start">{inhoud}</div>
+          );
+        })}
+      </div>
+
+      {/* Hulpvraag van eigenaren */}
+      <div className="card mt-8">
+        <h2 className="font-display font-bold text-xl text-bosgroen-dk">Waar kunnen we je mee helpen?</h2>
+        <p className="text-grijs text-sm mt-1 mb-4 max-w-2xl">
+          Laat weten waar je hulp of een product voor nodig hebt en in welke regio je woning staat. We
+          zoeken de juiste Huusmeester of partner erbij en nemen contact met je op — vrijblijvend.
+        </p>
+        <ContactForm hulp defaultOnderwerp="Hulpvraag Huusmeesters" knop="Vraag hulp aan" />
+      </div>
+
+      {/* Banner: word Huusmeester */}
+      <div className="mt-8 rounded-2xl overflow-hidden bg-bosgroen text-white p-6 md:p-8">
+        <h2 className="font-display font-extrabold text-2xl">Hier als Huusmeester staan?</h2>
+        <p className="text-salie-lt mt-2 max-w-2xl">
+          Ben je hovenier, schoonmaker, klusbedrijf, interieurspecialist, of lever je bijvoorbeeld
+          bergingen of wellness — voor jouw regio of landelijk? Meld je bedrijf gratis aan. We nemen
+          contact op om je in ons Huusmeesters-netwerk op te nemen.
+        </p>
+        <div className="bg-white text-inkt rounded-xl p-4 mt-5">
+          <HuusmeesterForm />
+        </div>
+      </div>
     </div>
   );
 }
