@@ -101,19 +101,6 @@ export default async function Dashboard() {
         </div>
       )}
 
-      {/* Belvilla verhuur */}
-      <div className="card mt-4 border-salie flex gap-4 items-center flex-wrap">
-        <div className="text-3xl">🏖️</div>
-        <div className="flex-1 min-w-[220px]">
-          <div className="font-display font-bold text-bosgroen-dk">Ook verhuren? Via onze partner Belvilla.</div>
-          <div className="text-sm text-grijs">
-            Wij plaatsen je woning door naar Belvilla — zij regelen boekingen en betalingen, jij
-            verdient aan verhuur. Geen eigen kalender of gastadministratie.
-          </div>
-        </div>
-        <Link href="/contact?onderwerp=Verhuren via Belvilla" className="btn btn-green text-sm">Verhuren via Belvilla</Link>
-      </div>
-
       <h2 className="font-display font-bold text-lg mt-6 mb-2">
         Leads <span className="bg-oranje text-white text-[0.66rem] font-bold px-2 py-0.5 rounded-full font-display align-middle">rechtstreeks naar jou</span>
       </h2>
@@ -127,8 +114,13 @@ export default async function Dashboard() {
                 {lead.naam.split(" ").map((w) => w[0]).join("").slice(0, 2)}
               </div>
               <div className="flex-1">
-                <div className="font-semibold text-sm">{lead.naam} <span className="text-grijs font-normal">· {lead.datum}</span></div>
-                <div className="text-sm text-grijs">{lead.bericht}</div>
+                <div className="font-semibold text-sm">
+                  {lead.naam} <span className="text-grijs font-normal">· {lead.datum}</span>
+                  {lead.bron === "mantelzorg" && (
+                    <span className="ml-2 bg-salie-lt text-bosgroen-dk text-[0.62rem] font-display font-semibold px-2 py-0.5 rounded-full align-middle">Mantelzorg</span>
+                  )}
+                </div>
+                <div className="text-sm text-grijs whitespace-pre-line">{lead.bericht}</div>
               </div>
               <a href={`mailto:${lead.email}`} className="btn text-sm">Beantwoorden</a>
             </div>
