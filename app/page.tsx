@@ -3,6 +3,7 @@ import { getLiveListings } from "@/lib/db";
 import { ListingsBrowser } from "@/components/ListingsBrowser";
 import { HuurPartners } from "@/components/HuurPartners";
 import { syncMarinaparkenIndienNodig } from "@/lib/marinaparken-feed";
+import { syncTradeTrackerIndienNodig } from "@/lib/tradetracker-feed";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { markeerHuidigeBlogAlsBasis, stuurNieuwsteBlog } from "@/lib/nieuwsbrief";
@@ -20,6 +21,7 @@ export default function Home() {
   stuurMaandrapportenIndienNieuweMaand().catch(() => {});
   // Huurfeeds (Marinaparken) — throttled, draait hooguit 1x per 6 uur.
   syncMarinaparkenIndienNodig();
+  syncTradeTrackerIndienNodig();
 
   // Alleen de eerste foto meesturen naar de overzichtskaarten (de kaart toont
   // er maar één) — scheelt fors in paginagrootte bij 150+ woningen.
