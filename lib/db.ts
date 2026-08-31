@@ -418,7 +418,9 @@ export function getLeads(listingId?: string): Lead[] {
 export function getLeadsForOwner(ownerId: string): Lead[] {
   const db = load();
   const ids = new Set(db.listings.filter((l) => l.ownerId === ownerId).map((l) => l.id));
-  return db.leads.filter((l) => ids.has(l.listingId));
+  // Leads via een eigen woning-advertentie én leads die rechtstreeks aan dit
+  // account gekoppeld zijn (bv. mantelzorg-aanvragen voor Zorgwoning.nl).
+  return db.leads.filter((l) => ids.has(l.listingId) || l.ownerId === ownerId);
 }
 export function addLead(data: Omit<Lead, "id" | "datum">): Lead {
   const db = load();
