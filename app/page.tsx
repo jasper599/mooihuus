@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { getLiveListings } from "@/lib/db";
 import { ListingsBrowser } from "@/components/ListingsBrowser";
-import { syncMarinaparkenIndienNodig } from "@/lib/marinaparken-feed";
-import { syncTradeTrackerIndienNodig } from "@/lib/tradetracker-feed";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { markeerHuidigeBlogAlsBasis, stuurNieuwsteBlog } from "@/lib/nieuwsbrief";
@@ -18,16 +16,17 @@ export default function Home() {
   // Maandrapport: automatisch één keer per maand naar alle makelaars.
   markeerHuidigeMaandAlsBasis();
   stuurMaandrapportenIndienNieuweMaand().catch(() => {});
-  // Huurfeeds (Marinaparken) — throttled, draait hooguit 1x per 6 uur.
-  syncMarinaparkenIndienNodig();
-  syncTradeTrackerIndienNodig();
+  // (De huurfeeds worden op de achtergrond ververst door de scheduler, niet
+  // meer op deze pagina — zo kan een grote feed nooit een verzoek blokkeren.)
 
   // Homepage = alléén het verkoop-aanbod. Verhuur staat op de aparte pagina
   // "Huusje Huren" (/verhuur). Alleen de eerste foto meesturen scheelt fors in
   // paginagrootte.
   const listings = getLiveListings()
     .filter((l) => l.doel === "koop")
-    .map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined }));
+    // Alleen de eerste foto en géén (lange) omschrijving meesturen — de
+    // overzichtskaart gebruikt die niet. Scheelt fors in paginagrootte.
+    .map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined, omschrijving: "" }));
   const locale = getLocale();
 
   return (
