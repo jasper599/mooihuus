@@ -16,7 +16,15 @@ export async function POST(req: Request) {
   }
 
   const mail = renderContact({ naam, email, onderwerp, bericht, categorie, regio });
-  await sendEmail({ aan: COMPANY.email, onderwerp: mail.onderwerp, soort: "contact", html: mail.html });
+
+  // Mantelzorg-aanvragen gaan naar onze partner Zorgwoning.nl (samenwerking),
+  // met een kopie naar Mooihuus zodat we de leads blijven volgen.
+  const isMantelzorg = (categorie || "").toLowerCase() === "mantelzorg";
+  const ontvangers = isMantelzorg
+    ? ["advies@zorgwoning.nl", COMPANY.email]
+    : COMPANY.email;
+
+  await sendEmail({ aan: ontvangers, onderwerp: mail.onderwerp, soort: "contact", html: mail.html });
 
   return NextResponse.json({ ok: true });
 }
