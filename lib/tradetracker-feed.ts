@@ -39,6 +39,14 @@ function prop(body: string, naam: string): string {
   return v ? clean(v[1]) : "";
 }
 
+// "€ 1.171,00" / "137,00" → 1171 / 137 (Europees: punt = duizendtal, komma = decimaal).
+function euroNaarGetal(s: string): number {
+  let t = (s || "").replace(/[^\d.,]/g, "");
+  if (t.includes(",")) t = t.replace(/\./g, "").replace(",", ".");
+  const n = parseFloat(t);
+  return isFinite(n) ? n : 0;
+}
+
 function typeUit(cat: string): string {
   const c = cat.toLowerCase();
   if (/chalet/.test(c)) return "Chalet";
@@ -79,14 +87,30 @@ async function syncEen(p: Partner): Promise<SyncResultaat> {
       const url2 = tag(body, "URL");
       if (!url2) continue;
 
-      const prijsRuw = parseFloat(tag(body, "price").replace(/[^\d.,]/g, "").replace(",", "."));
-      const uitleg = prop(body, "price_explanation");
-      const nachten = parseInt((uitleg.match(/(\d+)\s*nacht/i) || [])[1] || "3", 10) || 3;
-      const perNacht = isFinite(prijsRuw) && prijsRuw > 0 ? Math.max(1, Math.round(prijsRuw / nachten)) : 0;
+      // Alleen Nederlands aanbod op Mooihuus. Het landveld verschilt per feed:
+      // Glampings gebruikt "NL", TopParken "Nederland" — we accepteren beide.
+      // Feeds zonder landveld passeren automatisch (aannemen: NL).
+      const land = (prop(body, "country") + " " + prop(body, "country_name")).toLowerCase().trim();
+      if (land && !/nederland|netherlands|\bnl\b|\bnld\b/.test(land)) continue;
+
+      // Prijs per nacht — twee feed-varianten:
+      //  - Glampings: price_indication is al de prijs per nacht (price_indication_per = "night").
+      //  - TopParken: <price> is het totaal voor N nachten (uit price_explanation).
+      const perProp = prop(body, "price_indication_per");
+      const prijsInd = prop(body, "price_indication");
+      let perNacht = 0;
+      if (prijsInd && /night|nacht/i.test(perProp)) {
+        perNacht = Math.round(euroNaarGetal(prijsInd));
+      } else {
+        const prijsRuw = euroNaarGetal(tag(body, "price"));
+        const uitleg = prop(body, "price_explanation");
+        const nachten = parseInt((uitleg.match(/(\d+)\s*nacht/i) || [])[1] || "3", 10) || 3;
+        perNacht = prijsRuw > 0 ? Math.max(1, Math.round(prijsRuw / nachten)) : 0;
+      }
 
       const catPath = (body.match(/<category\b[^>]*path="([^"]*)"/) || [])[1] || prop(body, "accommodationType");
-      const foto = prop(body, "imageURL_accommodation") || prop(body, "imageURL_park");
-      const park = prop(body, "name_park") || prop(body, "Organization_name") || prop(body, "city");
+      const foto = prop(body, "imageURL_accommodation") || prop(body, "imageURL_park") || prop(body, "image");
+      const park = prop(body, "name_park") || prop(body, "Organization_name") || prop(body, "park") || prop(body, "city");
 
       const data: Partial<Listing> = {
         doel: "huur",
@@ -94,7 +118,7 @@ async function syncEen(p: Partner): Promise<SyncResultaat> {
         type: typeUit(catPath),
         provincie: prop(body, "province") || prop(body, "region") || "Nederland",
         park,
-        personen: parseInt(prop(body, "maxPersons"), 10) || 2,
+        personen: parseInt(prop(body, "maxPersons") || prop(body, "num_persons"), 10) || 2,
         m2: 0,
         prijs: perNacht || 1,
         prijsSuffix: "p.n.",
