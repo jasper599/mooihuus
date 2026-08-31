@@ -83,7 +83,9 @@ export interface Huusmeester {
  
 export interface Lead {
   id: string;
-  listingId: string;
+  listingId: string;  // "" voor partner-/mantelzorg-leads die niet bij een woning horen
+  ownerId?: string;   // directe koppeling aan een account (bv. mantelzorg → Zorgwoning.nl)
+  bron?: string;      // herkomst, bv. "mantelzorg"
   naam: string;
   email: string;
   telefoon?: string;
