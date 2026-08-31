@@ -84,15 +84,23 @@ export default function HuusmeestersPage() {
       {/* Categorieën / diensten */}
       <h2 className="font-display font-bold text-xl text-bosgroen-dk mt-8 mb-2">Waar we mee helpen</h2>
       <div className="grid gap-3 sm:grid-cols-2">
-        {HUUSMEESTERS_CATEGORIEEN.map((c) => (
-          <div key={c.titel} className="card flex gap-3 items-start">
-            <div className="w-11 h-11 rounded-xl bg-salie-lt flex items-center justify-center text-xl shrink-0">{c.icon}</div>
-            <div>
-              <div className="font-display font-bold text-bosgroen-dk">{c.titel}</div>
-              <div className="text-sm text-grijs">{c.tekst}</div>
-            </div>
-          </div>
-        ))}
+        {HUUSMEESTERS_CATEGORIEEN.map((c) => {
+          const inhoud = (
+            <>
+              <div className="w-11 h-11 rounded-xl bg-salie-lt flex items-center justify-center text-xl shrink-0">{c.icon}</div>
+              <div>
+                <div className="font-display font-bold text-bosgroen-dk">{c.titel}</div>
+                <div className="text-sm text-grijs">{c.tekst}</div>
+                {c.href && <span className="text-sm text-bosgroen font-semibold">Doe de check →</span>}
+              </div>
+            </>
+          );
+          return c.href ? (
+            <Link key={c.titel} href={c.href} className="card flex gap-3 items-start hover:shadow-md transition-shadow">{inhoud}</Link>
+          ) : (
+            <div key={c.titel} className="card flex gap-3 items-start">{inhoud}</div>
+          );
+        })}
       </div>
 
       {/* Hulpvraag van eigenaren */}
