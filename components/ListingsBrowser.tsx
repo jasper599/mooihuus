@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { Listing } from "@/lib/types";
 import { Locale, t } from "@/lib/i18n";
@@ -18,6 +18,8 @@ const PRIJS_RANGES: { label: string; min: number; max: number }[] = [
   { label: "€ 400.000+", min: 400000, max: Infinity },
 ];
 
+const PER_PAGINA = 48;
+
 export function ListingsBrowser({ listings, locale = "nl" }: { listings: Listing[]; locale?: Locale }) {
   const [q, setQ] = useState("");
   const [doel, setDoel] = useState("");
@@ -25,6 +27,9 @@ export function ListingsBrowser({ listings, locale = "nl" }: { listings: Listing
   const [prijs, setPrijs] = useState("");
   const [sort, setSort] = useState("");
   const [view, setView] = useState<"lijst" | "kaart">("lijst");
+  const [pagina, setPagina] = useState(0);
+  // Bij een nieuwe filter/zoekopdracht terug naar de eerste pagina.
+  useEffect(() => setPagina(0), [q, doel, provincie, prijs, sort]);
 
   const provincies = useMemo(
     () => Array.from(new Set(listings.map((l) => l.provincie))).sort((a, b) => a.localeCompare(b)),
@@ -51,6 +56,12 @@ export function ListingsBrowser({ listings, locale = "nl" }: { listings: Listing
     if (sort === "prijs-af") return [...filtered].sort((a, b) => b.prijs - a.prijs);
     return filtered; // standaard: volgorde uit db (uitgelicht eerst)
   }, [filtered, sort]);
+
+  // Paginering: rendert nooit meer dan PER_PAGINA kaarten tegelijk, zodat de
+  // pagina licht blijft — ook met duizenden woningen in het aanbod.
+  const totaalPaginas = Math.max(1, Math.ceil(sorted.length / PER_PAGINA));
+  const huidige = Math.min(pagina, totaalPaginas - 1);
+  const zichtbaar = sorted.slice(huidige * PER_PAGINA, (huidige + 1) * PER_PAGINA);
 
   return (
     <div>
@@ -111,11 +122,36 @@ export function ListingsBrowser({ listings, locale = "nl" }: { listings: Listing
       ) : view === "kaart" ? (
         <Kaart listings={sorted} locale={locale} />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sorted.map((l) => (
-            <ListingCard key={l.id} listing={l} locale={locale} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {zichtbaar.map((l) => (
+              <ListingCard key={l.id} listing={l} locale={locale} />
+            ))}
+          </div>
+          {totaalPaginas > 1 && (
+            <div className="flex items-center justify-center gap-3 mt-8">
+              <button
+                type="button"
+                onClick={() => setPagina(Math.max(0, huidige - 1))}
+                disabled={huidige === 0}
+                className="btn btn-ghost text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                ← Vorige
+              </button>
+              <span className="text-sm text-grijs font-display font-semibold">
+                Pagina {huidige + 1} van {totaalPaginas}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPagina(Math.min(totaalPaginas - 1, huidige + 1))}
+                disabled={huidige >= totaalPaginas - 1}
+                className="btn btn-ghost text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Volgende →
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
