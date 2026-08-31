@@ -20,7 +20,6 @@ const KENMERKEN: { icon: string; titel: string; tekst: string }[] = [
 ];
 
 export default function ZorgwoningProfiel() {
-  const uit = "/api/uit?partner=" + encodeURIComponent("Zorgwoning.nl");
   return (
     <div className="max-w-3xl mx-auto">
       <Link href="/huusmeesters" className="text-sm text-grijs hover:text-bosgroen">← Terug naar Huusmeesters</Link>
@@ -56,43 +55,42 @@ export default function ZorgwoningProfiel() {
         ))}
       </div>
 
-      {/* Vergunningscheck-CTA */}
+      {/* Vergunningscheck-CTA — de enige volgende stap: eerst de check */}
       <div className="card mt-8 bg-bosgroen text-white">
-        <div className="text-xs font-display font-semibold uppercase tracking-wider text-salie-lt">Gratis & indicatief</div>
-        <h2 className="font-display font-extrabold text-2xl mt-1">Mag een mantelzorgwoning vergunningvrij in jouw tuin?</h2>
+        <div className="text-xs font-display font-semibold uppercase tracking-wider text-salie-lt">Gratis & indicatief · start hier</div>
+        <h2 className="font-display font-extrabold text-2xl mt-1">Begin met de gratis vergunningscheck</h2>
         <p className="text-salie-lt mt-1.5 max-w-xl">
-          Doe de gratis vergunningscheck van Mooihuus. In een paar vragen weet je of het waarschijnlijk vergunningvrij
-          mag. Kansrijk? Dan denkt Zorgwoning.nl met je mee over het ontwerp en de plaatsing.
+          In een paar vragen weet je of een mantelzorgwoning waarschijnlijk vergunningvrij in jouw tuin mag. Is het
+          kansrijk en wil je verder? Dan brengen we je in contact met Zorgwoning.nl, die met je meedenkt over het
+          ontwerp, het inmeten en de plaatsing.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-4">
           <Link href="/mantelzorg" className="btn bg-white text-bosgroen-dk hover:bg-white/90">Doe de vergunningscheck →</Link>
-          <a href={uit} target="_blank" rel="sponsored nofollow noopener noreferrer" className="btn btn-ghost text-[#EAF3EC] border border-white/40">
-            Bekijk het aanbod op zorgwoning.nl
-          </a>
         </div>
       </div>
 
-      {/* Prijsindicatie / partnerschap */}
+      {/* Zo werkt het / prijsindicatie */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <div className="card">
+          <div className="font-display font-bold text-bosgroen-dk text-sm">Zo werkt het</div>
+          <p className="text-sm text-grijs mt-0.5">
+            Je doet eerst de gratis check op Mooihuus. Vraag je daarna advies aan, dan pakken wij je aanvraag op en
+            brengen we je in contact met Zorgwoning.nl — je stapt dus niet in het diepe, maar wordt persoonlijk verder
+            geholpen.
+          </p>
+        </div>
         <div className="card">
           <div className="font-display font-bold text-bosgroen-dk text-sm">Prijsindicatie</div>
           <p className="text-sm text-grijs mt-0.5">
             Een nieuwe zorgwoning start rond de € 66.550 incl. btw en loopt op afhankelijk van model, maatwerk en
-            afwerking. Ook tweedehands units en huur behoren tot de mogelijkheden.
-          </p>
-        </div>
-        <div className="card">
-          <div className="font-display font-bold text-bosgroen-dk text-sm">Zo werkt de samenwerking</div>
-          <p className="text-sm text-grijs mt-0.5">
-            Vraag je via de check advies aan, dan komt je aanvraag rechtstreeks bij Zorgwoning.nl binnen. Zij nemen
-            vrijblijvend contact met je op om de mogelijkheden, het inmeten en het ontwerp te bespreken.
+            afwerking. Ook tweedehands units en huur behoren tot de mogelijkheden — dat bespreek je in het adviesgesprek.
           </p>
         </div>
       </div>
 
       <p className="text-xs text-grijs mt-6">
-        Zorgwoning.nl is een samenwerkingspartner van Mooihuus. De vergunningscheck is een indicatie op basis van de
-        landelijke regels voor vergunningvrij bouwen; de gemeente beslist definitief.
+        Zorgwoning.nl is de uitvoeringspartner van Mooihuus voor mantelzorgwoningen. De vergunningscheck is een
+        indicatie op basis van de landelijke regels voor vergunningvrij bouwen; de gemeente beslist definitief.
       </p>
     </div>
   );
