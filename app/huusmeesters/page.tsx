@@ -49,6 +49,17 @@ export default function HuusmeestersPage() {
         <span className="btn text-sm">Bekijk het pakket →</span>
       </Link>
 
+      {/* Teaser: Huusje Huren (verhuuraanbod) */}
+      <Link href="/verhuur" className="mt-3 rounded-2xl bg-bosgroen text-white p-5 flex gap-4 items-center flex-wrap hover:shadow-md transition-shadow">
+        <div className="text-3xl">⛱️</div>
+        <div className="flex-1 min-w-[220px]">
+          <div className="text-xs font-semibold text-salie-lt uppercase tracking-wide">Even er tussenuit</div>
+          <div className="font-display font-bold mt-0.5">Huusje Huren — vakantiewoningen te huur</div>
+          <div className="text-sm text-salie-lt">Recreatiewoningen, chalets en lodges op de mooiste parken van Nederland, via onze verhuurpartners.</div>
+        </div>
+        <span className="btn bg-white text-bosgroen-dk hover:bg-white/90 text-sm">Bekijk het huuraanbod →</span>
+      </Link>
+
       {/* Teaser: Guest Experience (voor parken) */}
       <Link href="/guest-experience" className="mt-3 rounded-2xl bg-creme border border-salie p-5 flex gap-4 items-center flex-wrap hover:shadow-md transition-shadow">
         <div className="flex-1 min-w-[220px]">
