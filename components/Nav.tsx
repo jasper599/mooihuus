@@ -37,9 +37,12 @@ export function Nav() {
  
   const meerLabel = locale === "de" ? "Mehr" : locale === "en" ? "More" : "Meer";
  
+  const hurenLabel = locale === "de" ? "Mieten" : locale === "en" ? "Rent" : "Huren";
+
   // Zichtbare hoofdlinks
   const primary = [
     { href: "/", label: t("nav.aanbod") },
+    { href: "/verhuur", label: hurenLabel },
     { href: "/plaatsen", label: t("nav.plaats") },
     { href: "/huusmeesters", label: t("nav.huusmeesters") },
     ...(session ? [{ href: "/dashboard", label: t("nav.dashboard") }] : []),
