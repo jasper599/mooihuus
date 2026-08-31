@@ -1,10 +1,11 @@
 import { HUURPARTNERS } from "@/lib/huurpartners";
 import { gradient } from "@/lib/format";
-import { Locale, t } from "@/lib/i18n";
+import { Locale } from "@/lib/i18n";
 
 // "Ook te huur bij onze partners"-blok. Toont affiliate-partners als kaarten
-// die naar de partner linken (sponsored/nofollow). Met verplichte disclosure.
-export function HuurPartners({ locale = "nl" }: { locale?: Locale }) {
+// die naar de partner linken (sponsored/nofollow).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function HuurPartners({ locale }: { locale?: Locale }) {
   if (!HUURPARTNERS.length) return null;
   return (
     <section className="mt-12">
@@ -30,7 +31,6 @@ export function HuurPartners({ locale = "nl" }: { locale?: Locale }) {
           </a>
         ))}
       </div>
-      <p className="text-xs text-grijs mt-3 max-w-2xl">{t(locale, "footer.affiliate")}</p>
     </section>
   );
 }
