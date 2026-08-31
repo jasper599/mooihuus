@@ -28,7 +28,7 @@ export default function Disclaimer() {
 
       <h2>Externe links en partners</h2>
       <p>
-        Onze site kan verwijzen naar diensten van derden (zoals Belvilla voor verhuur of Mollie voor
+        Onze site kan verwijzen naar diensten van derden (zoals onze verhuurpartners of Mollie voor
         betalingen). Op die diensten zijn de voorwaarden en het privacybeleid van die partijen van
         toepassing; {COMPANY.bv} is daar niet verantwoordelijk voor.
       </p>
