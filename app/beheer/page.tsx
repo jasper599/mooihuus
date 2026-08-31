@@ -155,7 +155,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
                 <li key={p.id}>💶 Betaling {p.factuurnummer} — {euroCents(p.bedrag)} ({p.status})</li>
               ))}
               {leads.slice(0, 3).map((l) => (
-                <li key={l.id}>📩 Lead van {l.naam} op “{getListing(l.listingId)?.titel ?? "?"}”</li>
+                <li key={l.id}>📩 Lead van {l.naam} op “{l.bron === "mantelzorg" ? "Mantelzorg" : (getListing(l.listingId)?.titel ?? "?")}”</li>
               ))}
             </ul>
           </div>
@@ -254,7 +254,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
             <tr key={l.id} className="border-t border-lijn">
               <Td>{l.naam}</Td>
               <Td>{l.email}</Td>
-              <Td>{getListing(l.listingId)?.titel ?? "—"}</Td>
+              <Td>{l.bron === "mantelzorg" ? "Mantelzorg" : (getListing(l.listingId)?.titel ?? "—")}</Td>
               <Td>{l.bericht}</Td>
               <Td>{l.datum}</Td>
             </tr>
