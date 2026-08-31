@@ -15,8 +15,8 @@ interface Partner { source: string; bronLabel: string; env: string }
 
 const PARTNERS: Partner[] = [
   { source: "topparken", bronLabel: "via TopParken", env: "TOPPARKEN_FEED_URL" },
-  // Later, zodra je de feed-URL's hebt:
-  // { source: "glampings", bronLabel: "via Glampings.com", env: "GLAMPINGS_FEED_URL" },
+  { source: "glampings", bronLabel: "via Glampings.com", env: "GLAMPINGS_FEED_URL" },
+  // Later, zodra je de feed-URL hebt:
   // { source: "europarcs",  bronLabel: "via EuroParcs",     env: "EUROPARCS_FEED_URL" },
 ];
 
