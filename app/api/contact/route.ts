@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { renderContact, sendEmail } from "@/lib/email";
 import { COMPANY } from "@/lib/company";
+import { addLead, getUserByEmail } from "@/lib/db";
 
 export async function POST(req: Request) {
   const b = await req.json();
@@ -25,6 +26,19 @@ export async function POST(req: Request) {
     : COMPANY.email;
 
   await sendEmail({ aan: ontvangers, onderwerp: mail.onderwerp, soort: "contact", html: mail.html });
+
+  // Mantelzorg-lead ook koppelen aan het Zorgwoning.nl-account (advies-mail),
+  // zodat de aanvraag naast de e-mail óók in hun dashboard verschijnt.
+  if (isMantelzorg) {
+    try {
+      const partner = getUserByEmail("advies@zorgwoning.nl");
+      if (partner) {
+        addLead({ listingId: "", ownerId: partner.id, bron: "mantelzorg", naam, email, bericht });
+      }
+    } catch {
+      // lead-koppeling mag de aanvraag nooit blokkeren
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }
