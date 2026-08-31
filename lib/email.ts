@@ -481,7 +481,7 @@ export function renderBezichtiging(
 }
 
 export async function sendEmail(opts: {
-  aan: string;
+  aan: string | string[];
   onderwerp: string;
   soort: EmailRecord["soort"];
   html: string;
@@ -490,6 +490,9 @@ export async function sendEmail(opts: {
   const smtpHost = process.env.SMTP_HOST;
   const resendKey = process.env.RESEND_API_KEY;
   const from = process.env.MAIL_FROM || "Mooihuus <noreply@mooihuus.nl>";
+  // Eén of meerdere ontvangers toegestaan. Resend/nodemailer accepteren beide
+  // een array; voor opslag/preview maken we er een leesbare string van.
+  const aanStr = Array.isArray(opts.aan) ? opts.aan.join(", ") : opts.aan;
   let via: EmailRecord["verzondenVia"] = "preview";
 
   // 1) Voorkeur: Resend — verstuurt via een beveiligde HTTPS-API, dus werkt
@@ -551,5 +554,5 @@ export async function sendEmail(opts: {
     /* niet fataal */
   }
 
-  return addEmail({ aan: opts.aan, onderwerp: opts.onderwerp, soort: opts.soort, html: opts.html, verzondenVia: via });
+  return addEmail({ aan: aanStr, onderwerp: opts.onderwerp, soort: opts.soort, html: opts.html, verzondenVia: via });
 }
