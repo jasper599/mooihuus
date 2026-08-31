@@ -4,7 +4,7 @@ import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
   title: "Contact — Mooihuus",
-  description: "Vragen over adverteren, je account, verhuur via Belvilla of de Huusmeesters? Neem contact op met Mooihuus.",
+  description: "Vragen over adverteren, je account, verhuur of de Huusmeesters? Neem contact op met Mooihuus.",
   alternates: { canonical: "/contact" },
 };
 
@@ -14,7 +14,7 @@ export default function ContactPage({ searchParams }: { searchParams?: { onderwe
     <div className="max-w-3xl mx-auto">
       <h1 className="font-display font-extrabold text-3xl md:text-4xl text-bosgroen-dk">Contact</h1>
       <p className="text-grijs mt-2 max-w-2xl">
-        Een vraag over adverteren, je account, verhuur via Belvilla of de Huusmeesters? Stuur ons
+        Een vraag over adverteren, je account, verhuur of de Huusmeesters? Stuur ons
         gerust een bericht — we helpen je graag verder. Je hoort meestal binnen één werkdag van ons.
       </p>
 
