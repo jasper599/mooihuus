@@ -51,6 +51,8 @@ export interface Listing {
   promotedAt?: string;
   fotos?: string[];
   videoUrl?: string; // YouTube/Vimeo/Matterport-link voor rondleiding
+  externalUrl?: string; // affiliate-/partnerlink: kaart linkt hierheen i.p.v. interne detailpagina
+  bronLabel?: string; // badge op de kaart, bijv. "via Marinaparken"
   plattegrond?: string; // optionele plattegrond (PDF of afbeelding) — URL naar /api/foto/…
   openhuisDatum?: string; // yyyy-mm-dd van een open huis
   openhuisVan?: string; // "13:00"

@@ -362,6 +362,44 @@ export function sweepFeed(source: string, seenExternalIds: string[]): number {
   if (n) save();
   return n;
 }
+
+// Ontdubbelt externe (affiliate/feed) woningen: staat hetzelfde object in twee
+// feeds, dan blijft er één zichtbaar. Verbergt UITSLUITEND externe woningen
+// (die met een externalUrl) — eigen/Luyten-aanbod wordt nooit aangeraakt.
+export function dedupliceerExterneWoningen(): number {
+  const db = load();
+  const prio = (bron?: string) =>
+    bron === "eigen" ? 100 : bron === "luyten" ? 90 :
+    bron === "belvilla" ? 40 : bron === "marinaparken" ? 38 :
+    bron === "glampings" ? 36 : bron === "topparken" ? 34 : bron === "europarcs" ? 32 : 10;
+  const norm = (s: string) => (s || "").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, " ").trim();
+  const sleutel = (l: Listing) => `${norm(l.provincie)}|${norm(l.titel)}|${l.personen || ""}`;
+
+  const groepen = new Map<string, Listing[]>();
+  for (const l of db.listings) {
+    if (l.status !== "live") continue;
+    const k = sleutel(l);
+    const g = groepen.get(k) || [];
+    g.push(l);
+    groepen.set(k, g);
+  }
+
+  let verborgen = 0;
+  for (const groep of Array.from(groepen.values())) {
+    if (groep.length < 2) continue;
+    // Hoogste prioriteit wint (eigen/Luyten boven feeds).
+    groep.sort((a: Listing, b: Listing) => prio(b.source) - prio(a.source));
+    for (let i = 1; i < groep.length; i++) {
+      // Verberg alleen externe duplicaten; nooit een interne (eigen) woning.
+      if (groep[i].externalUrl && groep[i].status === "live") {
+        groep[i].status = "offline";
+        verborgen++;
+      }
+    }
+  }
+  if (verborgen) save();
+  return verborgen;
+}
  
 export function deleteListing(id: string): boolean {
   const db = load();
