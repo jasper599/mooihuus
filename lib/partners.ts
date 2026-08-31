@@ -36,7 +36,7 @@ export const HUUSMEESTERS_PARTNERS: Partner[] = [
 ];
 
 // Diensten/producten die je via de Huusmeesters kunt regelen.
-export const HUUSMEESTERS_CATEGORIEEN: { icon: string; titel: string; tekst: string }[] = [
+export const HUUSMEESTERS_CATEGORIEEN: { icon: string; titel: string; tekst: string; href?: string }[] = [
   { icon: "🏘️", titel: "Makelaar", tekst: "Professionele begeleiding bij de aan- of verkoop van je recreatiewoning." },
   { icon: "⚖️", titel: "Notaris & overdracht", tekst: "Ervaren notariskantoren voor de eigendomsoverdracht en juridische afwikkeling." },
   { icon: "🛡️", titel: "Verzekeringen", tekst: "Je recreatiewoning goed verzekerd, afgestemd op recreatief gebruik." },
@@ -49,7 +49,7 @@ export const HUUSMEESTERS_CATEGORIEEN: { icon: string; titel: string; tekst: str
   { icon: "♨️", titel: "Wellness", tekst: "Hottub, jacuzzi of sauna — regel extra luxe bij je recreatiewoning." },
   { icon: "❄️", titel: "Airco & klimaat", tekst: "Airco geplaatst in je recreatiewoning — heerlijk koel in de zomer, comfortabel warm in het tussenseizoen." },
   { icon: "🏗️", titel: "Nieuwbouw & maatwerk", tekst: "Een nieuwe recreatiewoning laten bouwen of op maat — van chalet tot vrijstaand vakantiehuis." },
-  { icon: "🏡", titel: "Mantelzorgwoning", tekst: "Een mantelzorg- of maatwerkwoning plaatsen, zodat zorg en zelfstandigheid samengaan." },
+  { icon: "🏡", titel: "Mantelzorgwoning", tekst: "Een mantelzorg- of maatwerkwoning plaatsen, zodat zorg en zelfstandigheid samengaan. Doe de gratis vergunningscheck.", href: "/mantelzorg" },
 ];
 
 // Zoek een partner op naam (voor de klik-doorstuur/telling).
