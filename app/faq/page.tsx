@@ -26,7 +26,7 @@ const CONTENT: Record<Locale, Content> = {
       { titel: "Betalen & leads", items: [
         { v: "Hoe betaal ik?", a: "Met iDEAL. Na betaling gaat je advertentie live en ontvang je een betalingsbewijs per e-mail." },
         { v: "Hoe komen reacties binnen?", a: "Rechtstreeks bij jou — per e-mail én in je dashboard. Mooihuus zit er niet tussen." },
-        { v: "Kan ik mijn woning verhuren?", a: "Ja, via onze partner Belvilla. Zij regelen boekingen en betalingen; jij houdt geen kalender bij." },
+        { v: "Kan ik mijn woning verhuren?", a: "Ja, via een verhuurpartner. Die regelt boekingen en betalingen; jij houdt geen kalender bij." },
       ]},
     ],
   },
@@ -48,7 +48,7 @@ const CONTENT: Record<Locale, Content> = {
       { titel: "Payments & leads", items: [
         { v: "How do I pay?", a: "With iDEAL. After payment your listing goes live and you receive a payment receipt by email." },
         { v: "How do enquiries arrive?", a: "Straight to you — by email and in your dashboard. Mooihuus doesn't sit in between." },
-        { v: "Can I rent out my home?", a: "Yes, via our partner Belvilla. They handle bookings and payments; you keep no calendar." },
+        { v: "Can I rent out my home?", a: "Yes, via a rental partner. They handle bookings and payments; you keep no calendar." },
       ]},
     ],
   },
@@ -70,7 +70,7 @@ const CONTENT: Record<Locale, Content> = {
       { titel: "Zahlung & Anfragen", items: [
         { v: "Wie bezahle ich?", a: "Mit iDEAL. Nach der Zahlung geht dein Inserat online und du erhältst einen Zahlungsbeleg per E-Mail." },
         { v: "Wie kommen Anfragen an?", a: "Direkt zu dir — per E-Mail und im Dashboard. Mooihuus sitzt nicht dazwischen." },
-        { v: "Kann ich mein Haus vermieten?", a: "Ja, über unseren Partner Belvilla. Sie regeln Buchungen und Zahlungen; du führst keinen Kalender." },
+        { v: "Kann ich mein Haus vermieten?", a: "Ja, über einen Vermietungspartner. Er regelt Buchungen und Zahlungen; du führst keinen Kalender." },
       ]},
     ],
   },
