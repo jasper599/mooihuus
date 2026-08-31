@@ -32,7 +32,7 @@ export default function Privacy() {
       <ul>
         <li><strong>Betaaldienstverlener</strong> (bijv. Mollie) — voor de afhandeling van betalingen.</li>
         <li><strong>E-maildienst</strong> — voor het versturen van transactionele e-mails (welkom, betalingsbewijs, lead-notificatie).</li>
-        <li><strong>Belvilla</strong> — uitsluitend als je ervoor kiest je woning te verhuren en daarvoor toestemming geeft.</li>
+        <li><strong>Verhuurpartners</strong> — klik je door naar het huuraanbod van een verhuurpartner, dan verlaat je Mooihuus en geldt op de site van die partner hun eigen privacybeleid. Wij delen daarbij zelf geen persoonsgegevens met de partner.</li>
         <li><strong>Hostingpartij</strong> — voor het draaien van het platform (bij voorkeur binnen de EU).</li>
       </ul>
       <p>Wij verkopen je gegevens niet aan derden.</p>
