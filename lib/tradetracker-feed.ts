@@ -1,4 +1,4 @@
-import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen } from "./db";
+import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, bewaarFeeds } from "./db";
 import type { Listing } from "./types";
 
 // ------------------------------------------------------------------
@@ -129,11 +129,12 @@ async function syncEen(p: Partner): Promise<SyncResultaat> {
         bronLabel: p.bronLabel,
         status: "live",
       };
-      upsertFeedListing(p.source, id, data);
+      upsertFeedListing(p.source, id, data, false); // batch: nog niet wegschrijven
       gezien.push(id);
       i++;
     }
-    const offline = sweepFeed(p.source, gezien);
+    const offline = sweepFeed(p.source, gezien, false); // batch
+    bewaarFeeds(); // één keer wegschrijven na alle woningen van deze partner
     return { source: p.source, verwerkt: gezien.length, offline };
   } catch (e: any) {
     return { source: p.source, fout: e?.message || "onbekende fout" };

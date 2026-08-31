@@ -313,12 +313,15 @@ export function getFeedListings(source: string): Listing[] {
   return load().listings.filter((l) => l.source === source);
 }
  
-export function upsertFeedListing(source: string, externalId: string, data: Partial<Listing>): Listing {
+// opslaan=false: alleen de in-memory cache bijwerken en NIET naar schijf
+// schrijven. Bij grote feeds (bv. 1710 woningen) zou per-woning wegschrijven de
+// server blokkeren; de aanroeper schrijft dan één keer weg via bewaarFeeds().
+export function upsertFeedListing(source: string, externalId: string, data: Partial<Listing>, opslaan = true): Listing {
   const db = load();
   const bestaand = db.listings.find((l) => l.source === source && l.externalId === externalId);
   if (bestaand) {
     Object.assign(bestaand, data, { source, externalId });
-    save();
+    if (opslaan) save();
     return bestaand;
   }
   const id = `${source}-${externalId}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-").slice(0, 90);
@@ -344,12 +347,18 @@ export function upsertFeedListing(source: string, externalId: string, data: Part
   // optionele velden overnemen (fotos, videoUrl, kenmerken, prijsSuffix, grond, ...)
   Object.assign(listing, data, { id, source, externalId, ownerId: listing.ownerId, aangemaakt: listing.aangemaakt });
   db.listings.push(listing);
-  save();
+  if (opslaan) save();
   return listing;
 }
- 
+
+// Schrijf de huidige cache één keer naar schijf. Gebruik dit ná een batch
+// upsertFeedListing(..., false)/sweepFeed(..., false)-aanroepen.
+export function bewaarFeeds(): void {
+  save();
+}
+
 // Zet woningen van deze bron die niet meer in de feed voorkomen op offline.
-export function sweepFeed(source: string, seenExternalIds: string[]): number {
+export function sweepFeed(source: string, seenExternalIds: string[], opslaan = true): number {
   const db = load();
   const seen = new Set(seenExternalIds);
   let n = 0;
@@ -359,7 +368,7 @@ export function sweepFeed(source: string, seenExternalIds: string[]): number {
       n++;
     }
   }
-  if (n) save();
+  if (n && opslaan) save();
   return n;
 }
 
