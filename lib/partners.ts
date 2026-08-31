@@ -6,6 +6,7 @@ export interface Partner {
   omschrijving: string;
   url: string;
   emoji: string;
+  profiel?: string; // interne profielpagina op Mooihuus (i.p.v. direct doorlinken)
 }
 
 export const HUUSMEESTERS_PARTNERS: Partner[] = [
@@ -32,6 +33,15 @@ export const HUUSMEESTERS_PARTNERS: Partner[] = [
       "Hypotheken en financiering speciaal voor vakantiewoningen. Deskundig advies op maat.",
     url: "https://samenfinancieelsterker.nl",
     emoji: "🏦",
+  },
+  {
+    naam: "Zorgwoning.nl",
+    vak: "Mantelzorgwoningen",
+    omschrijving:
+      "Specialist in mantelzorg- en zorgwoningen. Van vergunningscheck tot een kant-en-klare woning in de tuin — zodat zorg en zelfstandigheid samengaan.",
+    url: "https://www.zorgwoning.nl",
+    emoji: "🏡",
+    profiel: "/huusmeesters/zorgwoning",
   },
 ];
 
