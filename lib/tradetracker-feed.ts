@@ -11,13 +11,14 @@ import type { Listing } from "./types";
 // Env per partner: <PREFIX>_FEED_URL = de pf.tradetracker.net-feed-URL.
 // ------------------------------------------------------------------
 
-interface Partner { source: string; bronLabel: string; env: string }
+interface Partner { source: string; bronLabel: string; env: string; uitsluitPark?: RegExp }
 
 const PARTNERS: Partner[] = [
   { source: "topparken", bronLabel: "via TopParken", env: "TOPPARKEN_FEED_URL" },
-  { source: "glampings", bronLabel: "via Glampings.com", env: "GLAMPINGS_FEED_URL" },
-  // Later, zodra je de feed-URL hebt:
-  // { source: "europarcs",  bronLabel: "via EuroParcs",     env: "EUROPARCS_FEED_URL" },
+  // Marinaparken-parken uit Glampings weglaten — die komen al via de directe
+  // Marinaparken-feed (betere tracking, geen dubbele woningen). EuroParcs en
+  // alle andere parken mogen wél gewoon via Glampings binnenkomen.
+  { source: "glampings", bronLabel: "via Glampings.com", env: "GLAMPINGS_FEED_URL", uitsluitPark: /marina\s?parcs?|marinapark/i },
 ];
 
 function clean(s: string): string {
@@ -111,6 +112,8 @@ async function syncEen(p: Partner): Promise<SyncResultaat> {
       const catPath = (body.match(/<category\b[^>]*path="([^"]*)"/) || [])[1] || prop(body, "accommodationType");
       const foto = prop(body, "imageURL_accommodation") || prop(body, "imageURL_park") || prop(body, "image");
       const park = prop(body, "name_park") || prop(body, "Organization_name") || prop(body, "park") || prop(body, "city");
+      // Overlap met een directe partnerfeed (bv. Marinaparken) overslaan.
+      if (p.uitsluitPark && park && p.uitsluitPark.test(park)) continue;
 
       const data: Partial<Listing> = {
         doel: "huur",
