@@ -11,7 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = COMPANY.website;
   const nu = new Date();
 
-  const statisch = ["", "/te-koop", "/openhuizen", "/zoeker", "/blog", "/reviews", "/huusmeesters", "/fotografie", "/guest-experience", "/mantelzorg", "/verkocht", "/contact", "/faq", "/plaatsen", "/registreren", "/inloggen", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"];
+  const statisch = ["", "/te-koop", "/verhuur", "/openhuizen", "/zoeker", "/blog", "/reviews", "/huusmeesters", "/fotografie", "/guest-experience", "/mantelzorg", "/verkocht", "/contact", "/faq", "/plaatsen", "/registreren", "/inloggen", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"];
   const pages: MetadataRoute.Sitemap = statisch.map((p) => ({
     url: `${base}${p}`,
     lastModified: nu,
@@ -26,12 +26,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   }));
 
-  const listings: MetadataRoute.Sitemap = getLiveListings().map((l) => ({
-    url: `${base}/aanbod/${l.id}`,
-    lastModified: new Date(l.aangemaakt),
-    changeFrequency: "weekly",
-    priority: 0.8,
-  }));
+  // Alleen eigen woningen in de sitemap — externe (affiliate) huurwoningen zijn
+  // geen eigen content en horen niet als /aanbod-pagina in de index.
+  const listings: MetadataRoute.Sitemap = getLiveListings()
+    .filter((l) => !l.externalUrl)
+    .map((l) => ({
+      url: `${base}/aanbod/${l.id}`,
+      lastModified: new Date(l.aangemaakt),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    }));
 
   const blog: MetadataRoute.Sitemap = getBlogPosts().map((p) => ({
     url: `${base}/blog/${p.slug}`,
