@@ -31,6 +31,7 @@ interface DB {
   laatsteNieuwsbriefSlug?: string;
   laatsteMaandrapportMaand?: string; // "yyyy-mm" van de laatst verstuurde ronde
   resetTokens?: { token: string; userId: string; expires: number }[];
+  aiStyling?: { datum: string; totaal: number; perUser: Record<string, number> };
   seq: number;
 }
  
@@ -683,6 +684,29 @@ export function addPartnerklik(partner: string, url: string): PartnerKlik {
 }
 export function getPartnerkliks(): PartnerKlik[] {
   return load().partnerkliks;
+}
+
+// ---------- AI-styling verbruik (kostenbeheersing) ----------
+// Twee harde grenzen, beide instelbaar via env: per gebruiker per dag en een
+// globaal dagplafond voor de hele site. Zo kan het nooit uit de hand lopen.
+export function aiStylingStatus(userId: string): { mag: boolean; reden?: string; restDag: number } {
+  const db = load();
+  const vandaag = new Date().toISOString().slice(0, 10);
+  const perUserMax = parseInt(process.env.AI_STYLING_PER_USER_DAG || "10", 10) || 10;
+  const globaalMax = parseInt(process.env.AI_STYLING_MAX_DAG || "100", 10) || 100;
+  const s = db.aiStyling && db.aiStyling.datum === vandaag ? db.aiStyling : { datum: vandaag, totaal: 0, perUser: {} };
+  const gebruikt = s.perUser[userId] || 0;
+  if (s.totaal >= globaalMax) return { mag: false, reden: "De dagelijkse limiet voor AI-styling is bereikt. Probeer het morgen weer.", restDag: 0 };
+  if (gebruikt >= perUserMax) return { mag: false, reden: `Je hebt je dagelimiet van ${perUserMax} AI-impressies bereikt. Morgen kun je weer verder.`, restDag: 0 };
+  return { mag: true, restDag: perUserMax - gebruikt };
+}
+export function aiStylingTel(userId: string): void {
+  const db = load();
+  const vandaag = new Date().toISOString().slice(0, 10);
+  if (!db.aiStyling || db.aiStyling.datum !== vandaag) db.aiStyling = { datum: vandaag, totaal: 0, perUser: {} };
+  db.aiStyling.totaal += 1;
+  db.aiStyling.perUser[userId] = (db.aiStyling.perUser[userId] || 0) + 1;
+  save();
 }
 // ---------- Statistieken (eigen, privacyvriendelijke pageview-tracking) ----------
 const PAGEVIEW_CAP = 20000; // rollend venster, houdt db.json compact
