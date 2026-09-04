@@ -38,6 +38,15 @@ export default async function Dashboard() {
         <Stat n={euro(payments.filter((p) => p.status === "paid").reduce((s, p) => s + p.bedrag, 0))} l="Uitgegeven" />
       </div>
 
+      <Link href="/dashboard/styling" className="mb-6 rounded-2xl bg-creme border border-salie p-4 flex gap-3 items-center flex-wrap hover:shadow-md transition-shadow">
+        <div className="text-2xl">🎨</div>
+        <div className="flex-1 min-w-[200px]">
+          <div className="font-display font-bold text-bosgroen-dk">AI virtuele styling <span className="text-[0.6rem] bg-salie-lt text-bosgroen-dk font-semibold px-1.5 py-0.5 rounded-full align-middle">beta</span></div>
+          <div className="text-sm text-grijs">Laat een ruimte in een andere stijl zien met AI — handig bij een gedateerd interieur.</div>
+        </div>
+        <span className="btn btn-green text-sm">Probeer het →</span>
+      </Link>
+
       <div className="flex items-center justify-between mb-2">
         <h2 className="font-display font-bold text-lg">Mijn woningen</h2>
         <Link href="/plaatsen" className="btn btn-ghost text-sm">+ Nieuwe woning</Link>
