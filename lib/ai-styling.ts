@@ -1,13 +1,13 @@
 // ------------------------------------------------------------------
-// AI virtuele styling van interieurfoto's via Replicate.
+// AI virtuele styling van interieurfoto's via de Gemini-beeld-API (Google).
 //
-// Gebruikt een interieur-model dat de bestaande ruimte (muren, ramen, indeling)
-// behoudt en alleen de styling/aankleding vervangt volgens de gekozen sfeer.
-// Standaardmodel: adirik/interior-design (instelbaar via REPLICATE_MODEL).
+// Het model bewerkt een bestaande kamerfoto: het behoudt de architectuur/indeling
+// (muren, ramen, camerastandpunt) en vervangt alleen de aankleding volgens de
+// gekozen stijl. Model is instelbaar via GEMINI_MODEL, zodat we kunnen bijsturen
+// zonder de code opnieuw te uploaden.
 //
-// Beveiliging/kosten: dit draait alleen als REPLICATE_API_TOKEN is gezet en
-// AI_STYLING_UIT niet "1" is. De aanroeper (de API-route) checkt daarnaast de
-// per-gebruiker- en dag-limieten.
+// Beveiliging/kosten: draait alleen met GEMINI_API_KEY en als AI_STYLING_UIT niet
+// "1" is. De API-route checkt daarnaast de per-gebruiker- en dag-limieten.
 // ------------------------------------------------------------------
 
 export interface Stijl {
@@ -16,65 +16,68 @@ export interface Stijl {
   prompt: string;
 }
 
+// De 3 stijlen voor recreatiewoningen: strak, knus, en licht/ruimtelijk.
 export const STIJLEN: Stijl[] = [
-  { key: "modern", label: "Modern", prompt: "a modern interior, clean lines, contemporary furniture, warm neutral tones, tasteful decor, professionally styled, photorealistic, natural lighting" },
-  { key: "landelijk", label: "Landelijk", prompt: "a cozy Dutch country-style (landelijk) interior, natural wood, warm rustic furniture, soft textiles, inviting, photorealistic, natural lighting" },
-  { key: "scandinavisch", label: "Scandinavisch", prompt: "a Scandinavian interior, light wood, white walls, minimalist cozy furniture, bright and airy, photorealistic, natural lighting" },
-  { key: "modern-luxe", label: "Modern luxe", prompt: "a modern luxury interior, elegant furniture, refined materials, sophisticated lighting, high-end styling, photorealistic" },
-  { key: "licht-fris", label: "Licht & fris", prompt: "a light and fresh interior, bright natural light, airy neutral palette, subtle greenery, clean and inviting, photorealistic" },
+  { key: "modern", label: "Modern", prompt: "een moderne, strakke en eigentijdse inrichting met warme neutrale tinten, nette meubels en smaakvolle decoratie" },
+  { key: "landelijk", label: "Landelijk", prompt: "een warme, gezellige landelijke inrichting met natuurlijk hout, zachte textiel en een knusse vakantiesfeer" },
+  { key: "scandinavisch", label: "Licht & Scandinavisch", prompt: "een lichte, frisse Scandinavische inrichting met licht hout, witte wanden, minimalistische meubels en veel ruimtelijkheid" },
 ];
 
-const MODEL = process.env.REPLICATE_MODEL || "adirik/interior-design";
-const NEG = "lowres, watermark, text, distorted, blurry, extra walls, changed architecture, deformed windows, cartoon";
+const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-image-preview";
 
 export function stylingBeschikbaar(): boolean {
-  return !!process.env.REPLICATE_API_TOKEN && process.env.AI_STYLING_UIT !== "1";
-}
-
-async function replicate(pad: string, init: RequestInit): Promise<any> {
-  const res = await fetch(`https://api.replicate.com/v1/${pad}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${process.env.REPLICATE_API_TOKEN}`,
-      "Content-Type": "application/json",
-      ...(init.headers || {}),
-    },
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data?.detail || `Replicate gaf HTTP ${res.status}`);
-  return data;
+  return !!process.env.GEMINI_API_KEY && process.env.AI_STYLING_UIT !== "1";
 }
 
 // Genereert een gestylede versie van de foto. `imageDataUri` is een
-// "data:image/...;base64,..."-string. Geeft de (tijdelijke) URL van het
-// resultaat op Replicate terug.
-export async function genereerStyling(imageDataUri: string, stijlKey: string): Promise<string> {
+// "data:image/...;base64,..."-string. Geeft het gegenereerde beeld terug als
+// base64 + mime-type.
+export async function genereerStyling(imageDataUri: string, stijlKey: string): Promise<{ base64: string; mime: string }> {
   const stijl = STIJLEN.find((s) => s.key === stijlKey) || STIJLEN[0];
-  let pred = await replicate(`models/${MODEL}/predictions`, {
-    method: "POST",
-    headers: { Prefer: "wait=55" }, // Replicate wacht tot ~55s op het resultaat
-    body: JSON.stringify({
-      input: {
-        image: imageDataUri,
-        prompt: stijl.prompt,
-        negative_prompt: NEG,
-        guidance_scale: 15,
-        prompt_strength: 0.8,
-        num_inference_steps: 30,
+
+  const m = imageDataUri.match(/^data:([^;]+);base64,([\s\S]+)$/);
+  const inMime = m ? m[1] : "image/jpeg";
+  const inData = m ? m[2] : imageDataUri;
+
+  const prompt =
+    `Herstyle het interieur op deze foto naar ${stijl.prompt}. ` +
+    `Behoud EXACT de architectuur, de indeling, de ramen, deuren en het camerastandpunt van de originele foto — ` +
+    `verander alleen de meubels, kleuren, materialen en aankleding. Fotorealistisch resultaat, geen tekst of watermerk.`;
+
+  const body = {
+    contents: [
+      {
+        role: "user",
+        parts: [
+          { text: prompt },
+          { inlineData: { mimeType: inMime, data: inData } },
+        ],
       },
-    }),
-  });
+    ],
+    generationConfig: { responseModalities: ["IMAGE"] },
+  };
 
-  // Voor de zekerheid nog even doorpollen als 'wait' nog niet klaar was.
-  const start = Date.now();
-  while (pred?.status && !["succeeded", "failed", "canceled"].includes(pred.status)) {
-    if (Date.now() - start > 90000) throw new Error("Het genereren duurde te lang.");
-    await new Promise((r) => setTimeout(r, 2500));
-    pred = await replicate(`predictions/${pred.id}`, { method: "GET" });
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 90000);
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: ctrl.signal,
+      }
+    );
+    const data: any = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error?.message || `Gemini gaf HTTP ${res.status}`);
+
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    const beeld = parts.find((p: any) => (p.inlineData?.data || p.inline_data?.data));
+    const inline = beeld?.inlineData || beeld?.inline_data;
+    if (!inline?.data) throw new Error("Geen beeld ontvangen van het model.");
+    return { base64: inline.data as string, mime: (inline.mimeType || inline.mime_type || "image/png") as string };
+  } finally {
+    clearTimeout(timer);
   }
-  if (pred.status !== "succeeded") throw new Error(pred?.error || "Het genereren is mislukt.");
-
-  const out = Array.isArray(pred.output) ? pred.output[pred.output.length - 1] : pred.output;
-  if (!out || typeof out !== "string") throw new Error("Geen resultaat ontvangen van het model.");
-  return out;
 }
