@@ -41,10 +41,10 @@ export async function POST(req: Request) {
   }
   const dataUri = `data:${file.type};base64,${buf.toString("base64")}`;
 
-  // 5) Genereren.
-  let outUrl: string;
+  // 5) Genereren (Gemini geeft het beeld als base64 terug).
+  let gen: { base64: string; mime: string };
   try {
-    outUrl = await genereerStyling(dataUri, stijl);
+    gen = await genereerStyling(dataUri, stijl);
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "Het genereren is mislukt." }, { status: 502 });
   }
@@ -52,15 +52,14 @@ export async function POST(req: Request) {
   // 6) Resultaat op het volume opslaan met "ai-"-prefix (voor de labeling),
   //    en pas dan het verbruik tellen (mislukt genereren kost geen tegoed).
   try {
-    const r = await fetch(outUrl);
-    const outBuf = Buffer.from(await r.arrayBuffer());
+    const outBuf = Buffer.from(gen.base64, "base64");
     if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-    const naam = `ai-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.png`;
+    const ext = gen.mime.includes("jpeg") || gen.mime.includes("jpg") ? "jpg" : "png";
+    const naam = `ai-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.${ext}`;
     fs.writeFileSync(path.join(UPLOAD_DIR, naam), outBuf);
     aiStylingTel(userId);
     return NextResponse.json({ url: `/api/foto/${naam}`, restDag: status.restDag - 1 });
-  } catch {
-    aiStylingTel(userId);
-    return NextResponse.json({ url: outUrl, restDag: status.restDag - 1 });
+  } catch (e: any) {
+    return NextResponse.json({ error: "Opslaan van het beeld mislukte." }, { status: 500 });
   }
 }
