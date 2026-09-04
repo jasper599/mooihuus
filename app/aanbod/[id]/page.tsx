@@ -28,6 +28,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     title,
     description,
     alternates: { canonical: `/aanbod/${l.id}` },
+    // Externe (affiliate) huurwoningen: dunne, niet-eigen content — niet indexeren
+    // (de doorlink wél volgen). Eigen woningen gewoon indexeerbaar.
+    robots: l.externalUrl ? { index: false, follow: true } : undefined,
     openGraph: {
       title,
       description,
@@ -52,6 +55,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
     name: listing.titel,
     description: listing.omschrijving,
     category: listing.type,
+    image: listing.fotos && listing.fotos.length ? [`${COMPANY.website}${listing.fotos[0]}`] : undefined,
     offers: {
       "@type": "Offer",
       price: listing.prijs,
