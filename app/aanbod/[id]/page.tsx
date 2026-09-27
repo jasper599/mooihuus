@@ -17,7 +17,15 @@ import { VertaalOmschrijving } from "@/components/VertaalOmschrijving";
 import { FotoGalerij } from "@/components/FotoGalerij";
  
 export const dynamic = "force-dynamic";
- 
+
+// Maakt van een fotopad een geldige absolute URL. Eigen uploads zijn relatief
+// (/api/foto/…) en krijgen het domein ervoor; feed-foto's (TopParken, Glampings,
+// Marinaparken) zijn al volledige http(s)-URL's en blijven ongewijzigd — anders
+// ontstaat een ongeldige URL zoals "https://www.mooihuus.nlhttps://…".
+function fotoAbsoluut(foto: string): string {
+  return /^https?:\/\//i.test(foto) ? foto : `${COMPANY.website}${foto}`;
+}
+
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const l = getListing(params.id);
   if (!l) return { title: "Woning niet gevonden" };
@@ -36,7 +44,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       description,
       type: "website",
       url: `${COMPANY.website}/aanbod/${l.id}`,
-      images: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined,
+      images: l.fotos && l.fotos.length ? [fotoAbsoluut(l.fotos[0])] : undefined,
     },
   };
 }
@@ -55,7 +63,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
     name: listing.titel,
     description: listing.omschrijving,
     category: listing.type,
-    image: listing.fotos && listing.fotos.length ? [`${COMPANY.website}${listing.fotos[0]}`] : undefined,
+    image: listing.fotos && listing.fotos.length ? [fotoAbsoluut(listing.fotos[0])] : undefined,
     offers: {
       "@type": "Offer",
       price: listing.prijs,

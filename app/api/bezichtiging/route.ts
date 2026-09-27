@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { addLead, getListing, getUser } from "@/lib/db";
 import { renderBezichtiging, sendEmail } from "@/lib/email";
+import { isSpam } from "@/lib/antispam";
 
 export const runtime = "nodejs";
 
@@ -12,6 +13,11 @@ export async function POST(req: Request) {
   const datum = String(b.datum);
   const tijd = String(b.tijd || "");
   const bericht = String(b.bericht || "");
+
+  // Spam (bots) stil laten vallen: geen verzoek opslaan, geen mail versturen.
+  if (isSpam({ naam: String(b.naam), email: String(b.email), bericht, honeypot: b.bedrijf, ts: b.ts })) {
+    return NextResponse.json({ ok: true });
+  }
 
   const listing = getListing(String(b.listingId));
   if (!listing) return NextResponse.json({ error: "Woning niet gevonden." }, { status: 404 });

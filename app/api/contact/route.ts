@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { renderContact, sendEmail } from "@/lib/email";
 import { COMPANY } from "@/lib/company";
 import { addLead, getUserByEmail } from "@/lib/db";
+import { isSpam } from "@/lib/antispam";
 
 export async function POST(req: Request) {
   const b = await req.json();
@@ -14,6 +15,12 @@ export async function POST(req: Request) {
 
   if (!naam || !email || !bericht) {
     return NextResponse.json({ error: "Vul je naam, e-mail en bericht in." }, { status: 400 });
+  }
+
+  // Spam (bots) stil laten vallen: we accepteren de POST, maar versturen geen
+  // mail en slaan geen lead op.
+  if (isSpam({ naam, email, bericht, onderwerp, honeypot: b.bedrijf, ts: b.ts })) {
+    return NextResponse.json({ ok: true });
   }
 
   const mail = renderContact({ naam, email, onderwerp, bericht, categorie, regio });

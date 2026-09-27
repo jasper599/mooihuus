@@ -34,7 +34,9 @@ export function ContactForm({
     categorie: hulp ? HULP_OPTIES[0] : "",
     regio: "",
     bericht: "",
+    bedrijf: "", // honeypot — hoort leeg te blijven
   });
+  const [ts] = useState(() => Date.now()); // laadtijd, voor de antispam-tijdcontrole
 
   function set(k: string, v: string) {
     setForm((f) => ({ ...f, [k]: v }));
@@ -48,7 +50,7 @@ export function ContactForm({
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, ts }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -73,6 +75,17 @@ export function ContactForm({
 
   return (
     <form onSubmit={verstuur} className="grid gap-3 sm:grid-cols-2">
+      {/* Honeypot: onzichtbaar voor mensen, bots vullen het wél in. */}
+      <input
+        type="text"
+        name="bedrijf"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={form.bedrijf}
+        onChange={(e) => set("bedrijf", e.target.value)}
+        style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+      />
       <input required value={form.naam} onChange={(e) => set("naam", e.target.value)} placeholder="Je naam" className="field" />
       <input required type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="Je e-mailadres" className="field" />
       {hulp ? (

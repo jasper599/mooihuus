@@ -8,7 +8,8 @@ const TIJDEN = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "
 export function BezichtigingForm({ listingId }: { listingId: string }) {
   const t = useT();
   const [open, setOpen] = useState(false);
-  const [f, setF] = useState({ naam: "", email: "", datum: "", tijd: "10:00", bericht: "" });
+  const [f, setF] = useState({ naam: "", email: "", datum: "", tijd: "10:00", bericht: "", bedrijf: "" });
+  const [ts] = useState(() => Date.now());
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [err, setErr] = useState("");
@@ -20,7 +21,7 @@ export function BezichtigingForm({ listingId }: { listingId: string }) {
     const res = await fetch("/api/bezichtiging", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ listingId, ...f }),
+      body: JSON.stringify({ listingId, ...f, ts }),
     });
     const d = await res.json().catch(() => ({}));
     setBusy(false);
@@ -45,6 +46,8 @@ export function BezichtigingForm({ listingId }: { listingId: string }) {
   return (
     <form onSubmit={submit} className="space-y-2">
       <div className="font-display font-bold text-bosgroen-dk text-sm">{t("bez.plannen")}</div>
+      {/* Honeypot: onzichtbaar voor mensen, bots vullen het wél in. */}
+      <input type="text" name="bedrijf" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.bedrijf} onChange={(e) => set("bedrijf", e.target.value)} style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
       {err && <div className="text-sm text-oranje-dk">{err}</div>}
       <input required className="field" placeholder={t("bez.naam")} value={f.naam} onChange={(e) => set("naam", e.target.value)} />
       <input required type="email" className="field" placeholder={t("bez.email")} value={f.email} onChange={(e) => set("email", e.target.value)} />

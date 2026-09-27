@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { addLead, getListing, getUser, getLeads } from "@/lib/db";
 import { renderLead, renderLeadBevestiging, sendEmail } from "@/lib/email";
+import { isSpam } from "@/lib/antispam";
 
 export async function GET() {
   return NextResponse.json(getLeads());
@@ -10,6 +11,11 @@ export async function POST(req: Request) {
   const body = await req.json();
   if (!body.listingId || !body.naam || !body.email) {
     return NextResponse.json({ error: "Ontbrekende velden" }, { status: 400 });
+  }
+
+  // Spam (bots) stil laten vallen: geen lead opslaan, geen mail versturen.
+  if (isSpam({ naam: String(body.naam), email: String(body.email), bericht: String(body.bericht ?? ""), honeypot: body.bedrijf, ts: body.ts })) {
+    return NextResponse.json({ ok: true });
   }
   const lead = addLead({
     listingId: String(body.listingId),
