@@ -210,13 +210,31 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
               {euro(listing.prijs)}
               {prijsSuffix(listing) && <span className="text-grijs font-semibold text-base ml-1.5">{prijsSuffix(listing)}</span>}
             </div>
-            <div className="text-sm font-semibold mb-1 mt-3">{t(locale, zakelijk ? "listing.contactZakelijk" : "listing.contactTitle")}</div>
-            <p className="text-xs text-grijs mb-3">{t(locale, zakelijk ? "listing.directZakelijk" : "listing.direct")}</p>
-            <LeadForm listingId={listing.id} zakelijk={zakelijk} />
-            {listing.doel !== "huur" && (
-              <div className="mt-3 pt-3 border-t border-lijn">
-                <BezichtigingForm listingId={listing.id} />
-              </div>
+            {listing.externalUrl ? (
+              // Externe (feed-/affiliate-)verhuurwoning: Mooihuus is doorverwijzer,
+              // niet de verhuurder. Beschikbaarheid, vragen én boeken lopen via de
+              // partner — dus geen contactformulier naar ons, maar een doorlink
+              // (met kliktelling + affiliate-tracking via /api/klik).
+              <>
+                <div className="text-sm font-semibold mb-1 mt-3">Interesse in deze woning?</div>
+                <p className="text-xs text-grijs mb-3">
+                  Deze woning wordt aangeboden {feedBron || "via onze partner"}. Bekijk beschikbaarheid, stel je vraag en boek rechtstreeks bij de aanbieder.
+                </p>
+                <a href={`/api/klik?id=${listing.id}`} target="_blank" rel="noopener noreferrer sponsored" className="btn w-full">
+                  Bekijk &amp; boek {feedBron || "bij de aanbieder"} →
+                </a>
+              </>
+            ) : (
+              <>
+                <div className="text-sm font-semibold mb-1 mt-3">{t(locale, zakelijk ? "listing.contactZakelijk" : "listing.contactTitle")}</div>
+                <p className="text-xs text-grijs mb-3">{t(locale, zakelijk ? "listing.directZakelijk" : "listing.direct")}</p>
+                <LeadForm listingId={listing.id} zakelijk={zakelijk} />
+                {listing.doel !== "huur" && (
+                  <div className="mt-3 pt-3 border-t border-lijn">
+                    <BezichtigingForm listingId={listing.id} />
+                  </div>
+                )}
+              </>
             )}
           </div>
           <div className="card mt-4 flex flex-col gap-3">
