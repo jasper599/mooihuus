@@ -10,7 +10,8 @@ type Type = "particulier" | "zakelijk";
 export default function Registreren() {
   const router = useRouter();
   const [type, setType] = useState<Type>("particulier");
-  const [form, setForm] = useState({ naam: "", email: "", wachtwoord: "", bedrijfsnaam: "", kvk: "", btw: "", telefoon: "", adres: "", postcode: "", plaats: "", iban: "", factuurEmail: "", website: "" });
+  const [form, setForm] = useState({ naam: "", email: "", wachtwoord: "", bedrijfsnaam: "", kvk: "", btw: "", telefoon: "", adres: "", postcode: "", plaats: "", iban: "", factuurEmail: "", website: "", bedrijf: "" });
+  const [ts] = useState(() => Date.now()); // laadtijd, voor de antispam-tijdcontrole
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -27,7 +28,7 @@ export default function Registreren() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, type }),
+      body: JSON.stringify({ ...form, type, ts }),
     });
     if (!res.ok) {
       const d = await res.json();
@@ -63,6 +64,8 @@ export default function Registreren() {
       </div>
 
       <form onSubmit={submit} className="card space-y-1">
+        {/* Honeypot: onzichtbaar voor mensen, bots vullen het wél in. */}
+        <input type="text" name="bedrijf" tabIndex={-1} autoComplete="off" aria-hidden="true" value={form.bedrijf} onChange={(e) => setForm({ ...form, bedrijf: e.target.value })} style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }} />
         {error && <div className="bg-[#FBEEE4] border border-[#F0D6C1] text-oranje-dk rounded-xl p-3 text-sm mb-2">{error}</div>}
 
         {type === "zakelijk" && (

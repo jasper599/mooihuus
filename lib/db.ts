@@ -419,6 +419,22 @@ export function deleteListing(id: string): boolean {
   save();
   return true;
 }
+
+// Verwijdert een gebruikersprofiel (bijv. spam-registraties) uit het beheer.
+// Beschermt de systeemaccounts (beheer + Luyten) en weigert accounts die nog
+// woningen bezitten, zodat er nooit per ongeluk echte data verdwijnt.
+const BESCHERMDE_USER_IDS = new Set(["u-admin", "u-luyten"]);
+export function deleteUser(id: string): { ok: boolean; reden?: string } {
+  if (BESCHERMDE_USER_IDS.has(id)) return { ok: false, reden: "Dit is een beschermd systeemaccount." };
+  const db = load();
+  const u = db.users.find((x) => x.id === id);
+  if (!u) return { ok: false, reden: "Profiel niet gevonden." };
+  if (db.listings.some((l) => l.ownerId === id)) return { ok: false, reden: "Dit profiel heeft nog woningen — verwijder die eerst." };
+  db.users = db.users.filter((x) => x.id !== id);
+  db.leads = db.leads.filter((l) => l.ownerId !== id);
+  save();
+  return { ok: true };
+}
  
 // ---------- Leads ----------
 export function getLeads(listingId?: string): Lead[] {

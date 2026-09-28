@@ -14,6 +14,7 @@ import { FeedImportKnop } from "@/components/FeedImportKnop";
 import { MakelaarFactuurKnop } from "@/components/MakelaarFactuurKnop";
 import { BetalingStatusKnop } from "@/components/BetalingStatusKnop";
 import { SocialWachtrij } from "@/components/SocialWachtrij";
+import { GebruikerVerwijderKnop } from "@/components/GebruikerVerwijderKnop";
 
 export const dynamic = "force-dynamic";
 
@@ -163,7 +164,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
       )}
 
       {tab === "profielen" && (
-        <Table head={["Naam / bedrijf", "E-mail", "Type", "Objecten", "Facturatie"]}>
+        <Table head={["Naam / bedrijf", "E-mail", "Type", "Objecten", "Facturatie", "Acties"]}>
           {users.map((u) => (
             <tr key={u.id} className="border-t border-lijn">
               <Td>{u.type === "zakelijk" && u.bedrijfsnaam ? <span><strong>{u.bedrijfsnaam}</strong><br /><span className="text-grijs text-xs">{u.naam}{u.kvk ? ` · KvK ${u.kvk}` : ""}{u.btw ? ` · btw ${u.btw}` : ""}</span></span> : u.naam}</Td>
@@ -171,6 +172,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
               <Td>{u.type === "zakelijk" ? <span className="pill">Zakelijk</span> : "Particulier"}</Td>
               <Td>{listings.filter((l) => l.ownerId === u.id).length}</Td>
               <Td>{u.type === "zakelijk" ? <MakelaarFactuurKnop ownerId={u.id} /> : <span className="text-grijs text-xs">—</span>}</Td>
+              <Td>{u.id === "u-admin" || u.id === "u-luyten" ? <span className="text-grijs text-xs">—</span> : <GebruikerVerwijderKnop id={u.id} naam={u.naam} />}</Td>
             </tr>
           ))}
         </Table>

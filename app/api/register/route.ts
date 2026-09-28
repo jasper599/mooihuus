@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import { addUser, getUserByEmail } from "@/lib/db";
 import { renderWelkom, sendEmail } from "@/lib/email";
+import { isSpam } from "@/lib/antispam";
 
 export async function POST(req: Request) {
-  const { naam, email, wachtwoord, type, bedrijfsnaam, kvk, btw, telefoon, adres, postcode, plaats, iban, factuurEmail, website } = await req.json();
+  const body = await req.json();
+  const { naam, email, wachtwoord, type, bedrijfsnaam, kvk, btw, telefoon, adres, postcode, plaats, iban, factuurEmail, website } = body;
   if (!naam || !email || !wachtwoord) {
     return NextResponse.json({ error: "Vul je naam, e-mail en wachtwoord in." }, { status: 400 });
+  }
+
+  // Spam-registraties (bots) stil laten vallen: geen account, geen welkomstmail.
+  // Botnamen zijn doorgaans wartaal ("BXDZEYzbsyYHQrTDOuoId"); daarnaast honeypot + tijd.
+  if (isSpam({ naam, email, honeypot: body.bedrijf, ts: body.ts })) {
+    return NextResponse.json({ ok: true });
   }
   if (String(wachtwoord).length < 6) {
     return NextResponse.json({ error: "Kies een wachtwoord van minstens 6 tekens." }, { status: 400 });
