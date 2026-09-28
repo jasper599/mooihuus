@@ -55,7 +55,11 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
   const locale = getLocale();
   const owner = getUser(listing.ownerId);
   const zakelijk = owner?.type === "zakelijk";
-  const aanbieder = zakelijk ? owner?.bedrijfsnaam || owner?.naam : undefined;
+  // Externe (feed-/affiliate-)woningen niet aan onze eigen accounts toeschrijven —
+  // Luyten verhuurt bijvoorbeeld niet, dus die huur-feeds tonen hun eigen bron
+  // ("via Glampings.com" e.d.) in plaats van "Aangeboden door Luyten Makelaardij".
+  const aanbieder = !listing.externalUrl && zakelijk ? owner?.bedrijfsnaam || owner?.naam : undefined;
+  const feedBron = listing.externalUrl ? listing.bronLabel : undefined;
  
   const jsonLd = {
     "@context": "https://schema.org",
@@ -98,6 +102,11 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
           {aanbieder && (
             <div className="text-sm text-grijs mt-1">
               {t(locale, "listing.aangebodenDoor")} <span className="font-semibold text-bosgroen-dk">{aanbieder}</span>
+            </div>
+          )}
+          {feedBron && (
+            <div className="text-sm text-grijs mt-1">
+              Aanbod <span className="font-semibold text-bosgroen-dk">{feedBron}</span>
             </div>
           )}
           <div className="flex gap-2 flex-wrap mt-3">
