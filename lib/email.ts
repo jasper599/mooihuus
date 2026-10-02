@@ -485,11 +485,13 @@ export async function sendEmail(opts: {
   onderwerp: string;
   soort: EmailRecord["soort"];
   html: string;
+  van?: string; // optionele afzender, bv. "Guus <info@mooihuus.nl>"; standaard MAIL_FROM
+  replyTo?: string; // optioneel antwoordadres
   attachments?: { filename: string; content: string; contentType?: string }[]; // content = base64
 }): Promise<EmailRecord> {
   const smtpHost = process.env.SMTP_HOST;
   const resendKey = process.env.RESEND_API_KEY;
-  const from = process.env.MAIL_FROM || "Mooihuus <noreply@mooihuus.nl>";
+  const from = opts.van || process.env.MAIL_FROM || "Mooihuus <noreply@mooihuus.nl>";
   // Eén of meerdere ontvangers toegestaan. Resend/nodemailer accepteren beide
   // een array; voor opslag/preview maken we er een leesbare string van.
   const aanStr = Array.isArray(opts.aan) ? opts.aan.join(", ") : opts.aan;
@@ -506,6 +508,7 @@ export async function sendEmail(opts: {
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           from, to: opts.aan, subject: opts.onderwerp, html: opts.html,
+          ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
           ...(opts.attachments?.length ? { attachments: opts.attachments.map((a) => ({ filename: a.filename, content: a.content })) } : {}),
         }),
         signal: ctrl.signal,
@@ -535,6 +538,7 @@ export async function sendEmail(opts: {
         from,
         to: opts.aan,
         subject: opts.onderwerp,
+        ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
         html: opts.html,
         attachments: opts.attachments?.map((a) => ({ filename: a.filename, content: Buffer.from(a.content, "base64"), contentType: a.contentType })),
       });
