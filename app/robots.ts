@@ -5,11 +5,13 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      // Expliciete allow voor de verzendroute staat vóór de brede /api-disallow;
-      // volgens de robots-standaard wint de meest specifieke (langste) regel,
-      // zodat de geautomatiseerde Guus-sessie dit eindpunt mag ophalen.
-      allow: ["/", "/api/mail/send"],
-      disallow: ["/beheer", "/dashboard", "/account", "/betaling", "/api"],
+      allow: "/",
+      // Alleen de UI-pagina's met privégegevens afschermen. /api staat bewust
+      // niet meer als blok: die routes geven JSON terug, gevoelige endpoints
+      // zitten achter login, en een brede /api-disallow blokkeerde ook de
+      // verzendroute voor geautomatiseerde ophalers (die de 'langste regel
+      // wint'-uitzondering niet respecteren).
+      disallow: ["/beheer", "/dashboard", "/account", "/betaling"],
     },
     sitemap: `${COMPANY.website}/sitemap.xml`,
     host: COMPANY.website,
