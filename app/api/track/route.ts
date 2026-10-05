@@ -23,6 +23,11 @@ function classificeerDevice(ua: string): "mobiel" | "tablet" | "desktop" {
   return "desktop";
 }
 
+const BOT_RE = /bot|crawl|spider|slurp|mediapartners|bingpreview|facebookexternalhit|facebot|embedly|quora|pinterest|vkshare|redditbot|applebot|yandex|baiduspider|duckduckbot|semrush|ahrefs|mj12|dotbot|petalbot|bytespider|gptbot|claudebot|ccbot|chatgpt|anthropic|perplexity|python-requests|axios|curl|wget|node-fetch|go-http|java/|okhttp|httpclient|headless|phantom|puppeteer|playwright|lighthouse|pagespeed|gtmetrix|monitor|uptime|pingdom|statuscake|site24x7|prerender|screaming/i;
+function isBot(ua: string): boolean {
+  return BOT_RE.test(ua);
+}
+
 export async function POST(req: Request) {
   try {
     const b = await req.json();
@@ -35,6 +40,10 @@ export async function POST(req: Request) {
     if (!vid) return NextResponse.json({ ok: false }, { status: 400 });
 
     const ua = req.headers.get("user-agent") || "";
+    // Bots eruit: bekende crawler/preview/headless user-agents niet meetellen.
+    if (!ua || isBot(ua)) {
+      return NextResponse.json({ ok: true, skipped: true });
+    }
     const eigenHost = new URL(req.url).hostname;
     const ref = classificeerRef(String(b.ref || ""), eigenHost);
 
