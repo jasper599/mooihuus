@@ -16,7 +16,6 @@ import { syncMarinaparken } from "./marinaparken-feed";
 import { syncAlleTradeTracker } from "./tradetracker-feed";
 import { syncKolibri } from "./feed-import";
 import { kolibriGeconfigureerd } from "./kolibri";
-import { verwerkMakelaarFacturatie } from "./facturatie";
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const STAMP_FILE = path.join(DATA_DIR, "last-onderhoud.txt");
@@ -148,7 +147,6 @@ async function draaiDagelijks(): Promise<void> {
   try {
     await maakBackup().catch(() => {});
     await verwerkVerlopendeAdvertenties().catch(() => {});
-    await verwerkMakelaarFacturatie().catch(() => {});
     markeer(); // pas markeren als alles klaar is (crasht het eerder, dan retry volgende tick)
   } finally {
     bezig = false;

@@ -191,3 +191,43 @@ export async function verwerkMakelaarFacturatie(): Promise<{ actief: boolean; ge
   }
   return { actief: true, gefactureerd, offline };
 }
+
+
+// Per-woning advertentie-betaling voor een feed-woning (Kolibri). Maakt een
+// 'advertentie'-betaling — zodat de bestaande betaal- en verlengflow (verlenging.ts)
+// de woning daarna automatisch oppakt — plus een Mollie-betaallink.
+// Prijs: het makelaarstarief per woning per jaar.
+export async function maakWoningBetaling(
+  ownerId: string,
+  listing: { id: string; titel: string; pakket?: any }
+): Promise<{ ok: boolean; betaalUrl?: string; bedrag?: number; paymentId?: string }> {
+  const owner = getUser(ownerId);
+  if (!owner) return { ok: false };
+  const bedrag = makelaarBasisTarief();
+  const payment = addPayment({
+    listingId: listing.id,
+    userId: ownerId,
+    pakket: (listing.pakket as any) || "Premium",
+    bedrag,
+    status: "open",
+    methode: "iDEAL",
+    soort: "advertentie",
+    omschrijving: `Jaaradvertentie Mooihuus — ${listing.titel}`,
+  });
+  let betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
+  if (mollieEnabled()) {
+    try {
+      const { mollieId, checkoutUrl } = await createMolliePayment({
+        bedrag,
+        beschrijving: `Mooihuus advertentie — ${listing.titel}`,
+        redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
+        webhookUrl: `${baseUrl()}/api/webhook/mollie`,
+      });
+      updatePayment(payment.id, { mollieId });
+      betaalUrl = checkoutUrl || betaalUrl;
+    } catch {
+      /* val terug op de interne betaalpagina */
+    }
+  }
+  return { ok: true, betaalUrl, bedrag, paymentId: payment.id };
+}

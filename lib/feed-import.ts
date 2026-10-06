@@ -1,7 +1,7 @@
 import { Listing, User } from "./types";
-import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser } from "./db";
+import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner } from "./db";
 import { sendEmail } from "./email";
-import { makelaarBasisTarief, factureerbareObjecten, maakMakelaarFactuur } from "./facturatie";
+import { makelaarBasisTarief, maakWoningBetaling } from "./facturatie";
 import { COMPANY } from "./company";
 import {
   getAllMediaContracts,
@@ -42,22 +42,24 @@ async function stuurWelkomInloggegevens(profiel: User): Promise<void> {
 }
 
 // 2) Bedankmail voor de aanmelding + betaallink — altijd, ongeacht of er al een profiel was.
-async function stuurBedanktAanmelding(profiel: User, betaalUrl: string, aantal: number, bedrag: number): Promise<void> {
+async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number }[]): Promise<void> {
   try {
-    const tarief = makelaarBasisTarief();
     const naam = profiel.bedrijfsnaam || profiel.naam;
-    const obj = aantal === 1 ? "woning" : "woningen";
-    const meer = aantal === 1 ? "advertentie gaat" : "advertenties gaan";
+    const obj = regels.length === 1 ? "woning" : "woningen";
+    const totaal = Math.round(regels.reduce((s, r) => s + r.bedrag, 0) * 100) / 100;
+    const items = regels
+      .map((r) => "<li>" + r.titel + " — € " + r.bedrag + " per jaar — <a href=\"" + r.betaalUrl + "\">betaal en zet online</a></li>")
+      .join("");
     const html =
       "<p>Beste " + naam + ",</p>" +
-      "<p>Bedankt voor het aanmelden van uw aanbod (" + aantal + " " + obj + ") op <a href=\"" + COMPANY.website + "\">Mooihuus.nl</a>.</p>" +
-      "<p><strong>Uw " + meer + " online zodra de betaling binnen is.</strong></p>" +
-      "<p><strong>Tarief:</strong> \u20ac " + tarief + " per object per jaar, met staffelkorting (vanaf 5 objecten 15%, vanaf 10 objecten 25%). Voor uw " + aantal + " " + obj + " komt dat op \u20ac " + bedrag + " voor een jaar.</p>" +
-      "<p><a href=\"" + betaalUrl + "\">Klik hier om te betalen</a> \u2014 direct na betaling staat uw aanbod online.</p>" +
+      "<p>Bedankt voor het aanmelden van de volgende " + obj + " op <a href=\"" + COMPANY.website + "\">Mooihuus.nl</a>. Elke woning gaat online zodra deze is betaald.</p>" +
+      "<ul>" + items + "</ul>" +
+      "<p>Totaal: € " + totaal + " per jaar (€ " + makelaarBasisTarief() + " per woning per jaar).</p>" +
       "<p>Vragen? Mail ons gerust op " + COMPANY.email + ".</p>" +
       "<p>Hartelijke groet,<br>Team Mooihuus.nl</p>";
-    await sendEmail({ aan: profiel.email, onderwerp: "Bedankt voor uw aanmelding \u2014 nog \u00e9\u00e9n stap tot online", soort: "welkom", html });
-    await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie \u2014 aanmelding " + naam + " (" + aantal + " " + obj + ")", soort: "welkom", html });
+    const meer = regels.length === 1 ? "" : "en";
+    await sendEmail({ aan: profiel.email, onderwerp: "Bedankt voor uw aanmelding — zet uw woning" + meer + " online", soort: "welkom", html });
+    await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie — aanmelding " + naam + " (" + regels.length + " " + obj + ")", soort: "welkom", html });
   } catch {
     /* mail mislukt - sync niet laten falen */
   }
@@ -68,22 +70,32 @@ async function stuurBedanktAanmelding(profiel: User, betaalUrl: string, aantal: 
 async function verwerkNieuweKantorenWelkom(): Promise<void> {
   for (const u of getUsers()) {
     if (u.type !== "zakelijk" || !u.realtorId) continue;
-    const objecten = factureerbareObjecten(u.id);
-    if (objecten.length === 0) continue;
+    const woningen = getListingsByOwner(u.id).filter((l) => l.source === "kolibri" || l.source === "realworks");
+    if (woningen.length === 0) continue;
+
     // 1) Welkomstmail met inloggegevens: eenmalig, want dit kantoor had nog geen profiel.
     if (!u.inlogMailGestuurd) {
       await stuurWelkomInloggegevens(u);
       updateUser(u.id, { inlogMailGestuurd: true });
     }
-    // 2) Bedankmail + betaallink: eenmalig na de aanmelding.
-    if (!u.welkomGestuurd) {
-      const betaald = !!(u.betaaldTot && Date.parse(u.betaaldTot) > Date.now());
-      if (betaald) { updateUser(u.id, { welkomGestuurd: true }); continue; }
-      const f = await maakMakelaarFactuur(u.id, true);
-      if (!f.ok || !f.betaalUrl) continue;
-      await stuurBedanktAanmelding(u, f.betaalUrl, f.aantal || objecten.length, f.bedrag || 0);
-      updateUser(u.id, { welkomGestuurd: true });
+
+    // 2) Nieuwe, nog niet-gefactureerde woningen: per woning een betaling + één bedankmail met de betaallinks.
+    const betalingen = getPayments();
+    const heeftBetaling = (listingId: string) =>
+      betalingen.some(
+        (p) =>
+          (p.listingId === listingId || (p.listingIds || []).includes(listingId)) &&
+          (p.soort === "advertentie" || p.soort === "verlenging")
+      );
+    const nieuwe = woningen.filter((l) => l.status === "offline" && !heeftBetaling(l.id));
+    if (nieuwe.length === 0) continue;
+
+    const regels: { titel: string; betaalUrl: string; bedrag: number }[] = [];
+    for (const l of nieuwe) {
+      const b = await maakWoningBetaling(u.id, l);
+      if (b.ok && b.betaalUrl) regels.push({ titel: l.titel, betaalUrl: b.betaalUrl, bedrag: b.bedrag || 0 });
     }
+    if (regels.length > 0) await stuurBedanktAanmelding(u, regels);
   }
 }
 
@@ -261,11 +273,12 @@ export const kolibriAdapter: FeedAdapter = {
         // Aanbod staat pas live als het kantoor voor dat jaar betaald heeft.
         // Bestaand aanbod laten staan; alleen nieuw aanbod van onbetaalde kantoren offline.
         if (WELKOM_AAN) {
-          const betaald = !!(profiel.betaaldTot && Date.parse(profiel.betaaldTot) > Date.now());
           const bestaandeListing = getFeedListing("kolibri", externalId);
           if (bestaandeListing) {
+            // Bestaand aanbod laten staan; alleen een verkocht/ingetrokken-status uit de feed overnemen.
             if (data.status !== "verkocht" && data.status !== "offline") data.status = bestaandeListing.status;
-          } else if (!betaald && data.status === "live") {
+          } else if (data.status === "live") {
+            // Nieuw aanbod staat offline tot er per woning is betaald.
             data.status = "offline";
           }
         }
