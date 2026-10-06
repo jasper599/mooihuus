@@ -33,11 +33,13 @@ const TABS = [
   { key: "nieuwsbrief", label: "Nieuwsbrief" },
 ];
 
-export default async function Beheer({ searchParams }: { searchParams: { tab?: string } }) {
+export default async function Beheer({ searchParams }: { searchParams: { tab?: string; bron?: string; kantoor?: string } }) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.rol !== "beheerder") redirect("/inloggen");
 
   const tab = searchParams.tab && TABS.some((t) => t.key === searchParams.tab) ? searchParams.tab : "overzicht";
+  const bronFilter = searchParams.bron || "";
+  const kantoorFilter = searchParams.kantoor || "";
   const users = getUsers();
   const listings = getListings();
   const leads = getLeads();
@@ -178,43 +180,75 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
         </Table>
       )}
 
-      {tab === "advertenties" && (
-        <>
-          <div className="card mb-4">
-            <div className="font-display font-bold mb-2">Aanbod per bron</div>
-            <div className="flex gap-2 flex-wrap mb-3">
-              {Object.entries(
-                listings.reduce((acc: Record<string, number>, l) => {
-                  const b = l.source || "eigen";
-                  acc[b] = (acc[b] || 0) + 1;
-                  return acc;
-                }, {})
-              ).map(([bron, n]) => (
-                <span key={bron} className="pill">{bronLabel(bron)}: <strong className="ml-1">{n as number}</strong></span>
-              ))}
-            </div>
-            <div className="border-t border-lijn pt-3">
-              <div className="text-sm text-grijs mb-2">Feed-koppelingen (handmatig synchroniseren zodra geconfigureerd):</div>
-              <div className="flex gap-3 flex-wrap">
-                <FeedImportKnop bron="kolibri" label="Kolibri" />
-                <FeedImportKnop bron="realworks" label="Realworks" />
+      {tab === "advertenties" && (() => {
+        const bronCount = listings.reduce((acc: Record<string, number>, l) => {
+          const b = l.source || "eigen"; acc[b] = (acc[b] || 0) + 1; return acc;
+        }, {} as Record<string, number>);
+        const feedBronnen = ["kolibri", "realworks"];
+        const kantoorId = (l: any): string => l.realtorId || (l.source && feedBronnen.includes(l.source) && l.externalId ? String(l.externalId).split("-")[0] : "");
+        const kantoren: Record<string, { naam: string; n: number }> = {};
+        for (const l of listings) {
+          if (l.source !== "kolibri") continue;
+          const id = kantoorId(l) || "?";
+          const naam = (l as any).makelaar || (id !== "?" ? "Kantoor " + id : "Onbekend kantoor");
+          kantoren[id] = { naam, n: (kantoren[id]?.n || 0) + 1 };
+        }
+        const href = (bron?: string, kantoor?: string): string => {
+          const p = new URLSearchParams({ tab: "advertenties" });
+          if (bron) p.set("bron", bron);
+          if (kantoor) p.set("kantoor", kantoor);
+          return "/beheer?" + p.toString();
+        };
+        const zichtbaar = listings.filter((l) =>
+          (!bronFilter || (l.source || "eigen") === bronFilter) &&
+          (!kantoorFilter || kantoorId(l) === kantoorFilter)
+        );
+        const pill = (actief: boolean): string => actief ? "pill bg-bosgroen text-white" : "pill";
+        return (
+          <>
+            <div className="card mb-4">
+              <div className="font-display font-bold mb-2">Aanbod per bron</div>
+              <div className="flex gap-2 flex-wrap mb-3">
+                <Link href={href()} className={pill(!bronFilter && !kantoorFilter)}>Alle: <strong className="ml-1">{listings.length}</strong></Link>
+                {Object.entries(bronCount).sort((a, b) => (b[1] as number) - (a[1] as number)).map(([bron, n]) => (
+                  <Link key={bron} href={href(bron)} className={pill(bronFilter === bron && !kantoorFilter)}>{bronLabel(bron)}: <strong className="ml-1">{n as number}</strong></Link>
+                ))}
+              </div>
+              {Object.keys(kantoren).length > 0 && (
+                <div className="border-t border-lijn pt-3 mb-3">
+                  <div className="text-sm text-grijs mb-2">Kolibri per makelaarskantoor:</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {Object.entries(kantoren).sort((a, b) => b[1].n - a[1].n).map(([id, k]) => (
+                      <Link key={id} href={href("kolibri", id)} className={pill(kantoorFilter === id)}>{k.naam}: <strong className="ml-1">{k.n}</strong></Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div className="border-t border-lijn pt-3">
+                <div className="text-sm text-grijs mb-2">Feed-koppelingen (handmatig synchroniseren zodra geconfigureerd):</div>
+                <div className="flex gap-3 flex-wrap">
+                  <FeedImportKnop bron="kolibri" label="Kolibri" />
+                  <FeedImportKnop bron="realworks" label="Realworks" />
+                </div>
               </div>
             </div>
-          </div>
-          <Table head={["Titel", "Bron", "Eigenaar", "Doel", "Status", "Prijs"]}>
-            {listings.map((l) => (
-              <tr key={l.id} className="border-t border-lijn">
-                <Td>{l.titel}</Td>
-                <Td><span className="pill">{bronLabel(l.source)}</span></Td>
-                <Td>{getUser(l.ownerId)?.naam ?? "—"}</Td>
-                <Td>{l.doel === "huur" ? "Te huur" : "Te koop"}</Td>
-                <Td>{statusLabel(l.status)}</Td>
-                <Td>{euro(l.prijs)}</Td>
-              </tr>
-            ))}
-          </Table>
-        </>
-      )}
+            <div className="text-sm text-grijs mb-2">{zichtbaar.length} {zichtbaar.length === 1 ? "woning" : "woningen"}{bronFilter ? " · bron " + bronLabel(bronFilter) : ""}{kantoorFilter ? " · " + (kantoren[kantoorFilter]?.naam || "kantoor") : ""}</div>
+            <Table head={["Titel", "Bron", "Makelaar / kantoor", "Doel", "Status", "Prijs"]}>
+              {zichtbaar.map((l) => (
+                <tr key={l.id} className="border-t border-lijn">
+                  <Td>{l.titel}</Td>
+                  <Td><span className="pill">{bronLabel(l.source)}</span></Td>
+                  <Td>{(l as any).makelaar || getUser(l.ownerId)?.naam || "—"}</Td>
+                  <Td>{l.doel === "huur" ? "Te huur" : "Te koop"}</Td>
+                  <Td>{statusLabel(l.status)}</Td>
+                  <Td>{euro(l.prijs)}</Td>
+                </tr>
+              ))}
+            </Table>
+          </>
+        );
+      })()}
+
 
       {tab === "betalingen" && (
         <Table head={["Factuur", "Eigenaar", "Pakket", "Bedrag", "Methode", "Status"]}>

@@ -186,6 +186,8 @@ export const kolibriAdapter: FeedAdapter = {
         const data = mapKolibriPand(pand);
         if (!data) continue;
         const externalId = `${c.RealtorID}-${s.RealEstateProperyID}`;
+        data.makelaar = c.Name || undefined;
+        data.realtorId = String(c.RealtorID);
         objecten.push({ externalId, data });
 
         // Terugkoppeling aan de makelaar (best-effort; standaard uit tijdens testen).
