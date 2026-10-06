@@ -24,6 +24,8 @@ export interface User {
   factuurEmail?: string;
   website?: string;
   standaardPakket?: Pakket; // pakket voor woningen die via een feed (Kolibri) binnenkomen
+  realtorId?: string;   // RealtorID bij een automatisch aangemaakt makelaarskantoor-profiel (feed)
+  betaaldTot?: string;  // t/m wanneer het jaarabonnement van dit kantoor betaald is
   aangemaakt: string;
 }
  

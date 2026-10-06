@@ -228,6 +228,22 @@ export function addUser(data: {
   return user;
 }
  
+export function zoekOfMaakMakelaar(realtorId: string, naam: string, email?: string): User {
+  const db = load();
+  const bestaand = db.users.find((x) => x.realtorId === realtorId);
+  if (bestaand) return bestaand;
+  const created = addUser({
+    naam: naam || ("Kantoor " + realtorId),
+    email: email || ("kolibri-" + realtorId + "@import.mooihuus.nl"),
+    wachtwoord: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2),
+    type: "zakelijk",
+    bedrijfsnaam: naam || ("Kantoor " + realtorId),
+    factuurEmail: email,
+  });
+  updateUser(created.id, { realtorId });
+  return getUser(created.id) || created;
+}
+
 export function updateUser(id: string, patch: Partial<User>): User | undefined {
   const db = load();
   const u = db.users.find((x) => x.id === id);

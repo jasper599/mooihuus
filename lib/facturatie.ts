@@ -58,7 +58,7 @@ export async function maakMakelaarFactuur(ownerId: string): Promise<{
     methode: "iDEAL",
     soort: "makelaar-factuur",
     aantalObjecten: objecten.length,
-    omschrijving: `Advertenties Mooihuus — ${objecten.length} objecten`,
+    omschrijving: `Jaaradvertenties Mooihuus — ${objecten.length} objecten (1 jaar)`,
   });
 
   // Mollie-betaallink (of simulatie zonder key).

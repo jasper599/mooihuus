@@ -1,5 +1,5 @@
 import { Listing } from "./types";
-import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen } from "./db";
+import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar } from "./db";
 import { COMPANY } from "./company";
 import {
   getAllMediaContracts,
@@ -186,8 +186,10 @@ export const kolibriAdapter: FeedAdapter = {
         const data = mapKolibriPand(pand);
         if (!data) continue;
         const externalId = `${c.RealtorID}-${s.RealEstateProperyID}`;
+        const profiel = zoekOfMaakMakelaar(String(c.RealtorID), c.Name || "");
         data.makelaar = c.Name || undefined;
         data.realtorId = String(c.RealtorID);
+        data.ownerId = profiel.id;
         objecten.push({ externalId, data });
 
         // Terugkoppeling aan de makelaar (best-effort; standaard uit tijdens testen).

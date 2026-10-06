@@ -1,4 +1,4 @@
-import { getPayment, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning, addSocialPost, updateSocialPost } from "./db";
+import { getPayment, updatePayment, getListing, updateListing, getUser, updateUser, getListingsByOwner, zoekopdrachtenVoorWoning, addSocialPost, updateSocialPost } from "./db";
 import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, renderVerlengBevestiging, sendEmail } from "./email";
 import { COMPANY } from "./company";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
@@ -22,6 +22,11 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
   if (payment.soort === "makelaar-factuur") {
     const kantoor = getUser(payment.userId);
     if (kantoor) {
+      const tot = new Date(nu); tot.setFullYear(tot.getFullYear() + 1);
+      updateUser(kantoor.id, { betaaldTot: tot.toISOString() });
+      for (const l of getListingsByOwner(kantoor.id)) {
+        if (l.status === "offline" && (l.source === "kolibri" || l.source === "realworks")) updateListing(l.id, { status: "live" });
+      }
       const updated = getPayment(payment.id)!;
       const mail = renderFactuurBetaald(updated, kantoor.bedrijfsnaam || kantoor.naam);
       await sendEmail({ aan: kantoor.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
