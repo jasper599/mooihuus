@@ -1,4 +1,4 @@
-import { getUser, getListingsByOwner, addPayment, updatePayment } from "./db";
+import { getUser, getUsers, getListingsByOwner, getPayments, addPayment, updatePayment, updateListing } from "./db";
 import { mollieEnabled, createMolliePayment } from "./mollie";
 import { renderMakelaarFactuur, sendEmail } from "./email";
 import { COMPANY } from "./company";
@@ -155,4 +155,39 @@ export async function maakLosseFactuur(args: {
   }
 
   return { ok: true, bedrag, betaalUrl, factuurnummer: payment.factuurnummer, paymentId: payment.id };
+}
+
+// Automatische jaarfacturatie + offline-sweep voor feed-kantoren (Kolibri/Realworks).
+// Staat uit tenzij FACTURATIE_AUTO=1. Respijttermijn via FACTURATIE_OFFLINE_DAGEN (standaard 14).
+export async function verwerkMakelaarFacturatie(): Promise<{ actief: boolean; gefactureerd: number; offline: number }> {
+  if (process.env.FACTURATIE_AUTO !== "1") return { actief: false, gefactureerd: 0, offline: 0 };
+  const graceDagen = Number(process.env.FACTURATIE_OFFLINE_DAGEN) || 14;
+  const nu = Date.now();
+  const kantoren = getUsers().filter((u) => u.type === "zakelijk" && !!u.realtorId);
+  let gefactureerd = 0;
+  let offline = 0;
+  for (const u of kantoren) {
+    const objecten = getListingsByOwner(u.id).filter(
+      (l) => (l.source === "kolibri" || l.source === "realworks") && (l.status === "live" || l.status === "offline")
+    );
+    if (objecten.length === 0) continue;
+    // Nieuw kantoor: eerst de welkomstmail, pas na 1 dag de facturatie-sweep.
+    if (nu - Date.parse(u.aangemaakt) < 24 * 60 * 60 * 1000) continue;
+    const betaaldTot = u.betaaldTot ? Date.parse(u.betaaldTot) : 0;
+    if (betaaldTot && betaaldTot > nu) continue; // nog een jaar geldig
+    const open = getPayments().filter(
+      (p) => p.userId === u.id && p.soort === "makelaar-factuur" && p.status === "open"
+    );
+    if (open.length === 0) {
+      try { await maakMakelaarFactuur(u.id); gefactureerd++; } catch { /* volgende run opnieuw */ }
+      continue;
+    }
+    const oudste = Math.min(...open.map((p) => Date.parse(p.aangemaakt) || nu));
+    if (nu - oudste > graceDagen * 24 * 60 * 60 * 1000) {
+      for (const l of objecten) {
+        if (l.status === "live") { updateListing(l.id, { status: "offline" }); offline++; }
+      }
+    }
+  }
+  return { actief: true, gefactureerd, offline };
 }

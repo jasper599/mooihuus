@@ -14,14 +14,19 @@ import { addBlogPost } from "./db";
 import { genereerBlogpost } from "./blog-generator";
 import { syncMarinaparken } from "./marinaparken-feed";
 import { syncAlleTradeTracker } from "./tradetracker-feed";
+import { syncKolibri } from "./feed-import";
+import { kolibriGeconfigureerd } from "./kolibri";
+import { verwerkMakelaarFacturatie } from "./facturatie";
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const STAMP_FILE = path.join(DATA_DIR, "last-onderhoud.txt");
 const BLOG_STAMP = path.join(DATA_DIR, "last-blog.txt");
 const FEED_STAMP = path.join(DATA_DIR, "last-feeds.txt");
+const KOLIBRI_STAMP = path.join(DATA_DIR, "last-kolibri.txt");
 const INTERVAL = 30 * 60 * 1000; // elke 30 minuten kijken of het al gedraaid is
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 const FEED_INTERVAL = 6 * 60 * 60 * 1000; // huurfeeds elke 6 uur verversen
+const KOLIBRI_INTERVAL = 60 * 60 * 1000; // Kolibri elk uur synchroniseren
 
 function vandaag(d = new Date()): string {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
@@ -110,6 +115,32 @@ async function draaiFeeds(nu: Date): Promise<void> {
   }
 }
 
+function kolibriNodig(nu: Date): boolean {
+  try {
+    if (!fs.existsSync(KOLIBRI_STAMP)) return true;
+    const laatst = new Date(fs.readFileSync(KOLIBRI_STAMP, "utf8").trim()).getTime();
+    return nu.getTime() - laatst >= KOLIBRI_INTERVAL;
+  } catch {
+    return true;
+  }
+}
+let bezigKolibri = false;
+async function draaiKolibri(nu: Date): Promise<void> {
+  if (bezigKolibri || !kolibriGeconfigureerd() || !kolibriNodig(nu)) return;
+  bezigKolibri = true;
+  try {
+    await syncKolibri().catch(() => {});
+    try {
+      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+      fs.writeFileSync(KOLIBRI_STAMP, nu.toISOString(), "utf8");
+    } catch {
+      /* niet fataal */
+    }
+  } finally {
+    bezigKolibri = false;
+  }
+}
+
 let bezig = false;
 async function draaiDagelijks(): Promise<void> {
   if (bezig || alGedraaidVandaag()) return;
@@ -117,6 +148,7 @@ async function draaiDagelijks(): Promise<void> {
   try {
     await maakBackup().catch(() => {});
     await verwerkVerlopendeAdvertenties().catch(() => {});
+    await verwerkMakelaarFacturatie().catch(() => {});
     markeer(); // pas markeren als alles klaar is (crasht het eerder, dan retry volgende tick)
   } finally {
     bezig = false;
@@ -129,6 +161,7 @@ function tick(): void {
   void draaiDagelijks();
   void draaiBlog(new Date()).catch(() => {});
   void draaiFeeds(new Date()).catch(() => {});
+  void draaiKolibri(new Date()).catch(() => {});
 }
 
 let gestart = false;
