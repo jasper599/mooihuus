@@ -36,6 +36,9 @@ export async function GET(req: Request) {
     );
     if (objecten.length === 0) continue;
 
+    // Geef nieuwe kantoren eerst de welkomstmail; pas na 1 dag factureren.
+    if (Date.now() - Date.parse(u.aangemaakt) < 24 * 60 * 60 * 1000) continue;
+
     const betaaldTot = u.betaaldTot ? Date.parse(u.betaaldTot) : 0;
     if (betaaldTot && betaaldTot > nu) continue; // nog een jaar geldig
 

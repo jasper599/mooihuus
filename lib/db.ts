@@ -228,10 +228,20 @@ export function addUser(data: {
   return user;
 }
  
+export function getMakelaarByRealtor(realtorId: string): User | undefined {
+  return load().users.find((u) => u.realtorId === realtorId);
+}
+
 export function zoekOfMaakMakelaar(realtorId: string, naam: string, email?: string): User {
   const db = load();
   const bestaand = db.users.find((x) => x.realtorId === realtorId);
-  if (bestaand) return bestaand;
+  if (bestaand) {
+    if (email && (!bestaand.email || bestaand.email.endsWith("@import.mooihuus.nl"))) {
+      updateUser(bestaand.id, { email, factuurEmail: email });
+      return getUser(bestaand.id) || bestaand;
+    }
+    return bestaand;
+  }
   const created = addUser({
     naam: naam || ("Kantoor " + realtorId),
     email: email || ("kolibri-" + realtorId + "@import.mooihuus.nl"),

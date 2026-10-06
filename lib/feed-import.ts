@@ -1,5 +1,7 @@
-import { Listing } from "./types";
-import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar } from "./db";
+import { Listing, User } from "./types";
+import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getMakelaarByRealtor } from "./db";
+import { sendEmail } from "./email";
+import { makelaarBasisTarief } from "./facturatie";
 import { COMPANY } from "./company";
 import {
   getAllMediaContracts,
@@ -21,6 +23,24 @@ import {
 // en hun object naar ons Listing-model mapt — dát is het enige dat nog moet
 // gebeuren zodra we credentials + XSD/Swagger van de partner hebben.
 // ------------------------------------------------------------------
+
+async function stuurMakelaarWelkom(profiel: User): Promise<void> {
+  try {
+    const tarief = makelaarBasisTarief();
+    const naam = profiel.bedrijfsnaam || profiel.naam;
+    const html =
+      "<p>Beste " + naam + ",</p>" +
+      "<p>Goed nieuws: uw aanbod staat vanaf nu op <a href=\"" + COMPANY.website + "\">Mooihuus.nl</a>, het platform voor recreatiewoningen. Via uw Kolibri-koppeling verschijnt uw aanbod automatisch bij ons en wordt het ook automatisch bijgewerkt.</p>" +
+      "<p><strong>Tarief:</strong> \u20ac " + tarief + " per object per jaar, met staffelkorting (vanaf 5 objecten 15%, vanaf 10 objecten 25%). U ontvangt hiervoor binnenkort een factuur met een betaallink.</p>" +
+      "<p><strong>Uw account:</strong> we hebben alvast een profiel voor u aangemaakt. Stel uw wachtwoord in via <a href=\"" + COMPANY.website + "/wachtwoord-vergeten\">" + COMPANY.website + "/wachtwoord-vergeten</a> met dit e-mailadres, dan kunt u inloggen en uw aanbod en facturen bekijken.</p>" +
+      "<p>Vragen? Mail ons gerust op " + COMPANY.email + ".</p>" +
+      "<p>Hartelijke groet,<br>Team Mooihuus.nl</p>";
+    await sendEmail({ aan: profiel.email, onderwerp: "Welkom bij Mooihuus.nl \u2014 uw aanbod staat online", soort: "welkom", html });
+    await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie \u2014 nieuw makelaarskantoor op Mooihuus: " + naam, soort: "welkom", html });
+  } catch {
+    /* welkomstmail mislukt - sync niet laten falen */
+  }
+}
 
 export interface FeedObject {
   externalId: string; // uniek id van het object bij de bron
@@ -170,6 +190,8 @@ export const kolibriAdapter: FeedAdapter = {
     if (!kolibriGeconfigureerd()) {
       throw new Error("KOLIBRI_TOKEN ontbreekt — zet het mediapartner-token als omgevingsvariabele.");
     }
+    const gewelkomd = new Set<string>();
+    const WELKOM_AAN = process.env.FACTURATIE_AUTO === "1";
     const contracten = await getAllMediaContracts();
     const actief = contracten.filter((c) => c.MediaContractStatus.toUpperCase() === "ACTIVE");
 
@@ -186,7 +208,14 @@ export const kolibriAdapter: FeedAdapter = {
         const data = mapKolibriPand(pand);
         if (!data) continue;
         const externalId = `${c.RealtorID}-${s.RealEstateProperyID}`;
-        const profiel = zoekOfMaakMakelaar(String(c.RealtorID), c.Name || "");
+        const em = (x: any) => (typeof x === "string" ? x : x && x["#text"] ? String(x["#text"]) : "");
+        const kantoorEmail = em(pand?.Contact?.Agency?.Email) || em(pand?.Contact?.Department?.Email) || em(pand?.Contact?.Person?.Email) || undefined;
+        const bestond = !!getMakelaarByRealtor(String(c.RealtorID));
+        const profiel = zoekOfMaakMakelaar(String(c.RealtorID), c.Name || "", kantoorEmail);
+        if (!bestond && WELKOM_AAN && !gewelkomd.has(String(c.RealtorID))) {
+          gewelkomd.add(String(c.RealtorID));
+          await stuurMakelaarWelkom(profiel);
+        }
         data.makelaar = c.Name || undefined;
         data.realtorId = String(c.RealtorID);
         data.ownerId = profiel.id;
