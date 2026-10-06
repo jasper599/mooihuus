@@ -33,13 +33,14 @@ const TABS = [
   { key: "nieuwsbrief", label: "Nieuwsbrief" },
 ];
 
-export default async function Beheer({ searchParams }: { searchParams: { tab?: string; bron?: string; kantoor?: string } }) {
+export default async function Beheer({ searchParams }: { searchParams: { tab?: string; bron?: string; kantoor?: string; doel?: string } }) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.rol !== "beheerder") redirect("/inloggen");
 
   const tab = searchParams.tab && TABS.some((t) => t.key === searchParams.tab) ? searchParams.tab : "overzicht";
   const bronFilter = searchParams.bron || "";
   const kantoorFilter = searchParams.kantoor || "";
+  const doelFilter = searchParams.doel || "";
   const users = getUsers();
   const listings = getListings();
   const leads = getLeads();
@@ -193,33 +194,46 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
           const naam = (l as any).makelaar || (id !== "?" ? "Kantoor " + id : "Onbekend kantoor");
           kantoren[id] = { naam, n: (kantoren[id]?.n || 0) + 1 };
         }
-        const href = (bron?: string, kantoor?: string): string => {
+        const href = (ov: { bron?: string; kantoor?: string; doel?: string } = {}): string => {
+          const b = ov.bron !== undefined ? ov.bron : bronFilter;
+          const k = ov.kantoor !== undefined ? ov.kantoor : kantoorFilter;
+          const d = ov.doel !== undefined ? ov.doel : doelFilter;
           const p = new URLSearchParams({ tab: "advertenties" });
-          if (bron) p.set("bron", bron);
-          if (kantoor) p.set("kantoor", kantoor);
+          if (b) p.set("bron", b);
+          if (k) p.set("kantoor", k);
+          if (d) p.set("doel", d);
           return "/beheer?" + p.toString();
         };
-        const zichtbaar = listings.filter((l) =>
+        const naBronKantoor = listings.filter((l) =>
           (!bronFilter || (l.source || "eigen") === bronFilter) &&
           (!kantoorFilter || kantoorId(l) === kantoorFilter)
         );
+        const koopN = naBronKantoor.filter((l) => l.doel !== "huur").length;
+        const huurN = naBronKantoor.filter((l) => l.doel === "huur").length;
+        const zichtbaar = naBronKantoor.filter((l) => !doelFilter || (doelFilter === "huur" ? l.doel === "huur" : l.doel !== "huur"));
         const pill = (actief: boolean): string => actief ? "pill bg-bosgroen text-white" : "pill";
         return (
           <>
             <div className="card mb-4">
               <div className="font-display font-bold mb-2">Aanbod per bron</div>
               <div className="flex gap-2 flex-wrap mb-3">
-                <Link href={href()} className={pill(!bronFilter && !kantoorFilter)}>Alle: <strong className="ml-1">{listings.length}</strong></Link>
+                <Link href={href({ bron: "", kantoor: "" })} className={pill(!bronFilter && !kantoorFilter)}>Alle: <strong className="ml-1">{listings.length}</strong></Link>
                 {Object.entries(bronCount).sort((a, b) => (b[1] as number) - (a[1] as number)).map(([bron, n]) => (
-                  <Link key={bron} href={href(bron)} className={pill(bronFilter === bron && !kantoorFilter)}>{bronLabel(bron)}: <strong className="ml-1">{n as number}</strong></Link>
+                  <Link key={bron} href={href({ bron, kantoor: "" })} className={pill(bronFilter === bron && !kantoorFilter)}>{bronLabel(bron)}: <strong className="ml-1">{n as number}</strong></Link>
                 ))}
+              </div>
+              <div className="flex gap-2 flex-wrap mb-3 items-center">
+                <span className="text-sm text-grijs mr-1">Type:</span>
+                <Link href={href({ doel: "" })} className={pill(!doelFilter)}>Alle</Link>
+                <Link href={href({ doel: "koop" })} className={pill(doelFilter === "koop")}>Te koop: <strong className="ml-1">{koopN}</strong></Link>
+                <Link href={href({ doel: "huur" })} className={pill(doelFilter === "huur")}>Te huur: <strong className="ml-1">{huurN}</strong></Link>
               </div>
               {Object.keys(kantoren).length > 0 && (
                 <div className="border-t border-lijn pt-3 mb-3">
                   <div className="text-sm text-grijs mb-2">Kolibri per makelaarskantoor:</div>
                   <div className="flex gap-2 flex-wrap">
                     {Object.entries(kantoren).sort((a, b) => b[1].n - a[1].n).map(([id, k]) => (
-                      <Link key={id} href={href("kolibri", id)} className={pill(kantoorFilter === id)}>{k.naam}: <strong className="ml-1">{k.n}</strong></Link>
+                      <Link key={id} href={href({ bron: "kolibri", kantoor: id })} className={pill(kantoorFilter === id)}>{k.naam}: <strong className="ml-1">{k.n}</strong></Link>
                     ))}
                   </div>
                 </div>
@@ -232,7 +246,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
                 </div>
               </div>
             </div>
-            <div className="text-sm text-grijs mb-2">{zichtbaar.length} {zichtbaar.length === 1 ? "woning" : "woningen"}{bronFilter ? " · bron " + bronLabel(bronFilter) : ""}{kantoorFilter ? " · " + (kantoren[kantoorFilter]?.naam || "kantoor") : ""}</div>
+            <div className="text-sm text-grijs mb-2">{zichtbaar.length} {zichtbaar.length === 1 ? "woning" : "woningen"}{bronFilter ? " · bron " + bronLabel(bronFilter) : ""}{kantoorFilter ? " · " + (kantoren[kantoorFilter]?.naam || "kantoor") : ""}{doelFilter ? " · " + (doelFilter === "huur" ? "te huur" : "te koop") : ""}</div>
             <Table head={["Titel", "Bron", "Makelaar / kantoor", "Doel", "Status", "Prijs"]}>
               {zichtbaar.map((l) => (
                 <tr key={l.id} className="border-t border-lijn">
@@ -248,7 +262,6 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
           </>
         );
       })()}
-
 
       {tab === "betalingen" && (
         <Table head={["Factuur", "Eigenaar", "Pakket", "Bedrag", "Methode", "Status"]}>
