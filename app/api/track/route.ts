@@ -23,7 +23,7 @@ function classificeerDevice(ua: string): "mobiel" | "tablet" | "desktop" {
   return "desktop";
 }
 
-const BOT_RE = /bot|crawl|spider|slurp|mediapartners|bingpreview|facebookexternalhit|facebot|embedly|quora|pinterest|vkshare|redditbot|applebot|yandex|baiduspider|duckduckbot|semrush|ahrefs|mj12|dotbot|petalbot|bytespider|gptbot|claudebot|ccbot|chatgpt|anthropic|perplexity|python-requests|axios|curl|wget|node-fetch|go-http|java/|okhttp|httpclient|headless|phantom|puppeteer|playwright|lighthouse|pagespeed|gtmetrix|monitor|uptime|pingdom|statuscake|site24x7|prerender|screaming/i;
+const BOT_RE = /bot|crawl|spider|slurp|mediapartners|bingpreview|facebookexternalhit|facebot|embedly|quora|pinterest|vkshare|redditbot|applebot|yandex|baiduspider|duckduckbot|semrush|ahrefs|mj12|dotbot|petalbot|bytespider|gptbot|claudebot|ccbot|chatgpt|anthropic|perplexity|python-requests|axios|curl|wget|node-fetch|go-http|java\/|okhttp|httpclient|headless|phantom|puppeteer|playwright|lighthouse|pagespeed|gtmetrix|monitor|uptime|pingdom|statuscake|site24x7|prerender|screaming/i;
 function isBot(ua: string): boolean {
   return BOT_RE.test(ua);
 }
