@@ -1,7 +1,7 @@
 import { Listing, User } from "./types";
-import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getMakelaarByRealtor } from "./db";
+import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser } from "./db";
 import { sendEmail } from "./email";
-import { makelaarBasisTarief } from "./facturatie";
+import { makelaarBasisTarief, factureerbareObjecten, maakMakelaarFactuur } from "./facturatie";
 import { COMPANY } from "./company";
 import {
   getAllMediaContracts,
@@ -24,21 +24,40 @@ import {
 // gebeuren zodra we credentials + XSD/Swagger van de partner hebben.
 // ------------------------------------------------------------------
 
-async function stuurMakelaarWelkom(profiel: User): Promise<void> {
+async function stuurMakelaarWelkom(profiel: User, betaalUrl: string, aantal: number, bedrag: number): Promise<void> {
   try {
     const tarief = makelaarBasisTarief();
     const naam = profiel.bedrijfsnaam || profiel.naam;
+    const obj = aantal === 1 ? "object" : "objecten";
     const html =
       "<p>Beste " + naam + ",</p>" +
-      "<p>Goed nieuws: uw aanbod staat vanaf nu op <a href=\"" + COMPANY.website + "\">Mooihuus.nl</a>, het platform voor recreatiewoningen. Via uw Kolibri-koppeling verschijnt uw aanbod automatisch bij ons en wordt het ook automatisch bijgewerkt.</p>" +
-      "<p><strong>Tarief:</strong> \u20ac " + tarief + " per object per jaar, met staffelkorting (vanaf 5 objecten 15%, vanaf 10 objecten 25%). U ontvangt hiervoor binnenkort een factuur met een betaallink.</p>" +
+      "<p>Welkom bij <a href=\"" + COMPANY.website + "\">Mooihuus.nl</a>, het platform voor recreatiewoningen. Via uw Kolibri-koppeling hebben we uw aanbod (" + aantal + " " + obj + ") automatisch klaargezet.</p>" +
+      "<p><strong>Uw advertenties gaan live zodra de advertentiekosten voldaan zijn.</strong> Tot die tijd staan ze klaar, maar nog niet online.</p>" +
+      "<p><strong>Tarief:</strong> \u20ac " + tarief + " per object per jaar, met staffelkorting (vanaf 5 objecten 15%, vanaf 10 objecten 25%). Voor uw " + aantal + " " + obj + " komt dat op \u20ac " + bedrag + " voor een jaar.</p>" +
+      "<p><a href=\"" + betaalUrl + "\">Klik hier om te betalen</a> \u2014 direct na betaling staat uw aanbod online.</p>" +
       "<p><strong>Uw account:</strong> we hebben alvast een profiel voor u aangemaakt. Stel uw wachtwoord in via <a href=\"" + COMPANY.website + "/wachtwoord-vergeten\">" + COMPANY.website + "/wachtwoord-vergeten</a> met dit e-mailadres, dan kunt u inloggen en uw aanbod en facturen bekijken.</p>" +
       "<p>Vragen? Mail ons gerust op " + COMPANY.email + ".</p>" +
       "<p>Hartelijke groet,<br>Team Mooihuus.nl</p>";
-    await sendEmail({ aan: profiel.email, onderwerp: "Welkom bij Mooihuus.nl \u2014 uw aanbod staat online", soort: "welkom", html });
+    await sendEmail({ aan: profiel.email, onderwerp: "Uw aanbod staat klaar op Mooihuus.nl \u2014 nog \u00e9\u00e9n stap", soort: "welkom", html });
     await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie \u2014 nieuw makelaarskantoor op Mooihuus: " + naam, soort: "welkom", html });
   } catch {
     /* welkomstmail mislukt - sync niet laten falen */
+  }
+}
+
+// Na de sync: nieuwe (nog niet gewelkomde) kantoren een factuur + welkomstmail
+// met betaallink sturen. Hun aanbod staat offline tot de betaling binnen is.
+async function verwerkNieuweKantorenWelkom(): Promise<void> {
+  for (const u of getUsers()) {
+    if (u.type !== "zakelijk" || !u.realtorId || u.welkomGestuurd) continue;
+    const objecten = factureerbareObjecten(u.id);
+    if (objecten.length === 0) continue;
+    const betaald = !!(u.betaaldTot && Date.parse(u.betaaldTot) > Date.now());
+    if (betaald) { updateUser(u.id, { welkomGestuurd: true }); continue; }
+    const f = await maakMakelaarFactuur(u.id, true);
+    if (!f.ok || !f.betaalUrl) continue;
+    await stuurMakelaarWelkom(u, f.betaalUrl, f.aantal || objecten.length, f.bedrag || 0);
+    updateUser(u.id, { welkomGestuurd: true });
   }
 }
 
@@ -190,7 +209,6 @@ export const kolibriAdapter: FeedAdapter = {
     if (!kolibriGeconfigureerd()) {
       throw new Error("KOLIBRI_TOKEN ontbreekt — zet het mediapartner-token als omgevingsvariabele.");
     }
-    const gewelkomd = new Set<string>();
     const WELKOM_AAN = process.env.FACTURATIE_AUTO === "1";
     const contracten = await getAllMediaContracts();
     const actief = contracten.filter((c) => c.MediaContractStatus.toUpperCase() === "ACTIVE");
@@ -210,15 +228,21 @@ export const kolibriAdapter: FeedAdapter = {
         const externalId = `${c.RealtorID}-${s.RealEstateProperyID}`;
         const em = (x: any) => (typeof x === "string" ? x : x && x["#text"] ? String(x["#text"]) : "");
         const kantoorEmail = em(pand?.Contact?.Agency?.Email) || em(pand?.Contact?.Department?.Email) || em(pand?.Contact?.Person?.Email) || undefined;
-        const bestond = !!getMakelaarByRealtor(String(c.RealtorID));
         const profiel = zoekOfMaakMakelaar(String(c.RealtorID), c.Name || "", kantoorEmail);
-        if (!bestond && WELKOM_AAN && !gewelkomd.has(String(c.RealtorID))) {
-          gewelkomd.add(String(c.RealtorID));
-          await stuurMakelaarWelkom(profiel);
-        }
         data.makelaar = c.Name || undefined;
         data.realtorId = String(c.RealtorID);
         data.ownerId = profiel.id;
+        // Aanbod staat pas live als het kantoor voor dat jaar betaald heeft.
+        // Bestaand aanbod laten staan; alleen nieuw aanbod van onbetaalde kantoren offline.
+        if (WELKOM_AAN) {
+          const betaald = !!(profiel.betaaldTot && Date.parse(profiel.betaaldTot) > Date.now());
+          const bestaandeListing = getFeedListing("kolibri", externalId);
+          if (bestaandeListing) {
+            if (data.status !== "verkocht" && data.status !== "offline") data.status = bestaandeListing.status;
+          } else if (!betaald && data.status === "live") {
+            data.status = "offline";
+          }
+        }
         objecten.push({ externalId, data });
 
         // Terugkoppeling aan de makelaar (best-effort; standaard uit tijdens testen).
@@ -245,6 +269,9 @@ export const kolibriAdapter: FeedAdapter = {
 export async function syncKolibri(): Promise<FeedResultaat> {
   const res = await importFeed(kolibriAdapter);
   dedupliceerExterneWoningen();
+  if (process.env.FACTURATIE_AUTO === "1") {
+    try { await verwerkNieuweKantorenWelkom(); } catch { /* welkom/facturatie mag de sync niet breken */ }
+  }
   return res;
 }
 

@@ -336,6 +336,10 @@ export function updateListing(id: string, patch: Partial<Listing>): Listing | un
 // ---------- Feed-synchronisatie (Kolibri / Realworks / andere bronnen) ----------
 // Woningen staan al in de database; deze functies laten een externe feed
 // woningen toevoegen, bijwerken en (als ze bij de bron verdwijnen) offline zetten.
+export function getFeedListing(source: string, externalId: string): Listing | undefined {
+  return load().listings.find((l) => l.source === source && l.externalId === externalId);
+}
+
 export function getFeedListings(source: string): Listing[] {
   return load().listings.filter((l) => l.source === source);
 }

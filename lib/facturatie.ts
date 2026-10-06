@@ -20,7 +20,7 @@ export function prijsPerObject(aantal = 1): number {
 // een feed (Kolibri/Realworks) zijn gepubliceerd.
 export function factureerbareObjecten(ownerId: string) {
   return getListingsByOwner(ownerId).filter(
-    (l) => l.status === "live" && (l.source === "kolibri" || l.source === "realworks")
+    (l) => (l.status === "live" || l.status === "offline") && (l.source === "kolibri" || l.source === "realworks")
   );
 }
 
@@ -30,7 +30,7 @@ function baseUrl(): string {
 
 // Maakt een factuur voor één makelaar/kantoor: telt de objecten, maakt een
 // Mollie-betaallink en mailt de factuur met die link naar de makelaar.
-export async function maakMakelaarFactuur(ownerId: string): Promise<{
+export async function maakMakelaarFactuur(ownerId: string, stil = false): Promise<{
   ok: boolean;
   reden?: string;
   aantal?: number;
@@ -88,8 +88,10 @@ export async function maakMakelaarFactuur(ownerId: string): Promise<{
     totaal: bedrag,
     betaalUrl,
   });
-  await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
-  await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie — ${mail.onderwerp}`, soort: "factuur", html: mail.html });
+  if (!stil) {
+    await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
+    await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie — ${mail.onderwerp}`, soort: "factuur", html: mail.html });
+  }
 
   return { ok: true, aantal: objecten.length, bedrag, betaalUrl, factuurnummer: updated.factuurnummer };
 }
