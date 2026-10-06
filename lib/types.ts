@@ -26,7 +26,8 @@ export interface User {
   standaardPakket?: Pakket; // pakket voor woningen die via een feed (Kolibri) binnenkomen
   realtorId?: string;   // RealtorID bij een automatisch aangemaakt makelaarskantoor-profiel (feed)
   betaaldTot?: string;
-  welkomGestuurd?: boolean;  // t/m wanneer het jaarabonnement van dit kantoor betaald is
+  welkomGestuurd?: boolean;
+  inlogMailGestuurd?: boolean;  // t/m wanneer het jaarabonnement van dit kantoor betaald is
   aangemaakt: string;
 }
  
