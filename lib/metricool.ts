@@ -31,6 +31,20 @@ export function volgendeSlot(prioriteit: boolean, vanaf = new Date()): string {
   return d.toISOString();
 }
 
+const TZ = "Europe/Amsterdam";
+
+// Metricool verwacht dateTime als lokale wandklok-tijd "YYYY-MM-DDTHH:MM:SS"
+// (zonder "Z" of milliseconden), passend bij het meegegeven timezone-veld.
+function naarLokaal(iso: string, tz: string): string {
+  const d = new Date(iso);
+  const p: any = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: tz,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  }).formatToParts(d).reduce((a: any, x) => ((a[x.type] = x.value), a), {});
+  return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}`;
+}
+
 export async function scheduleInstagramPost(opts: {
   tekst: string;
   fotoUrl?: string;
@@ -48,22 +62,28 @@ export async function scheduleInstagramPost(opts: {
 
   const body = {
     providers: [{ network: "instagram" }],
-    publicationDate: { dateTime: opts.publishAt, timezone: "Europe/Amsterdam" },
+    publicationDate: { dateTime: naarLokaal(opts.publishAt, TZ), timezone: TZ },
     text: opts.tekst,
     media: opts.fotoUrl ? [opts.fotoUrl] : [],
+    instagramData: { autoPublish: true },
     autoPublish: true,
+    draft: false,
+    shortener: false,
   };
 
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 12000);
+    const timer = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json", "X-Mc-Auth": token },
       signal: controller.signal,
       body: JSON.stringify(body),
     }).finally(() => clearTimeout(timer));
-    if (!res.ok) return { ok: false, error: `Metricool ${res.status}` };
+    if (!res.ok) {
+      const tekst = await res.text().catch(() => "");
+      return { ok: false, error: `Metricool ${res.status}: ${tekst.slice(0, 300)}` };
+    }
     const data = await res.json().catch(() => ({}));
     return { ok: true, id: data?.id ? String(data.id) : undefined };
   } catch (e: any) {
