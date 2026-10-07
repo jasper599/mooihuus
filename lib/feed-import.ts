@@ -1,6 +1,6 @@
 import { Listing, User } from "./types";
-import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner } from "./db";
-import { sendEmail } from "./email";
+import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails } from "./db";
+import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt } from "./email";
 import { makelaarBasisTarief, maakWoningBetaling } from "./facturatie";
 import { COMPANY } from "./company";
 import {
@@ -28,14 +28,9 @@ import {
 async function stuurWelkomInloggegevens(profiel: User): Promise<void> {
   try {
     const naam = profiel.bedrijfsnaam || profiel.naam;
-    const html =
-      "<p>Beste " + naam + ",</p>" +
-      "<p>Welkom bij <a href=\"" + COMPANY.website + "\">Mooihuus.nl</a>, het platform voor recreatiewoningen. We hebben een account voor u aangemaakt zodat u uw aanbod en facturen kunt beheren.</p>" +
-      "<p><strong>Inloggen:</strong> ga naar <a href=\"" + COMPANY.website + "\">" + COMPANY.website + "</a> en log in met dit e-mailadres (" + profiel.email + "). Stel uw wachtwoord in via <a href=\"" + COMPANY.website + "/wachtwoord-vergeten\">" + COMPANY.website + "/wachtwoord-vergeten</a>.</p>" +
-      "<p>Vragen? Mail ons gerust op " + COMPANY.email + ".</p>" +
-      "<p>Hartelijke groet,<br>Team Mooihuus.nl</p>";
-    await sendEmail({ aan: profiel.email, onderwerp: "Welkom bij Mooihuus.nl \u2014 uw inloggegevens", soort: "welkom", html });
-    await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie \u2014 nieuw makelaarskantoor op Mooihuus: " + naam, soort: "welkom", html });
+    const mail = renderMakelaarWelkom(naam, profiel.email);
+    await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html });
+    await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie \u2014 nieuw makelaarskantoor op Mooihuus: " + naam, soort: "welkom", html: mail.html });
   } catch {
     /* mail mislukt - sync niet laten falen */
   }
@@ -45,21 +40,9 @@ async function stuurWelkomInloggegevens(profiel: User): Promise<void> {
 async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number }[]): Promise<void> {
   try {
     const naam = profiel.bedrijfsnaam || profiel.naam;
-    const obj = regels.length === 1 ? "woning" : "woningen";
-    const totaal = Math.round(regels.reduce((s, r) => s + r.bedrag, 0) * 100) / 100;
-    const items = regels
-      .map((r) => "<li>" + r.titel + " — € " + r.bedrag + " per jaar — <a href=\"" + r.betaalUrl + "\">betaal en zet online</a></li>")
-      .join("");
-    const html =
-      "<p>Beste " + naam + ",</p>" +
-      "<p>Bedankt voor het aanmelden van de volgende " + obj + " op <a href=\"" + COMPANY.website + "\">Mooihuus.nl</a>. Elke woning gaat online zodra deze is betaald.</p>" +
-      "<ul>" + items + "</ul>" +
-      "<p>Totaal: € " + totaal + " per jaar (€ " + makelaarBasisTarief() + " per woning per jaar).</p>" +
-      "<p>Vragen? Mail ons gerust op " + COMPANY.email + ".</p>" +
-      "<p>Hartelijke groet,<br>Team Mooihuus.nl</p>";
-    const meer = regels.length === 1 ? "" : "en";
-    await sendEmail({ aan: profiel.email, onderwerp: "Bedankt voor uw aanmelding — zet uw woning" + meer + " online", soort: "welkom", html });
-    await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie — aanmelding " + naam + " (" + regels.length + " " + obj + ")", soort: "welkom", html });
+    const mail = renderMakelaarBedankt(naam, regels, makelaarBasisTarief());
+    await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html });
+    await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie \u2014 aanmelding " + naam + " (" + regels.length + " woning(en))", soort: "welkom", html: mail.html });
   } catch {
     /* mail mislukt - sync niet laten falen */
   }
@@ -73,8 +56,14 @@ async function verwerkNieuweKantorenWelkom(): Promise<void> {
     const woningen = getListingsByOwner(u.id).filter((l) => l.source === "kolibri" || l.source === "realworks");
     if (woningen.length === 0) continue;
 
-    // 1) Welkomstmail met inloggegevens: eenmalig, want dit kantoor had nog geen profiel.
-    if (!u.inlogMailGestuurd) {
+    // 1) Welkomstmail met inloggegevens: eenmalig. Sluitende check tegen het mail-logboek,
+    //    zodat een herstart of een dubbel profiel nooit een tweede welkomstmail oplevert.
+    const alGemaild = getEmails().some(
+      (e) => e.soort === "welkom" && e.aan === u.email && e.onderwerp.includes("inloggegevens")
+    );
+    if (alGemaild) {
+      if (!u.inlogMailGestuurd) updateUser(u.id, { inlogMailGestuurd: true });
+    } else if (!u.inlogMailGestuurd) {
       await stuurWelkomInloggegevens(u);
       updateUser(u.id, { inlogMailGestuurd: true });
     }
