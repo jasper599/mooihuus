@@ -1037,3 +1037,14 @@ export function meldZoekAlertAf(email: string): number {
   if (verwijderd) save();
   return verwijderd;
 }
+
+// Verwijder zoekopdrachten (woning-alerts) op id. Geeft het aantal verwijderde terug.
+export function verwijderZoekopdrachten(ids: string[]): number {
+  const db = load();
+  const set = new Set(ids);
+  const voor = db.zoekopdrachten.length;
+  db.zoekopdrachten = db.zoekopdrachten.filter((z) => !set.has(z.id));
+  const n = voor - db.zoekopdrachten.length;
+  if (n) save();
+  return n;
+}
