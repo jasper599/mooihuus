@@ -1,5 +1,5 @@
 import { getPayment, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning, addSocialPost, updateSocialPost } from "./db";
-import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, renderVerlengBevestiging, sendEmail } from "./email";
+import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, renderVerlengBevestiging, renderSocialTopperAlert, sendEmail } from "./email";
 import { COMPANY } from "./company";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
 import { genereerSocialCaption } from "./social-caption";
@@ -75,6 +75,15 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
           const r = await scheduleInstagramPost({ tekst: post.tekst || listing.titel, fotoUrl: post.fotoUrl, publishAt });
           if (r.ok) updateSocialPost(post.id, { status: "ingepland", metricoolId: r.id, ingeplandVoor: publishAt });
           else updateSocialPost(post.id, { notitie: `Metricool: ${r.error || "inplannen mislukt"}` });
+        } else {
+          // Geen Metricool-koppeling: stuur een alert naar Mooihuus met alles klaar
+          // voor handmatige plaatsing (voorkomt de Metricool-abonnementskosten).
+          try {
+            const mailA = renderSocialTopperAlert(listing.titel, post.tekst || caption, post.fotoUrl);
+            await sendEmail({ aan: COMPANY.email, onderwerp: mailA.onderwerp, soort: "alert", html: mailA.html });
+          } catch {
+            /* alert mislukt — post staat nog in de wachtrij */
+          }
         }
       }
     }

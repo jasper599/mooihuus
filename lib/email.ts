@@ -110,6 +110,19 @@ export function renderMakelaarBedankt(
   return { onderwerp: ond, html: layout("Uw factuur — Mooihuus", inner) };
 }
 
+export function renderSocialTopperAlert(titel: string, caption: string, fotoUrl?: string): { onderwerp: string; html: string } {
+  const foto = fotoUrl ? `<p style="margin:14px 0;"><img src="${fotoUrl}" alt="${titel}" style="max-width:100%;border-radius:12px;"></p>` : "";
+  const inner = `
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Betaalde Social spotlight \u2014 plaats op Instagram \u{1F4F8}</h1>
+    <p style="line-height:1.6;">Er is een betaalde Social spotlight afgerekend voor <strong>${titel}</strong>. Zet deze post op Instagram \u2014 hieronder staat alles klaar.</p>
+    ${foto}
+    <p style="line-height:1.6;font-weight:bold;margin:16px 0 6px;">Caption (kopieer-klaar):</p>
+    <div style="background:${BRAND.creme};border:1px solid ${BRAND.lijn};border-radius:12px;padding:14px 16px;white-space:pre-wrap;line-height:1.6;font-size:14px;">${caption}</div>
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/beheer?tab=social`, "Open in beheer")}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Download de foto, plak de caption en plaats \u2019m op Instagram. Markeer \u2019m daarna als geplaatst in beheer \u2192 Social.</p>`;
+  return { onderwerp: `Social spotlight betaald \u2014 plaats "${titel}" op Instagram`, html: layout("Social spotlight \u2014 plaatsen", inner) };
+}
+
 export function renderBetalingsbewijs(p: Payment, listing: Listing, naam: string): { onderwerp: string; html: string } {
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 6px;">Bedankt, ${naam} — je betaling is gelukt ✅</h1>
