@@ -4,6 +4,7 @@ import { COMPANY } from "./company";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
 import { genereerSocialCaption } from "./social-caption";
 import { activeerVerlenging } from "./verlenging";
+import { instagramEnabled, postToInstagram } from "./instagram";
 
 // Markeer een betaling als betaald. Idempotent — dubbel aanroepen (bijv.
 // webhook + redirect) doet niets extra's.
@@ -71,7 +72,11 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
         });
         // Direct inplannen als Metricool gekoppeld is; anders blijft 'ie in de
         // wachtrij (met voorrang) voor handmatige plaatsing vanuit de backoffice.
-        if (metricoolEnabled()) {
+        if (instagramEnabled()) {
+          const r = await postToInstagram({ imageUrl: post.fotoUrl, caption: post.tekst || caption });
+          if (r.ok) updateSocialPost(post.id, { status: "geplaatst", geplaatstOp: new Date().toISOString(), metricoolId: r.id, notitie: undefined });
+          else updateSocialPost(post.id, { notitie: `Instagram: ${r.error || "plaatsen mislukt"}` });
+        } else if (metricoolEnabled()) {
           const r = await scheduleInstagramPost({ tekst: post.tekst || listing.titel, fotoUrl: post.fotoUrl, publishAt });
           if (r.ok) updateSocialPost(post.id, { status: "ingepland", metricoolId: r.id, ingeplandVoor: publishAt });
           else updateSocialPost(post.id, { notitie: `Metricool: ${r.error || "inplannen mislukt"}` });

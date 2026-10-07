@@ -10,6 +10,7 @@ import path from "path";
 import { maakBackup } from "./backup";
 import { verwerkVerlopendeAdvertenties } from "./verlenging";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
+import { instagramEnabled, postToInstagram } from "./instagram";
 import { getBlogPosts } from "./blog";
 import { addBlogPost, getSocialPosts, updateSocialPost, getListing } from "./db";
 import { genereerBlogpost } from "./blog-generator";
@@ -143,22 +144,29 @@ async function draaiKolibri(nu: Date): Promise<void> {
 
 let bezigSocial = false;
 async function draaiSocial(): Promise<void> {
-  if (bezigSocial || !metricoolEnabled()) return;
+  if (bezigSocial || (!instagramEnabled() && !metricoolEnabled())) return;
   bezigSocial = true;
   try {
     const wacht = getSocialPosts().filter((x) => x.status === "wachtrij");
     for (const post of wacht) {
       const listing = getListing(post.listingId);
-      const publishAt = volgendeSlot(post.prioriteit, new Date());
-      const r = await scheduleInstagramPost({
-        tekst: post.tekst || listing?.titel || "Mooihuus",
-        fotoUrl: post.fotoUrl || listing?.fotos?.[0],
-        publishAt,
-      }).catch(() => ({ ok: false, error: "verbindingsfout" } as const));
-      if ((r as any).ok) {
-        updateSocialPost(post.id, { status: "ingepland", metricoolId: (r as any).id, ingeplandVoor: publishAt, notitie: undefined });
+      const caption = post.tekst || listing?.titel || "Mooihuus";
+      const fotoUrl = post.fotoUrl || listing?.fotos?.[0];
+      if (instagramEnabled()) {
+        const r = await postToInstagram({ imageUrl: fotoUrl, caption }).catch(() => ({ ok: false, error: "verbindingsfout" } as const));
+        if ((r as any).ok) {
+          updateSocialPost(post.id, { status: "geplaatst", geplaatstOp: new Date().toISOString(), metricoolId: (r as any).id, notitie: undefined });
+        } else {
+          updateSocialPost(post.id, { notitie: `Instagram: ${(r as any).error || "plaatsen mislukt"}` });
+        }
       } else {
-        updateSocialPost(post.id, { notitie: `Metricool: ${(r as any).error || "inplannen mislukt"}` });
+        const publishAt = volgendeSlot(post.prioriteit, new Date());
+        const r = await scheduleInstagramPost({ tekst: caption, fotoUrl, publishAt }).catch(() => ({ ok: false, error: "verbindingsfout" } as const));
+        if ((r as any).ok) {
+          updateSocialPost(post.id, { status: "ingepland", metricoolId: (r as any).id, ingeplandVoor: publishAt, notitie: undefined });
+        } else {
+          updateSocialPost(post.id, { notitie: `Metricool: ${(r as any).error || "inplannen mislukt"}` });
+        }
       }
     }
   } finally {
