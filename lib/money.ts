@@ -30,7 +30,7 @@ export function prijsMetKorting(pakket: Pakket, aantalObjecten: number): { bedra
 export const OPVALLERS: { id: string; naam: string; prijs: number; omschrijving: string }[] = [
   { id: "Omhoog", naam: "Omhoog", prijs: 1.95, omschrijving: "Zet je advertentie weer bovenaan de lijst" },
   { id: "Dagtopper", naam: "Dagtopper", prijs: 2.95, omschrijving: "1 dag bovenaan de zoekresultaten" },
-  { id: "Blikvanger", naam: "Blikvanger", prijs: 4.95, omschrijving: "Uitgelicht met opvallende opmaak" },
+  { id: "Blikvanger", naam: "Blikvanger", prijs: 4.95, omschrijving: "1 week uitgelicht met opvallende opmaak" },
   { id: "Social spotlight", naam: "Social spotlight", prijs: 9.95, omschrijving: "Aparte post op onze socials" },
 ];
 

@@ -54,6 +54,7 @@ export interface Listing {
   postcode?: string;
   uitjes?: string[];
   uitgelicht?: boolean;
+  uitgelichtTot?: string; // ISO-datum: einde van een betaalde "Blikvanger" (uitgelicht 1 week). Leeg = permanent (bijv. Luyten).
   promotedAt?: string;
   fotos?: string[];
   videoUrl?: string; // YouTube/Vimeo/Matterport-link voor rondleiding

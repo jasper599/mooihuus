@@ -53,7 +53,9 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
     if (listing) {
       const id = payment.omschrijving; // opvaller-id, bijv. "Blikvanger"
       if (id === "Blikvanger") {
-        updateListing(listing.id, { uitgelicht: true, promotedAt: nu });
+        // Uitgelicht voor 1 week; de scheduler zet 'm daarna automatisch weer uit.
+        const week = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        updateListing(listing.id, { uitgelicht: true, uitgelichtTot: week, promotedAt: nu });
       } else if (id === "Omhoog" || id === "Dagtopper") {
         updateListing(listing.id, { promotedAt: nu });
       } else if (id === "Social spotlight") {

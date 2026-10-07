@@ -12,7 +12,7 @@ import { verwerkVerlopendeAdvertenties } from "./verlenging";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
 import { instagramEnabled, postToInstagram } from "./instagram";
 import { getBlogPosts } from "./blog";
-import { addBlogPost, getSocialPosts, updateSocialPost, getListing } from "./db";
+import { addBlogPost, getSocialPosts, updateSocialPost, getListing, getListings, updateListing } from "./db";
 import { genereerBlogpost } from "./blog-generator";
 import { syncMarinaparken } from "./marinaparken-feed";
 import { syncAlleTradeTracker } from "./tradetracker-feed";
@@ -174,6 +174,18 @@ async function draaiSocial(): Promise<void> {
   }
 }
 
+// Zet een betaalde "Blikvanger" (uitgelicht met einddatum) automatisch weer uit
+// zodra de week voorbij is. Permanente uitlichting (bijv. Luyten, zonder
+// uitgelichtTot) blijft ongemoeid. Nooit fataal.
+function draaiUitgelicht(): void {
+  const nu = Date.now();
+  for (const l of getListings()) {
+    if (l.uitgelicht && l.uitgelichtTot && new Date(l.uitgelichtTot).getTime() <= nu) {
+      updateListing(l.id, { uitgelicht: false, uitgelichtTot: undefined });
+    }
+  }
+}
+
 let bezig = false;
 async function draaiDagelijks(): Promise<void> {
   if (bezig || alGedraaidVandaag()) return;
@@ -181,6 +193,7 @@ async function draaiDagelijks(): Promise<void> {
   try {
     await maakBackup().catch(() => {});
     await verwerkVerlopendeAdvertenties().catch(() => {});
+    try { draaiUitgelicht(); } catch { /* niet fataal */ }
     markeer(); // pas markeren als alles klaar is (crasht het eerder, dan retry volgende tick)
   } finally {
     bezig = false;

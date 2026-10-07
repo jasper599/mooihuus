@@ -49,6 +49,7 @@ export async function POST(req: Request) {
     prijsSuffix: b.prijsSuffix ? String(b.prijsSuffix).slice(0, 24) : undefined,
     grond: b.grond ? String(b.grond).slice(0, 60) : undefined,
     videoUrl: b.videoUrl ? String(b.videoUrl).slice(0, 300) : undefined,
+    plattegrond: b.plattegrond ? String(b.plattegrond).slice(0, 500) : undefined,
     omschrijving,
     kleur: getListings().length % 6,
     pakket,

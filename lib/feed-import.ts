@@ -204,6 +204,35 @@ function mapKolibriPand(p: any): Partial<Listing> | null {
     .map((a) => a.url)
     .slice(0, 40);
 
+  // Plattegrond: eerste Attachment van het type FLOORPLAN/PLAN (afbeelding of PDF).
+  const plattegrond = arr(p?.Attachments?.Attachment)
+    .map((a: any) => ({
+      url: String(a?.URLNormalizedFile || a?.URLOriginalFile || "").trim(),
+      type: String(a?.Type ?? "").toUpperCase(),
+      index: num(a?.Index),
+    }))
+    .filter((a) => /FLOOR\s*PLAN|FLOORPLAN|PLATTEGROND|\bPLAN\b|BLUEPRINT/.test(a.type) && /^https?:\/\//i.test(a.url))
+    .sort((a, b) => a.index - b.index)
+    .map((a) => a.url)[0];
+
+  // Video / virtuele rondleiding: eerst uit Attachments (MOVIE/VIDEO/VIRTUAL TOUR),
+  // anders uit de losse Movies/VirtualTours/Videos-knopen die WREC soms meestuurt.
+  const videoUitAttach = arr(p?.Attachments?.Attachment)
+    .map((a: any) => ({
+      url: String(a?.URLNormalizedFile || a?.URLOriginalFile || a?.URL || "").trim(),
+      type: String(a?.Type ?? "").toUpperCase(),
+    }))
+    .filter((a) => /MOVIE|VIDEO|VIRTUAL|TOUR|MATTERPORT|360/.test(a.type) && /^https?:\/\//i.test(a.url))
+    .map((a) => a.url)[0];
+  const videoUitKnoop = [
+    ...arr(p?.Movies?.Movie),
+    ...arr(p?.VirtualTours?.VirtualTour),
+    ...arr(p?.Videos?.Video),
+  ]
+    .map((m: any) => String((m && (m.URL || m.Url || m.url)) || (typeof m === "string" ? m : "")).trim())
+    .find((u) => /^https?:\/\//i.test(u));
+  const videoUrl = videoUitAttach || videoUitKnoop || undefined;
+
   const counts = p?.Counts || {};
   const energieKlasse = String(p?.ClimatControl?.EnergyCertificate?.EnergyClass ?? "").toUpperCase();
   const bouwjaar = parseInt(String(p?.Construction?.ConstructionYearFrom ?? ""), 10);
@@ -221,6 +250,8 @@ function mapKolibriPand(p: any): Partial<Listing> | null {
     prijsSuffix: suffix || undefined,
     omschrijving,
     fotos,
+    plattegrond,
+    videoUrl,
     bouwjaar: isFinite(bouwjaar) && bouwjaar > 1800 ? bouwjaar : undefined,
     energielabel: KOLIBRI_ENERGIE[energieKlasse] || undefined,
     status: kolibriStatus(info.Status),
