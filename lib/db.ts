@@ -2,7 +2,7 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost, Kortingscode } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 import type { BlogPost } from "./blog";
  
@@ -28,6 +28,7 @@ interface DB {
   nieuwsbrief: NieuwsbriefLid[];
   socialPosts: SocialPost[];
   blogPosts: BlogPost[];
+  kortingscodes: Kortingscode[];
   laatsteNieuwsbriefSlug?: string;
   laatsteMaandrapportMaand?: string; // "yyyy-mm" van de laatst verstuurde ronde
   resetTokens?: { token: string; userId: string; expires: number }[];
@@ -56,7 +57,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], socialPosts: [], blogPosts: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], socialPosts: [], blogPosts: [], kortingscodes: [], seq: 100 };
 }
  
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -158,6 +159,7 @@ function load(): DB {
   if (!Array.isArray(cache.nieuwsbrief)) { cache.nieuwsbrief = []; migrated = true; }
   if (!Array.isArray(cache.socialPosts)) { cache.socialPosts = []; migrated = true; }
   if (!Array.isArray(cache.blogPosts)) { cache.blogPosts = []; migrated = true; }
+  if (!Array.isArray(cache.kortingscodes)) { cache.kortingscodes = []; migrated = true; }
   const removed = removeDemoData(cache);
   const added = ensureLmData(cache);
   if (fresh || removed || added || migrated) save();
@@ -915,3 +917,90 @@ export function partnerklikTotalen(): { partner: string; aantal: number; laatste
 }
  
 
+
+// ---------- Kortingscodes ----------
+export function getKortingscodes(): Kortingscode[] {
+  return load().kortingscodes;
+}
+export function getKortingscode(id: string): Kortingscode | undefined {
+  return load().kortingscodes.find((k) => k.id === id);
+}
+export function getKortingscodeByCode(code: string): Kortingscode | undefined {
+  const norm = (code || "").trim().toUpperCase();
+  if (!norm) return undefined;
+  return load().kortingscodes.find((k) => k.code.toUpperCase() === norm);
+}
+export function addKortingscode(data: {
+  code: string;
+  type: Kortingscode["type"];
+  waarde?: number;
+  doel: Kortingscode["doel"];
+  vervalt?: string;
+  maxGebruik?: number;
+  notitie?: string;
+}): Kortingscode {
+  const db = load();
+  const k: Kortingscode = {
+    id: nextId("kc-"),
+    code: data.code.trim().toUpperCase(),
+    type: data.type,
+    waarde: data.type === "gratis" ? 0 : Math.max(0, Number(data.waarde) || 0),
+    doel: data.doel,
+    vervalt: data.vervalt || undefined,
+    maxGebruik: typeof data.maxGebruik === "number" && data.maxGebruik > 0 ? Math.floor(data.maxGebruik) : undefined,
+    aantalGebruikt: 0,
+    actief: true,
+    notitie: data.notitie || undefined,
+    aangemaakt: new Date().toISOString(),
+  };
+  db.kortingscodes.push(k);
+  save();
+  return k;
+}
+export function updateKortingscode(id: string, patch: Partial<Kortingscode>): Kortingscode | undefined {
+  const db = load();
+  const k = db.kortingscodes.find((x) => x.id === id);
+  if (!k) return undefined;
+  Object.assign(k, patch);
+  save();
+  return k;
+}
+export function redeemKortingscode(id: string): void {
+  const db = load();
+  const k = db.kortingscodes.find((x) => x.id === id);
+  if (!k) return;
+  k.aantalGebruikt = (k.aantalGebruikt || 0) + 1;
+  save();
+}
+
+export type KortingResultaat = {
+  ok: boolean;
+  reden?: string;
+  code?: Kortingscode;
+  kortingBedrag?: number; // euro die eraf gaat
+  nieuwBedrag?: number;   // bedrag na korting (>= 0)
+  gratis?: boolean;
+};
+
+export function valideerKortingscode(
+  codeStr: string,
+  doel: "advertentie" | "opvaller",
+  bedrag: number
+): KortingResultaat {
+  const c = getKortingscodeByCode(codeStr);
+  if (!c) return { ok: false, reden: "Onbekende kortingscode." };
+  if (!c.actief) return { ok: false, reden: "Deze code is niet (meer) actief." };
+  if (c.vervalt && new Date(c.vervalt).getTime() < Date.now()) return { ok: false, reden: "Deze code is verlopen." };
+  if (typeof c.maxGebruik === "number" && c.aantalGebruikt >= c.maxGebruik) {
+    return { ok: false, reden: "Deze code is al het maximale aantal keer gebruikt." };
+  }
+  if (c.doel !== "alles" && c.doel !== doel) {
+    return { ok: false, reden: `Deze code geldt niet voor ${doel === "advertentie" ? "advertenties" : "opvallers"}.` };
+  }
+  let nieuw = bedrag;
+  if (c.type === "gratis") nieuw = 0;
+  else if (c.type === "procent") nieuw = Math.round(bedrag * (1 - Math.min(Math.max(c.waarde, 0), 100) / 100) * 100) / 100;
+  else if (c.type === "bedrag") nieuw = Math.max(0, Math.round((bedrag - c.waarde) * 100) / 100);
+  const kortingBedrag = Math.round((bedrag - nieuw) * 100) / 100;
+  return { ok: true, code: c, kortingBedrag, nieuwBedrag: nieuw, gratis: nieuw <= 0.0001 };
+}

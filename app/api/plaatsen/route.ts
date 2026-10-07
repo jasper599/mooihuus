@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { addListing, addPayment, updatePayment, getListings, getListingsByOwner } from "@/lib/db";
+import { addListing, addPayment, updatePayment, getListings, getListingsByOwner, valideerKortingscode, redeemKortingscode } from "@/lib/db";
 import { prijsMetKorting } from "@/lib/money";
 import { Doel, Pakket } from "@/lib/types";
 import { mollieEnabled, createMolliePayment } from "@/lib/mollie";
 import { handhaafHuisregels } from "@/lib/huisregels";
+import { markPaymentPaid } from "@/lib/payments";
 
 function baseUrl(req: Request): string {
   return process.env.NEXTAUTH_URL || new URL(req.url).origin;
@@ -58,23 +59,47 @@ export async function POST(req: Request) {
     uitjes: Array.isArray(b.uitjes) ? b.uitjes.map(String).slice(0, 12) : undefined,
   });
 
-  // Volumekorting: telt alle objecten van deze eigenaar (inclusief de nieuwe).
+  // Prijs: particuliere volumekorting (staffel) + optionele kortingscode.
   const aantalObjecten = getListingsByOwner(userId).length;
   const { bedrag, pct } = prijsMetKorting(pakket, aantalObjecten);
+
+  let finaalBedrag = bedrag;
+  let kortingCodeId: string | undefined;
+  let kortingCodeTekst: string | undefined;
+  let kortingCodeBedrag: number | undefined;
+  const codeStr = typeof b.code === "string" ? b.code.trim() : "";
+  if (codeStr) {
+    const v = valideerKortingscode(codeStr, "advertentie", bedrag);
+    if (!v.ok) return NextResponse.json({ error: v.reden || "Kortingscode ongeldig." }, { status: 422 });
+    finaalBedrag = v.nieuwBedrag ?? bedrag;
+    kortingCodeId = v.code!.id;
+    kortingCodeTekst = v.code!.code;
+    kortingCodeBedrag = v.kortingBedrag;
+  }
+
   const payment = addPayment({
     listingId: listing.id,
     userId,
     pakket,
-    bedrag,
+    bedrag: finaalBedrag,
     status: "open",
     methode: "iDEAL",
     kortingPct: pct > 0 ? pct : undefined,
+    kortingscode: kortingCodeTekst,
+    kortingBedrag: kortingCodeBedrag,
   });
+  if (kortingCodeId) redeemKortingscode(kortingCodeId);
+
+  // Gratis (bijv. 100%-cadeaucode): meteen live zetten, geen betaalstap.
+  if (finaalBedrag <= 0) {
+    await markPaymentPaid(payment.id, "cadeau");
+    return NextResponse.json({ redirect: `/betaling/${payment.id}`, extern: false, gratis: true });
+  }
 
   if (mollieEnabled()) {
     try {
       const { mollieId, checkoutUrl } = await createMolliePayment({
-        bedrag,
+        bedrag: finaalBedrag,
         beschrijving: `Mooihuus ${pakket} — ${listing.titel}`,
         redirectUrl: `${baseUrl(req)}/betaling/${payment.id}`,
         webhookUrl: `${baseUrl(req)}/api/webhook/mollie`,

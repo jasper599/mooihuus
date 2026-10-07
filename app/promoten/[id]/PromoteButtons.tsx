@@ -7,6 +7,8 @@ export function PromoteButtons({ listingId, opvaller, prijs }: { listingId: stri
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const [showCode, setShowCode] = useState(false);
 
   async function koop() {
     setBusy(true);
@@ -15,7 +17,7 @@ export function PromoteButtons({ listingId, opvaller, prijs }: { listingId: stri
       const res = await fetch("/api/promoten", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ listingId, opvaller }),
+        body: JSON.stringify({ listingId, opvaller, code: code.trim() || undefined }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -39,6 +41,18 @@ export function PromoteButtons({ listingId, opvaller, prijs }: { listingId: stri
       <button onClick={koop} disabled={busy} className="btn w-full text-sm">
         {busy ? "Bezig…" : `Kies · ${prijs}`}
       </button>
+      {showCode ? (
+        <input
+          className="field mt-2 text-sm uppercase"
+          value={code}
+          onChange={(e) => setCode(e.target.value.toUpperCase())}
+          placeholder="Kortingscode"
+        />
+      ) : (
+        <button type="button" onClick={() => setShowCode(true)} className="mt-2 text-xs text-bosgroen-dk underline">
+          Kortingscode?
+        </button>
+      )}
       {err && <p className="text-xs text-oranje-dk mt-2">{err}</p>}
     </>
   );

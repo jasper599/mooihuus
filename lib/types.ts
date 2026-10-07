@@ -110,6 +110,8 @@ export interface Payment {
   factuurnummer: string;
   methode: string;
   kortingPct?: number;
+  kortingscode?: string;   // toegepaste kortingscode (indien gebruikt)
+  kortingBedrag?: number;  // bedrag dat de code eraf haalde (euro)
   soort?: "advertentie" | "opvaller" | "makelaar-factuur" | "verlenging";
   aantalObjecten?: number; // bij een makelaar-factuur: aantal gefactureerde objecten
   listingIds?: string[];   // bij een verlenging: welke woningen deze betaling verlengt
@@ -119,6 +121,26 @@ export interface Payment {
   betaaldOp?: string;
 }
  
+// Kortingscode / cadeaucode voor adverteren en opvallers. Een code met
+// type "gratis" (of 100%) maakt de bestelling kosteloos — handig om weg te
+// geven (bijv. een Instagram-giveaway).
+export type KortingType = "procent" | "bedrag" | "gratis";
+export type KortingDoel = "alles" | "advertentie" | "opvaller";
+
+export interface Kortingscode {
+  id: string;
+  code: string;            // hoofdletters, uniek (bijv. "WELKOM10")
+  type: KortingType;
+  waarde: number;          // procent bij "procent", euro bij "bedrag", genegeerd bij "gratis"
+  doel: KortingDoel;       // waarvoor de code geldt
+  vervalt?: string;        // ISO-datum (optioneel); daarna ongeldig
+  maxGebruik?: number;     // max. aantal keer te gebruiken (optioneel = ongelimiteerd)
+  aantalGebruikt: number;  // teller
+  actief: boolean;
+  notitie?: string;        // vrije notitie voor beheer (bijv. "IG-giveaway maart")
+  aangemaakt: string;
+}
+
 export type SocialStatus = "wachtrij" | "ingepland" | "geplaatst" | "mislukt";
 
 export interface SocialPost {

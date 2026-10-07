@@ -64,6 +64,7 @@ export default function Plaatsen() {
   }
 
   const [fout, setFout] = useState("");
+  const [code, setCode] = useState("");
 
   async function publiceer() {
     setBusy(true);
@@ -87,6 +88,7 @@ export default function Plaatsen() {
         pakket,
         postcode: f.postcode,
         uitjes,
+        code: code.trim() || undefined,
       }),
     });
     if (res.status === 401) {
@@ -283,6 +285,15 @@ export default function Plaatsen() {
           </div>
           <div className="bg-[#EAF4EC] border border-[#CADFCF] rounded-xl p-3 mt-3 text-sm text-bosgroen-dk">
             🏷️ <strong>Volumekorting:</strong> vanaf 5 objecten krijg je automatisch 15% korting, vanaf 10 objecten 25% — handig voor organisaties en parken.
+          </div>
+          <div className="mt-3">
+            <label className="label">Kortingscode (optioneel)</label>
+            <input
+              className="field uppercase"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="Heb je een code? Vul 'm hier in"
+            />
           </div>
           {fout && (
             <div className="bg-[#FBE9E7] border border-[#E5B4AB] text-[#8A2E22] rounded-xl p-3 mt-3 text-sm whitespace-pre-line">

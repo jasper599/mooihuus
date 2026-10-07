@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
   getUsers, getListings, getLeads, getPayments, getEmails, getUser, getListing, getEnquetes, getAllReviews,
-  partnerklikTotalen, getPartnerkliks, analyticsSamenvatting, getNieuwsbriefLeden, getSocialPosts,
+  partnerklikTotalen, getPartnerkliks, analyticsSamenvatting, getNieuwsbriefLeden, getSocialPosts, getKortingscodes,
 } from "@/lib/db";
 import { euro, euroCents } from "@/lib/money";
 import { metricoolEnabled } from "@/lib/metricool";
@@ -14,6 +14,7 @@ import { FeedImportKnop } from "@/components/FeedImportKnop";
 import { MakelaarFactuurKnop } from "@/components/MakelaarFactuurKnop";
 import { BetalingStatusKnop } from "@/components/BetalingStatusKnop";
 import { SocialWachtrij } from "@/components/SocialWachtrij";
+import { KortingscodeBeheer } from "@/components/KortingscodeBeheer";
 import { GebruikerVerwijderKnop } from "@/components/GebruikerVerwijderKnop";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,7 @@ const TABS = [
   { key: "advertenties", label: "Advertenties" },
   { key: "betalingen", label: "Betalingen" },
   { key: "social", label: "Social" },
+  { key: "codes", label: "Codes" },
   { key: "leads", label: "Leads" },
   { key: "mailbox", label: "Mailbox" },
   { key: "enquetes", label: "Enquêtes" },
@@ -317,6 +319,27 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
             notitie: s.notitie,
             aangemaakt: s.aangemaakt,
           }))}
+        />
+      )}
+
+      {tab === "codes" && (
+        <KortingscodeBeheer
+          codes={getKortingscodes()
+            .slice()
+            .sort((a, b) => String(b.aangemaakt).localeCompare(String(a.aangemaakt)))
+            .map((c) => ({
+              id: c.id,
+              code: c.code,
+              type: c.type,
+              waarde: c.waarde,
+              doel: c.doel,
+              vervalt: c.vervalt,
+              maxGebruik: c.maxGebruik,
+              aantalGebruikt: c.aantalGebruikt,
+              actief: c.actief,
+              notitie: c.notitie,
+              aangemaakt: c.aangemaakt,
+            }))}
         />
       )}
 

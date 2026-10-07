@@ -2,18 +2,16 @@ import { getUser, getUsers, getListingsByOwner, getPayments, addPayment, updateP
 import { mollieEnabled, createMolliePayment } from "./mollie";
 import { renderMakelaarFactuur, sendEmail } from "./email";
 import { COMPANY } from "./company";
-import { volumeKortingPct } from "./money";
 
 // Makelaars publiceren met het Premiumpakket tegen een vast makelaarstarief
-// van € 65 per object (instelbaar via env), mét de bekende volumekorting
-// (vanaf 5 objecten 15%, vanaf 10 objecten 25%).
+// van € 65 per object (instelbaar via env). Geen volumekorting: makelaars
+// betalen per woning, dus een staffel heeft hier geen functie.
 export function makelaarBasisTarief(): number {
   const v = Number(process.env.MAKELAAR_OBJECT_PRIJS);
   return isFinite(v) && v > 0 ? v : 65;
 }
-export function prijsPerObject(aantal = 1): number {
-  const korting = volumeKortingPct(aantal);
-  return Math.round(makelaarBasisTarief() * (1 - korting / 100) * 100) / 100;
+export function prijsPerObject(_aantal = 1): number {
+  return makelaarBasisTarief();
 }
 
 // Objecten die we een makelaar in rekening brengen: hun live woningen die via
