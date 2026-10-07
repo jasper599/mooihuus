@@ -37,7 +37,7 @@ async function stuurWelkomInloggegevens(profiel: User): Promise<void> {
 }
 
 // 2) Bedankmail voor de aanmelding + betaallink — altijd, ongeacht of er al een profiel was.
-async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number }[]): Promise<void> {
+async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[]): Promise<void> {
   try {
     const naam = profiel.bedrijfsnaam || profiel.naam;
     const mail = renderMakelaarBedankt(naam, regels, makelaarBasisTarief());
@@ -79,10 +79,10 @@ async function verwerkNieuweKantorenWelkom(): Promise<void> {
     const nieuwe = woningen.filter((l) => l.status === "offline" && !heeftBetaling(l.id));
     if (nieuwe.length === 0) continue;
 
-    const regels: { titel: string; betaalUrl: string; bedrag: number }[] = [];
+    const regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[] = [];
     for (const l of nieuwe) {
       const b = await maakWoningBetaling(u.id, l);
-      if (b.ok && b.betaalUrl) regels.push({ titel: l.titel, betaalUrl: b.betaalUrl, bedrag: b.bedrag || 0 });
+      if (b.ok && b.betaalUrl) regels.push({ titel: l.titel, betaalUrl: b.betaalUrl, bedrag: b.bedrag || 0, factuurnummer: b.factuurnummer });
     }
     if (regels.length > 0) await stuurBedanktAanmelding(u, regels);
   }

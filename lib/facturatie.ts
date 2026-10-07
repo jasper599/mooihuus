@@ -200,7 +200,7 @@ export async function verwerkMakelaarFacturatie(): Promise<{ actief: boolean; ge
 export async function maakWoningBetaling(
   ownerId: string,
   listing: { id: string; titel: string; pakket?: any }
-): Promise<{ ok: boolean; betaalUrl?: string; bedrag?: number; paymentId?: string }> {
+): Promise<{ ok: boolean; betaalUrl?: string; bedrag?: number; paymentId?: string; factuurnummer?: string }> {
   const owner = getUser(ownerId);
   if (!owner) return { ok: false };
   const bedrag = makelaarBasisTarief();
@@ -229,5 +229,5 @@ export async function maakWoningBetaling(
       /* val terug op de interne betaalpagina */
     }
   }
-  return { ok: true, betaalUrl, bedrag, paymentId: payment.id };
+  return { ok: true, betaalUrl, bedrag, paymentId: payment.id, factuurnummer: payment.factuurnummer };
 }

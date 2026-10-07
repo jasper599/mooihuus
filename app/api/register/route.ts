@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Er bestaat al een account met dit e-mailadres." }, { status: 409 });
   }
   const user = addUser({ naam, email, wachtwoord, type, bedrijfsnaam, kvk, btw, telefoon, adres, postcode, plaats, iban, factuurEmail, website });
-  const mail = renderWelkom(user.naam);
+  const mail = renderWelkom(user.naam, user.email);
   await sendEmail({ aan: user.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html });
   return NextResponse.json({ ok: true });
 }

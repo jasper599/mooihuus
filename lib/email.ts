@@ -53,10 +53,14 @@ function layout(title: string, inner: string): string {
 const btn = (href: string, label: string) =>
   `<a href="${href}" style="display:inline-block;background:${BRAND.oranje};color:#fff;text-decoration:none;font-weight:bold;padding:11px 20px;border-radius:10px;">${label}</a>`;
 
-export function renderWelkom(naam: string): { onderwerp: string; html: string } {
+export function renderWelkom(naam: string, email?: string): { onderwerp: string; html: string } {
+  const inlog = email
+    ? `<p style="line-height:1.6;"><strong>Inloggen:</strong> met je e-mailadres (<strong>${email}</strong>) op <a href="${COMPANY.website}/inloggen" style="color:${BRAND.bosgroen};">${COMPANY.website}/inloggen</a>. Je wachtwoord wijzig je altijd in <a href="${COMPANY.website}/account" style="color:${BRAND.bosgroen};">je account</a> (of via <a href="${COMPANY.website}/wachtwoord-vergeten" style="color:${BRAND.bosgroen};">wachtwoord vergeten</a>).</p>`
+    : "";
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Welkom bij Mooihuus, ${naam}! 👋</h1>
     <p style="line-height:1.6;">Je account is aangemaakt. Vanaf nu zet je je recreatiewoning zelf in de etalage — met de regie in eigen hand en hulp binnen handbereik.</p>
+    ${inlog}
     <p style="line-height:1.6;">Klaar om te beginnen? Plaats je eerste woning in een paar minuten.</p>
     <p style="margin:22px 0;">${btn(`${COMPANY.website}/plaatsen`, "Plaats je huus")}</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Fijn dat je er bent.<br>Team Mooihuus</p>`;
@@ -75,7 +79,7 @@ export function renderMakelaarWelkom(naam: string, email: string): { onderwerp: 
 
 export function renderMakelaarBedankt(
   naam: string,
-  regels: { titel: string; betaalUrl: string; bedrag: number }[],
+  regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[],
   tarief: number
 ): { onderwerp: string; html: string } {
   const obj = regels.length === 1 ? "woning" : "woningen";
@@ -84,25 +88,26 @@ export function renderMakelaarBedankt(
     .map(
       (r) => `
       <tr>
-        <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.5;">${r.titel}<br><span style="color:${BRAND.grijs};font-size:13px;">${euro(r.bedrag)} per jaar</span></td>
+        <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.5;">${r.titel}${r.factuurnummer ? `<br><span style="color:${BRAND.grijs};font-size:12px;">Factuur ${r.factuurnummer}</span>` : ""}<br><span style="color:${BRAND.grijs};font-size:13px;">${euro(r.bedrag)} per jaar</span></td>
         <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;white-space:nowrap;">${btn(r.betaalUrl, "Betaal")}</td>
       </tr>`
     )
     .join("");
   const inner = `
-    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Bedankt voor uw aanmelding, ${naam}</h1>
-    <p style="line-height:1.6;">U heeft ${regels.length} ${obj} aangemeld op <strong>Mooihuus.nl</strong>. <strong>Elke woning gaat online zodra deze is betaald.</strong></p>
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Uw factuur voor plaatsing op Mooihuus</h1>
+    <p style="line-height:1.6;">Beste ${naam}, bedankt voor het aanmelden van ${regels.length} ${obj} op <strong>Mooihuus.nl</strong>. Hieronder de factuur met betaallink. <strong>Elke woning gaat online zodra deze is betaald.</strong></p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
-      <tr><td colspan="2" style="background:${BRAND.creme};padding:12px 16px;font-size:13px;color:${BRAND.grijs};">Uw aanmelding \u2014 ${euro(tarief)} per woning per jaar</td></tr>
+      <tr><td colspan="2" style="background:${BRAND.creme};padding:12px 16px;font-size:13px;color:${BRAND.grijs};">Advertentie — ${euro(tarief)} per woning per jaar</td></tr>
       ${items}
       <tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};font-weight:bold;">Totaal per jaar</td>
           <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;font-weight:bold;">${euro(totaal)}</td></tr>
     </table>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bedragen zijn per woning per jaar. Na betaling staat de betreffende woning direct online en ontvangt u het betaalbewijs.</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Hartelijke groet,<br>Team Mooihuus</p>`;
   const ond = regels.length === 1
-    ? "Bedankt voor uw aanmelding \u2014 zet uw woning online"
-    : "Bedankt voor uw aanmelding \u2014 zet uw woningen online";
-  return { onderwerp: ond, html: layout("Bedankt voor uw aanmelding", inner) };
+    ? "Factuur & betaallink — uw woning op Mooihuus.nl"
+    : "Factuur & betaallink — uw woningen op Mooihuus.nl";
+  return { onderwerp: ond, html: layout("Uw factuur — Mooihuus", inner) };
 }
 
 export function renderBetalingsbewijs(p: Payment, listing: Listing, naam: string): { onderwerp: string; html: string } {
