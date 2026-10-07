@@ -51,7 +51,7 @@ export default function InstaPage() {
       {woningen.length === 0 ? (
         <div className="text-center text-grijs py-10">
           Er staan nu even geen woningen klaar.{" "}
-          <Link href="/aanbod" className="underline text-bosgroen-dk">
+          <Link href="/" className="underline text-bosgroen-dk">
             Bekijk het volledige aanbod →
           </Link>
         </div>
@@ -63,7 +63,7 @@ export default function InstaPage() {
             ))}
           </div>
           <div className="text-center mt-8">
-            <Link href="/aanbod" className="btn">
+            <Link href="/" className="btn">
               Bekijk al het aanbod →
             </Link>
           </div>
