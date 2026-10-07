@@ -1,5 +1,5 @@
 import { Listing, User } from "./types";
-import { upsertFeedListing, sweepFeed, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails } from "./db";
+import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails } from "./db";
 import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt } from "./email";
 import { makelaarBasisTarief, maakWoningBetaling } from "./facturatie";
 import { COMPANY } from "./company";
@@ -110,10 +110,13 @@ export async function importFeed(adapter: FeedAdapter): Promise<FeedResultaat> {
   const objects = await adapter.fetchObjects();
   const seen: string[] = [];
   for (const o of objects) {
-    upsertFeedListing(adapter.source, o.externalId, o.data);
+    // opslaan=false: niet per woning de hele database wegschrijven. Dat zou bij
+    // duizenden woningen elk uur onwerkbaar traag worden.
+    upsertFeedListing(adapter.source, o.externalId, o.data, false);
     seen.push(o.externalId);
   }
-  const offline = sweepFeed(adapter.source, seen);
+  const offline = sweepFeed(adapter.source, seen, false);
+  bewaarFeeds(); // één keer wegschrijven na de hele batch
   return { source: adapter.source, verwerkt: objects.length, offline };
 }
 

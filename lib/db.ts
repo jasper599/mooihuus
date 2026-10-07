@@ -168,7 +168,27 @@ function load(): DB {
  
 function save() {
   ensureDir();
-  fs.writeFileSync(DB_FILE, JSON.stringify(cache, null, 2), "utf8");
+  // Atomair: eerst naar een tijdelijk bestand, dan hernoemen. Zo kan een crash
+  // midden in het schrijven db.json niet beschadigen. Compact (geen indent) is
+  // bij duizenden woningen flink sneller en kleiner.
+  const tmp = `${DB_FILE}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(cache), "utf8");
+  fs.renameSync(tmp, DB_FILE);
+}
+
+// Bezoekers-tellen schrijft niet bij élke paginaweergave de hele database weg,
+// maar hooguit eens per ~12 seconden. Scheelt enorm veel schijf-I/O bij groei.
+let pvFlushTimer: ReturnType<typeof setTimeout> | null = null;
+function plansPageviewFlush() {
+  if (pvFlushTimer) return;
+  pvFlushTimer = setTimeout(() => {
+    pvFlushTimer = null;
+    try {
+      save();
+    } catch {
+      /* niet fataal */
+    }
+  }, 12000);
 }
  
 function nextId(prefix: string): string {
@@ -771,7 +791,7 @@ export function addPageview(data: { path: string; ref: string; device: Pageview[
   };
   db.pageviews.unshift(pv);
   if (db.pageviews.length > PAGEVIEW_CAP) db.pageviews = db.pageviews.slice(0, PAGEVIEW_CAP);
-  save();
+  plansPageviewFlush();
 }
  
 export function getPageviews(): Pageview[] {
