@@ -9,8 +9,9 @@ import fs from "fs";
 import path from "path";
 import { maakBackup } from "./backup";
 import { verwerkVerlopendeAdvertenties } from "./verlenging";
+import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
 import { getBlogPosts } from "./blog";
-import { addBlogPost } from "./db";
+import { addBlogPost, getSocialPosts, updateSocialPost, getListing } from "./db";
 import { genereerBlogpost } from "./blog-generator";
 import { syncMarinaparken } from "./marinaparken-feed";
 import { syncAlleTradeTracker } from "./tradetracker-feed";
@@ -140,6 +141,31 @@ async function draaiKolibri(nu: Date): Promise<void> {
   }
 }
 
+let bezigSocial = false;
+async function draaiSocial(): Promise<void> {
+  if (bezigSocial || !metricoolEnabled()) return;
+  bezigSocial = true;
+  try {
+    const wacht = getSocialPosts().filter((x) => x.status === "wachtrij");
+    for (const post of wacht) {
+      const listing = getListing(post.listingId);
+      const publishAt = volgendeSlot(post.prioriteit, new Date());
+      const r = await scheduleInstagramPost({
+        tekst: post.tekst || listing?.titel || "Mooihuus",
+        fotoUrl: post.fotoUrl || listing?.fotos?.[0],
+        publishAt,
+      }).catch(() => ({ ok: false, error: "verbindingsfout" } as const));
+      if ((r as any).ok) {
+        updateSocialPost(post.id, { status: "ingepland", metricoolId: (r as any).id, ingeplandVoor: publishAt, notitie: undefined });
+      } else {
+        updateSocialPost(post.id, { notitie: `Metricool: ${(r as any).error || "inplannen mislukt"}` });
+      }
+    }
+  } finally {
+    bezigSocial = false;
+  }
+}
+
 let bezig = false;
 async function draaiDagelijks(): Promise<void> {
   if (bezig || alGedraaidVandaag()) return;
@@ -160,6 +186,7 @@ function tick(): void {
   void draaiBlog(new Date()).catch(() => {});
   void draaiFeeds(new Date()).catch(() => {});
   void draaiKolibri(new Date()).catch(() => {});
+  void draaiSocial().catch(() => {});
 }
 
 let gestart = false;
