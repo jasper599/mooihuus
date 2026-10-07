@@ -33,7 +33,7 @@ const TABS = [
   { key: "nieuwsbrief", label: "Nieuwsbrief" },
 ];
 
-export default async function Beheer({ searchParams }: { searchParams: { tab?: string; bron?: string; kantoor?: string; doel?: string } }) {
+export default async function Beheer({ searchParams }: { searchParams: { tab?: string; bron?: string; kantoor?: string; doel?: string; pstatus?: string } }) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.rol !== "beheerder") redirect("/inloggen");
 
@@ -263,22 +263,45 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
         );
       })()}
 
-      {tab === "betalingen" && (
-        <Table head={["Factuur", "Eigenaar", "Pakket", "Bedrag", "Methode", "Status"]}>
-          {payments.length === 0 ? (
-            <tr><Td>—</Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td></tr>
-          ) : payments.slice().reverse().map((p) => (
-            <tr key={p.id} className="border-t border-lijn">
-              <Td><Link href={`/factuur/${p.id}`} className="text-bosgroen underline hover:text-bosgroen-dk">{p.factuurnummer}</Link></Td>
-              <Td>{getUser(p.userId)?.naam ?? "—"}</Td>
-              <Td>{p.pakket}</Td>
-              <Td>{euroCents(p.bedrag)}</Td>
-              <Td>{p.methode}</Td>
-              <Td><BetalingStatusKnop paymentId={p.id} status={p.status} /></Td>
-            </tr>
-          ))}
-        </Table>
-      )}
+      {tab === "betalingen" && (() => {
+        const pstatus = searchParams.pstatus === "paid" || searchParams.pstatus === "open" ? searchParams.pstatus : "alle";
+        const alle = payments.slice().reverse();
+        const betaaldLijst = alle.filter((p) => p.status === "paid");
+        const openLijst = alle.filter((p) => p.status === "open");
+        const zichtbaar = pstatus === "paid" ? betaaldLijst : pstatus === "open" ? openLijst : alle;
+        const somBetaald = betaaldLijst.reduce((sum, p) => sum + p.bedrag, 0);
+        const chip = (active: boolean) => `rounded-full px-3 py-1 text-sm ${active ? "bg-bosgroen text-white" : "bg-white border border-lijn text-bosgroen-dk hover:bg-zand"}`;
+        const soortLabel = (so?: string) =>
+          so === "makelaar-factuur" ? "Makelaar" : so === "verlenging" ? "Verlenging" : so === "opvaller" ? "Opvaller" : "Advertentie";
+        return (
+          <div>
+            <div className="flex flex-wrap gap-2 mb-3">
+              <Link href="/beheer?tab=betalingen&pstatus=paid" className={chip(pstatus === "paid")}>Betaald: <strong className="ml-1">{betaaldLijst.length}</strong></Link>
+              <Link href="/beheer?tab=betalingen&pstatus=open" className={chip(pstatus === "open")}>Open: <strong className="ml-1">{openLijst.length}</strong></Link>
+              <Link href="/beheer?tab=betalingen" className={chip(pstatus === "alle")}>Alle: <strong className="ml-1">{alle.length}</strong></Link>
+            </div>
+            <div className="text-sm text-grijs mb-2">Totaal betaald: <strong className="text-bosgroen-dk">{euroCents(somBetaald)}</strong> · {zichtbaar.length} {zichtbaar.length === 1 ? "factuur" : "facturen"} getoond</div>
+            <Table head={["Factuur", "Betaler", "Soort", "Bedrag", "Betaald op", "Methode", "Status"]}>
+              {zichtbaar.length === 0 ? (
+                <tr><Td>—</Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td></tr>
+              ) : zichtbaar.map((p) => {
+                const u = getUser(p.userId);
+                return (
+                  <tr key={p.id} className="border-t border-lijn">
+                    <Td><Link href={`/factuur/${p.id}`} className="text-bosgroen underline hover:text-bosgroen-dk">{p.factuurnummer}</Link></Td>
+                    <Td>{u ? <span>{u.bedrijfsnaam || u.naam}<br /><span className="text-grijs text-xs">{u.email}</span></span> : "—"}</Td>
+                    <Td>{soortLabel(p.soort)}</Td>
+                    <Td>{euroCents(p.bedrag)}</Td>
+                    <Td>{p.betaaldOp ? new Date(p.betaaldOp).toLocaleDateString("nl-NL") : "—"}</Td>
+                    <Td>{p.methode}</Td>
+                    <Td><BetalingStatusKnop paymentId={p.id} status={p.status} /></Td>
+                  </tr>
+                );
+              })}
+            </Table>
+          </div>
+        );
+      })()}
 
       {tab === "social" && (
         <SocialWachtrij
