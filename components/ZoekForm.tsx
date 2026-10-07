@@ -15,6 +15,8 @@ export function ZoekForm() {
     naam: "", email: "", doel: "alle", provincie: "alle",
     prijsMax: "", personenMin: "", alerts: true,
   });
+  const [bedrijf, setBedrijf] = useState(""); // honeypot — hoort leeg te blijven
+  const [ts] = useState(() => Date.now());
   const set = (k: string, v: any) => setF((s) => ({ ...s, [k]: v }));
 
   async function verstuur(e: React.FormEvent) {
@@ -28,6 +30,8 @@ export function ZoekForm() {
           ...f,
           prijsMax: f.prijsMax ? Number(f.prijsMax) : undefined,
           personenMin: f.personenMin ? Number(f.personenMin) : undefined,
+          bedrijf,
+          ts,
         }),
       });
       const data = await res.json();
@@ -53,6 +57,17 @@ export function ZoekForm() {
 
   return (
     <form onSubmit={verstuur} className="grid gap-3 sm:grid-cols-2">
+      {/* Honeypot: verborgen voor mensen, vaak ingevuld door bots. */}
+      <input
+        type="text"
+        name="bedrijf"
+        tabIndex={-1}
+        autoComplete="off"
+        value={bedrijf}
+        onChange={(e) => setBedrijf(e.target.value)}
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+      />
       <input required value={f.naam} onChange={(e) => set("naam", e.target.value)} placeholder="Je naam" className="field" />
       <input required type="email" value={f.email} onChange={(e) => set("email", e.target.value)} placeholder="Je e-mailadres" className="field" />
       <select value={f.doel} onChange={(e) => set("doel", e.target.value)} className="field">

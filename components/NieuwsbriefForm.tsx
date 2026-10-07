@@ -4,6 +4,8 @@ import { useState } from "react";
 
 export function NieuwsbriefForm({ compact = false }: { compact?: boolean }) {
   const [email, setEmail] = useState("");
+  const [bedrijf, setBedrijf] = useState(""); // honeypot — hoort leeg te blijven
+  const [ts] = useState(() => Date.now());
   const [status, setStatus] = useState<"idle" | "busy" | "ok" | "err">("idle");
 
   async function verstuur(e: React.FormEvent) {
@@ -12,7 +14,7 @@ export function NieuwsbriefForm({ compact = false }: { compact?: boolean }) {
     const res = await fetch("/api/nieuwsbrief", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, bedrijf, ts }),
     });
     setStatus(res.ok ? "ok" : "err");
   }
@@ -23,6 +25,17 @@ export function NieuwsbriefForm({ compact = false }: { compact?: boolean }) {
 
   return (
     <form onSubmit={verstuur} className="flex gap-2 flex-wrap">
+      {/* Honeypot: verborgen voor mensen, vaak ingevuld door bots. */}
+      <input
+        type="text"
+        name="bedrijf"
+        tabIndex={-1}
+        autoComplete="off"
+        value={bedrijf}
+        onChange={(e) => setBedrijf(e.target.value)}
+        aria-hidden="true"
+        style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+      />
       <input
         type="email"
         required

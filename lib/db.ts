@@ -1024,3 +1024,16 @@ export function valideerKortingscode(
   const kortingBedrag = Math.round((bedrag - nieuw) * 100) / 100;
   return { ok: true, code: c, kortingBedrag, nieuwBedrag: nieuw, gratis: nieuw <= 0.0001 };
 }
+
+// Meld alle woning-alerts (zoekopdrachten) van een e-mailadres af. Geeft het
+// aantal verwijderde alerts terug. Gebruikt door de afmeldpagina.
+export function meldZoekAlertAf(email: string): number {
+  const db = load();
+  const norm = (email || "").trim().toLowerCase();
+  if (!norm) return 0;
+  const voor = db.zoekopdrachten.length;
+  db.zoekopdrachten = db.zoekopdrachten.filter((z) => (z.email || "").toLowerCase() !== norm);
+  const verwijderd = voor - db.zoekopdrachten.length;
+  if (verwijderd) save();
+  return verwijderd;
+}

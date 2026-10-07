@@ -264,7 +264,7 @@ export function renderWoningAlert(z: Zoekopdracht, listing: Listing): { onderwer
       ${woningRegel(listing)}
     </table>
     <p style="margin:22px 0;">${btn(`${COMPANY.website}/aanbod/${listing.id}`, "Bekijk de woning")}</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je ontvangt deze mail omdat je een woning-alert hebt ingesteld op Mooihuus. Reageren op de woning gaat rechtstreeks naar de aanbieder.</p>`;
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je ontvangt deze mail omdat je een woning-alert hebt ingesteld op Mooihuus. Reageren op de woning gaat rechtstreeks naar de aanbieder. <a href="${COMPANY.website}/woning-alert/afmelden?e=${encodeURIComponent(z.email)}" style="color:${BRAND.grijs};">Afmelden</a>.</p>`;
   return { onderwerp: `Nieuwe match: ${listing.titel}`, html: layout("Nieuwe match", inner) };
 }
 
@@ -279,7 +279,7 @@ export function renderPrijsdaling(z: Zoekopdracht, listing: Listing, oudePrijs: 
     </table>
     <p style="line-height:1.6;font-size:16px;">Van <span style="text-decoration:line-through;color:${BRAND.grijs};">${euro(oudePrijs)}</span> naar <strong style="color:${BRAND.oranjeDk};">${euro(listing.prijs)}</strong>.</p>
     <p style="margin:22px 0;">${btn(`${COMPANY.website}/aanbod/${listing.id}`, "Bekijk de woning")}</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je ontvangt deze mail omdat je een woning-alert hebt ingesteld op Mooihuus. Reageren gaat rechtstreeks naar de aanbieder.</p>`;
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je ontvangt deze mail omdat je een woning-alert hebt ingesteld op Mooihuus. Reageren gaat rechtstreeks naar de aanbieder. <a href="${COMPANY.website}/woning-alert/afmelden?e=${encodeURIComponent(z.email)}" style="color:${BRAND.grijs};">Afmelden</a>.</p>`;
   return { onderwerp: `Prijsverlaging: ${listing.titel}`, html: layout("Prijsverlaging", inner) };
 }
 
@@ -299,7 +299,7 @@ export function renderZoekBevestiging(z: Zoekopdracht, matches: Listing[]): { on
     ${matches.length ? `<p style="line-height:1.6;">Dit past nú al bij je zoekopdracht:</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:14px 0;">${lijst}</table>` : `<p style="line-height:1.6;">Er staat nu nog niets dat precies past — maar zodra dat verandert, ben jij de eerste die het weet.</p>`}
     <p style="margin:22px 0;">${btn(`${COMPANY.website}/`, "Bekijk het aanbod")}</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je kunt je op elk moment afmelden door te reageren op deze mail.</p>`;
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Je kunt je <a href="${COMPANY.website}/woning-alert/afmelden?e=${encodeURIComponent(z.email)}" style="color:${BRAND.grijs};">op elk moment afmelden</a>.</p>`;
   return { onderwerp: "Je woning-alert op Mooihuus staat aan", html: layout("Woning-alert", inner) };
 }
 
