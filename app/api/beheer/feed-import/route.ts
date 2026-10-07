@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { importFeed, adapterVoor } from "@/lib/feed-import";
+import { importFeed, adapterVoor, syncKolibri } from "@/lib/feed-import";
 
 export const runtime = "nodejs";
 
@@ -14,7 +14,8 @@ export async function POST(req: Request) {
   }
   const { bron } = await req.json().catch(() => ({}));
   try {
-    const res = await importFeed(adapterVoor(String(bron || "kolibri")));
+    const b = String(bron || "kolibri");
+    const res = b === "kolibri" ? await syncKolibri() : await importFeed(adapterVoor(b));
     return NextResponse.json({ ok: true, ...res });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message || "Import mislukt." }, { status: 501 });

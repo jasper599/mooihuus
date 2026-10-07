@@ -274,7 +274,7 @@ export const kolibriAdapter: FeedAdapter = {
         objecten.push({ externalId, data });
 
         // Terugkoppeling aan de makelaar (best-effort; standaard uit tijdens testen).
-        if (CONFIRM_AAN) {
+        if (CONFIRM_AAN && data.status === "live") {
           const listingId = `kolibri-${externalId}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-").slice(0, 90);
           try {
             await confirmRetrieval(
