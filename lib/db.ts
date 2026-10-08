@@ -196,6 +196,13 @@ function nextId(prefix: string): string {
   db.seq += 1;
   return `${prefix}${db.seq}`;
 }
+
+// Alleen-lezen momentopname van de volledige database voor de Postgres-spiegel
+// (lib/pg-mirror.ts). db.json blijft de bron van waarheid; de spiegel leest
+// hier enkel uit en raakt het schrijfpad nooit aan.
+export function snapshotForMirror(): DB {
+  return load();
+}
  
 // ---------- Users ----------
 export function getUsers(): User[] {
