@@ -59,7 +59,10 @@ export async function GET() {
 
   const woningItems: Item[] = listings.map((l) => ({
     title: `${l.type} ${l.doel === "huur" ? "te huur" : "te koop"} in ${l.provincie} — ${euro(l.prijs)}`,
-    link: `${SITE}/aanbod/${l.id}`,
+    // Bewust de link-in-bio-pagina i.p.v. een diepe woning-URL: als een
+    // RSS-automaat deze link onderaan de post plakt, komt de bezoeker netjes op
+    // de link-in-bio-pagina met het aanbod uit (geen rommelige /aanbod-URL).
+    link: `${SITE}/insta`,
     caption: listingCaption(l),
     image: `${SITE}/social/woning/${l.id}`,
     date: new Date(l.aangemaakt || 0).toUTCString(),

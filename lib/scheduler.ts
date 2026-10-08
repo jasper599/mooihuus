@@ -12,8 +12,9 @@ import { verwerkVerlopendeAdvertenties } from "./verlenging";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
 import { instagramEnabled, postToInstagram } from "./instagram";
 import { getBlogPosts } from "./blog";
-import { addBlogPost, getSocialPosts, updateSocialPost, getListing, getListings, updateListing } from "./db";
+import { addBlogPost, addSocialPost, getSocialPosts, updateSocialPost, getListing, getListings, updateListing } from "./db";
 import { genereerBlogpost } from "./blog-generator";
+import { genereerSocialCaption } from "./social-caption";
 import { syncMarinaparken } from "./marinaparken-feed";
 import { syncAlleTradeTracker } from "./tradetracker-feed";
 import { syncKolibri } from "./feed-import";
@@ -24,6 +25,7 @@ const STAMP_FILE = path.join(DATA_DIR, "last-onderhoud.txt");
 const BLOG_STAMP = path.join(DATA_DIR, "last-blog.txt");
 const FEED_STAMP = path.join(DATA_DIR, "last-feeds.txt");
 const KOLIBRI_STAMP = path.join(DATA_DIR, "last-kolibri.txt");
+const SOCIAL_AUTO_STAMP = path.join(DATA_DIR, "last-social-auto.txt");
 const INTERVAL = 30 * 60 * 1000; // elke 30 minuten kijken of het al gedraaid is
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 const FEED_INTERVAL = 6 * 60 * 60 * 1000; // huurfeeds elke 6 uur verversen
@@ -174,6 +176,69 @@ async function draaiSocial(): Promise<void> {
   }
 }
 
+// Automatische (organische) Instagram-posts — vanuit ONZE app, zodat wij de
+// caption 100% bepalen: altijd nette tekst met "link in bio", NOOIT een
+// uitgeschreven URL. Zet elke dag hooguit één live woning in de wachtrij; de
+// bestaande draaiSocial() plaatst 'm daarna via Metricool, en omdat we 'm als
+// SocialPost vastleggen verschijnt de woning ook op /insta (de link-in-bio).
+//
+// Alleen actief als SOCIAL_AUTO=1 én Metricool/Instagram gekoppeld is. Zo kunnen
+// we veilig uitrollen (vlag uit = geen gedragswijziging) en pas omschakelen als
+// de oude RSS-automaat in Metricool is uitgezet (anders zou je dubbel posten).
+let bezigOrganisch = false;
+async function draaiOrganischSocial(nu: Date): Promise<void> {
+  if (process.env.SOCIAL_AUTO !== "1") return;
+  if (bezigOrganisch || (!metricoolEnabled() && !instagramEnabled())) return;
+  bezigOrganisch = true;
+  try {
+    // Hooguit één automatische post per kalenderdag.
+    try {
+      if (fs.existsSync(SOCIAL_AUTO_STAMP) && fs.readFileSync(SOCIAL_AUTO_STAMP, "utf8").trim() === vandaag(nu)) return;
+    } catch { /* ga door */ }
+
+    const posts = getSocialPosts();
+    // Niet opstapelen: staat er al een automatische post klaar of ingepland,
+    // dan eerst die laten plaatsen.
+    if (posts.some((p) => p.bron === "automatisch" && (p.status === "wachtrij" || p.status === "ingepland"))) return;
+
+    const live = getListings().filter((l) => l.status === "live" && (l.fotos?.length || 0) > 0);
+    if (live.length === 0) return;
+
+    // Wanneer is elke woning voor het laatst gepost? Zo rouleren we netjes.
+    const laatst = new Map<string, string>();
+    for (const p of posts) {
+      const cur = laatst.get(p.listingId);
+      if (!cur || p.aangemaakt > cur) laatst.set(p.listingId, p.aangemaakt);
+    }
+    const nooit = live.filter((l) => !laatst.has(l.id));
+    const kandidaat = nooit.length
+      ? nooit.slice().sort((a, b) =>
+          (b.uitgelicht ? 1 : 0) - (a.uitgelicht ? 1 : 0) ||
+          String(b.aangemaakt).localeCompare(String(a.aangemaakt)))[0]
+      : live.slice().sort((a, b) =>
+          String(laatst.get(a.id) || "").localeCompare(String(laatst.get(b.id) || "")))[0];
+    if (!kandidaat) return;
+
+    const caption = await genereerSocialCaption(kandidaat).catch(() => undefined);
+    addSocialPost({
+      listingId: kandidaat.id,
+      kanaal: "instagram",
+      prioriteit: false,
+      status: "wachtrij",
+      bron: "automatisch",
+      tekst: caption || kandidaat.titel,
+      fotoUrl: kandidaat.fotos?.[0],
+    });
+
+    try {
+      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+      fs.writeFileSync(SOCIAL_AUTO_STAMP, vandaag(nu), "utf8");
+    } catch { /* niet fataal */ }
+  } finally {
+    bezigOrganisch = false;
+  }
+}
+
 // Zet een betaalde "Blikvanger" (uitgelicht met einddatum) automatisch weer uit
 // zodra de week voorbij is. Permanente uitlichting (bijv. Luyten, zonder
 // uitgelichtTot) blijft ongemoeid. Nooit fataal.
@@ -207,6 +272,7 @@ function tick(): void {
   void draaiBlog(new Date()).catch(() => {});
   void draaiFeeds(new Date()).catch(() => {});
   void draaiKolibri(new Date()).catch(() => {});
+  void draaiOrganischSocial(new Date()).catch(() => {});
   void draaiSocial().catch(() => {});
 }
 

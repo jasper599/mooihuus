@@ -149,7 +149,7 @@ export interface SocialPost {
   kanaal: "instagram";
   prioriteit: boolean;       // betaalde 'Social spotlight' krijgt voorrang
   status: SocialStatus;
-  bron: "bestelling" | "handmatig";
+  bron: "bestelling" | "handmatig" | "automatisch";
   paymentId?: string;
   tekst?: string;            // voorgestelde caption
   fotoUrl?: string;          // eerste foto van de woning
