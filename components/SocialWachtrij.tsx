@@ -68,7 +68,7 @@ export function SocialWachtrij({ posts, metricool }: { posts: Post[]; metricool:
     <div>
       <div className={`text-sm mb-3 ${metricool ? "text-bosgroen" : "text-oranje-dk"}`}>
         {metricool
-          ? "✓ Metricool gekoppeld — betaalde posts worden automatisch met voorrang ingepland op Instagram."
+          ? "✓ Metricool gekoppeld — posts worden automatisch ingepland en gepubliceerd op Instagram. Je hoeft hier niets te doen; dit is puur een overzicht. Je kunt een post desgewenst nog aanpassen of annuleren."
           : "○ Metricool nog niet gekoppeld. Posts staan met voorrang in de wachtrij; plaats ze handmatig en markeer ze hier als geplaatst. (Stel de METRICOOL_-variabelen in om automatisch in te plannen.)"}
       </div>
       <div className="space-y-2">
@@ -82,7 +82,7 @@ export function SocialWachtrij({ posts, metricool }: { posts: Post[]; metricool:
                   <span className="font-display font-semibold text-bosgroen-dk truncate">{p.titel}</span>
                 </div>
                 <div className="text-xs text-grijs mt-0.5">
-                  {p.bron === "bestelling" ? "Betaalde bestelling" : "Handmatig"} · <span className={l.cls}>{l.txt}</span>
+                  {p.bron === "bestelling" ? "Betaalde bestelling" : p.bron === "automatisch" ? "Automatisch" : "Handmatig"} · <span className={l.cls}>{l.txt}</span>
                   {p.ingeplandVoor && <> · gepland: {new Date(p.ingeplandVoor).toLocaleString("nl-NL")}</>}
                 </div>
                 {bewerkId === p.id ? (
@@ -131,19 +131,18 @@ export function SocialWachtrij({ posts, metricool }: { posts: Post[]; metricool:
                 {p.notitie && <div className="text-xs text-[#8A2E22] mt-1">{p.notitie}</div>}
               </div>
               <div className="flex flex-wrap gap-1.5 shrink-0">
-                {metricool && p.status !== "geplaatst" && (
-                  <button onClick={() => doe(p.id, "inplannen")} disabled={!!busy} className="btn btn-ghost text-xs py-1 px-2">
-                    {busy === p.id + "inplannen" ? "…" : "Inplannen"}
-                  </button>
-                )}
-                {p.status !== "geplaatst" ? (
-                  <button onClick={() => doe(p.id, "geplaatst")} disabled={!!busy} className="btn text-xs py-1 px-2">
-                    {busy === p.id + "geplaatst" ? "…" : "Markeer geplaatst"}
-                  </button>
-                ) : (
-                  <button onClick={() => doe(p.id, "wachtrij")} disabled={!!busy} className="text-grijs text-xs underline">
-                    terug naar wachtrij
-                  </button>
+                {/* Zonder Metricool: handmatige plaatsing. Mét Metricool loopt alles
+                    automatisch, dus dan alleen 'annuleren' als nood-/stopknop. */}
+                {!metricool && (
+                  p.status !== "geplaatst" ? (
+                    <button onClick={() => doe(p.id, "geplaatst")} disabled={!!busy} className="btn text-xs py-1 px-2">
+                      {busy === p.id + "geplaatst" ? "…" : "Markeer geplaatst"}
+                    </button>
+                  ) : (
+                    <button onClick={() => doe(p.id, "wachtrij")} disabled={!!busy} className="text-grijs text-xs underline">
+                      terug naar wachtrij
+                    </button>
+                  )
                 )}
                 {p.status !== "mislukt" && p.status !== "geplaatst" && (
                   <button onClick={() => doe(p.id, "annuleren")} disabled={!!busy} className="text-oranje-dk text-xs underline">
