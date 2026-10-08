@@ -19,6 +19,8 @@ import { syncMarinaparken } from "./marinaparken-feed";
 import { syncAlleTradeTracker } from "./tradetracker-feed";
 import { syncKolibri } from "./feed-import";
 import { kolibriGeconfigureerd } from "./kolibri";
+import { HUUSMEESTERS_CATEGORIEEN, huusmeesterSlug } from "./partners";
+import { COMPANY } from "./company";
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const STAMP_FILE = path.join(DATA_DIR, "last-onderhoud.txt");
@@ -26,6 +28,7 @@ const BLOG_STAMP = path.join(DATA_DIR, "last-blog.txt");
 const FEED_STAMP = path.join(DATA_DIR, "last-feeds.txt");
 const KOLIBRI_STAMP = path.join(DATA_DIR, "last-kolibri.txt");
 const SOCIAL_AUTO_STAMP = path.join(DATA_DIR, "last-social-auto.txt");
+const SOCIAL_ROT_STAMP = path.join(DATA_DIR, "social-rotatie.txt");
 const INTERVAL = 30 * 60 * 1000; // elke 30 minuten kijken of het al gedraaid is
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 const FEED_INTERVAL = 6 * 60 * 60 * 1000; // huurfeeds elke 6 uur verversen
@@ -178,65 +181,151 @@ async function draaiSocial(): Promise<void> {
 
 // Automatische (organische) Instagram-posts — vanuit ONZE app, zodat wij de
 // caption 100% bepalen: altijd nette tekst met "link in bio", NOOIT een
-// uitgeschreven URL. Zet elke dag hooguit één live woning in de wachtrij; de
-// bestaande draaiSocial() plaatst 'm daarna via Metricool, en omdat we 'm als
-// SocialPost vastleggen verschijnt de woning ook op /insta (de link-in-bio).
+// uitgeschreven URL. Drie keer per week (ma/wo/vr, overdag), met een MIX die
+// rouleert: woning → blog-tip → Huusmeesters-categorie → woning → … Een woning
+// leggen we ook als SocialPost vast, zodat die op /insta (de link-in-bio) komt.
 //
 // Alleen actief als SOCIAL_AUTO=1 én Metricool/Instagram gekoppeld is. Zo kunnen
 // we veilig uitrollen (vlag uit = geen gedragswijziging) en pas omschakelen als
-// de oude RSS-automaat in Metricool is uitgezet (anders zou je dubbel posten).
+// de oude RSS-automaat in Metricool uit staat (anders zou je dubbel posten).
+const SITE = COMPANY.website;
+const POST_DAGEN = new Set(["Mon", "Wed", "Fri"]); // 3× per week
+const SOORTEN = ["woning", "blog", "huusmeester"] as const;
+
+function amsWeekdag(d: Date): string {
+  return new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Amsterdam", weekday: "short" }).format(d);
+}
+function amsUur(d: Date): number {
+  return Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Amsterdam", hour: "2-digit", hour12: false }).format(d));
+}
+function amsDatum(d: Date): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Amsterdam" }).format(d); // YYYY-MM-DD
+}
+function socialTag(s: string): string {
+  return "#" + (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+function leesTeller(): number {
+  try { return parseInt(fs.readFileSync(SOCIAL_ROT_STAMP, "utf8").trim(), 10) || 0; } catch { return 0; }
+}
+function schrijfTeller(n: number): void {
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(SOCIAL_ROT_STAMP, String(n), "utf8");
+  } catch { /* niet fataal */ }
+}
+
+function blogCaptionSchoon(p: any): string {
+  const intro = (p.intro || "").replace(/\s+/g, " ").trim().slice(0, 200);
+  return [
+    `${p.emoji || "📝"} ${p.titel}`, ``, intro, ``,
+    `👉 Lees het hele artikel via de link in onze bio.`, ``,
+    `#recreatiewoning #vakantiehuis #tips #mooihuus ${socialTag(p.categorie || "")}`.trim(),
+  ].join("\n");
+}
+function huusCaptionSchoon(c: any): string {
+  return [
+    `🛠️ ${c.titel} voor je recreatiewoning?`, ``,
+    (c.tekst || "").replace(/\s+/g, " ").trim(), ``,
+    `De Huusmeesters van Mooihuus regelen het voor je — kijk via de link in onze bio.`, ``,
+    `#huusmeesters #recreatiewoning #vakantiehuis #mooihuus`,
+  ].join("\n");
+}
+
+// Kiest de volgende te posten woning (nog nooit gepost eerst, anders langst
+// geleden gepost; uitgelichte/nieuwe krijgen voorrang).
+function kiesWoning(): any {
+  const posts = getSocialPosts();
+  const live = getListings().filter((l) => l.status === "live" && (l.fotos?.length || 0) > 0);
+  if (live.length === 0) return undefined;
+  const laatst = new Map<string, string>();
+  for (const p of posts) {
+    const cur = laatst.get(p.listingId);
+    if (!cur || p.aangemaakt > cur) laatst.set(p.listingId, p.aangemaakt);
+  }
+  const nooit = live.filter((l) => !laatst.has(l.id));
+  return nooit.length
+    ? nooit.slice().sort((a, b) =>
+        (b.uitgelicht ? 1 : 0) - (a.uitgelicht ? 1 : 0) ||
+        String(b.aangemaakt).localeCompare(String(a.aangemaakt)))[0]
+    : live.slice().sort((a, b) =>
+        String(laatst.get(a.id) || "").localeCompare(String(laatst.get(b.id) || "")))[0];
+}
+
+// Plaatst één post van de soort die bij deze rotatiestand hoort. Valt bij een
+// lege soort (geen blogs/categorieën) netjes terug op een woning.
+async function plaatsEenPost(teller: number): Promise<{ soort: string; ok: boolean; detail: string }> {
+  const soort = SOORTEN[teller % SOORTEN.length];
+  const publishAt = volgendeSlot(true, new Date()); // ~15 min later
+
+  if (soort === "blog") {
+    const blogs = getBlogPosts();
+    if (blogs.length > 0) {
+      const p: any = blogs[Math.floor(teller / SOORTEN.length) % blogs.length];
+      const r: any = await scheduleInstagramPost({ tekst: blogCaptionSchoon(p), fotoUrl: `${SITE}/social/blog/${p.slug}`, publishAt }).catch(() => ({ ok: false, error: "verbindingsfout" }));
+      return { soort, ok: !!r.ok, detail: r.ok ? `blog: ${p.titel}` : `blog mislukt: ${r.error}` };
+    }
+  } else if (soort === "huusmeester") {
+    const cats = HUUSMEESTERS_CATEGORIEEN;
+    if (cats.length > 0) {
+      const c: any = cats[Math.floor(teller / SOORTEN.length) % cats.length];
+      const r: any = await scheduleInstagramPost({ tekst: huusCaptionSchoon(c), fotoUrl: `${SITE}/social/huusmeester/${huusmeesterSlug(c.titel)}`, publishAt }).catch(() => ({ ok: false, error: "verbindingsfout" }));
+      return { soort, ok: !!r.ok, detail: r.ok ? `huusmeester: ${c.titel}` : `huusmeester mislukt: ${r.error}` };
+    }
+  }
+
+  // Woning (ook de terugval voor een lege blog/huusmeester-soort).
+  const w = kiesWoning();
+  if (!w) return { soort: "woning", ok: false, detail: "geen geschikte woning" };
+  const caption = (await genereerSocialCaption(w).catch(() => undefined)) || w.titel;
+  const r: any = await scheduleInstagramPost({ tekst: caption, fotoUrl: w.fotos?.[0], publishAt }).catch(() => ({ ok: false, error: "verbindingsfout" }));
+  // Woning vastleggen voor /insta. 'ingepland' zodat draaiSocial 'm niet nog eens plaatst.
+  addSocialPost({
+    listingId: w.id, kanaal: "instagram", prioriteit: false,
+    status: r.ok ? "ingepland" : "wachtrij", bron: "automatisch",
+    tekst: caption, fotoUrl: w.fotos?.[0],
+    metricoolId: r.ok ? r.id : undefined,
+    ingeplandVoor: r.ok ? publishAt : undefined,
+    notitie: r.ok ? undefined : `Metricool: ${r.error || "inplannen mislukt"}`,
+  });
+  return { soort: "woning", ok: !!r.ok, detail: r.ok ? `woning: ${w.titel}` : `woning mislukt: ${r.error}` };
+}
+
 let bezigOrganisch = false;
 async function draaiOrganischSocial(nu: Date): Promise<void> {
   if (process.env.SOCIAL_AUTO !== "1") return;
   if (bezigOrganisch || (!metricoolEnabled() && !instagramEnabled())) return;
   bezigOrganisch = true;
   try {
-    // Hooguit één automatische post per kalenderdag.
+    // 3× per week (ma/wo/vr), overdag (vanaf 9u), hooguit één post per dag.
+    if (!POST_DAGEN.has(amsWeekdag(nu))) return;
+    const uur = amsUur(nu);
+    if (uur < 9 || uur >= 20) return;
     try {
-      if (fs.existsSync(SOCIAL_AUTO_STAMP) && fs.readFileSync(SOCIAL_AUTO_STAMP, "utf8").trim() === vandaag(nu)) return;
+      if (fs.existsSync(SOCIAL_AUTO_STAMP) && fs.readFileSync(SOCIAL_AUTO_STAMP, "utf8").trim() === amsDatum(nu)) return;
     } catch { /* ga door */ }
 
-    const posts = getSocialPosts();
-    // Niet opstapelen: staat er al een automatische post klaar of ingepland,
-    // dan eerst die laten plaatsen.
-    if (posts.some((p) => p.bron === "automatisch" && (p.status === "wachtrij" || p.status === "ingepland"))) return;
-
-    const live = getListings().filter((l) => l.status === "live" && (l.fotos?.length || 0) > 0);
-    if (live.length === 0) return;
-
-    // Wanneer is elke woning voor het laatst gepost? Zo rouleren we netjes.
-    const laatst = new Map<string, string>();
-    for (const p of posts) {
-      const cur = laatst.get(p.listingId);
-      if (!cur || p.aangemaakt > cur) laatst.set(p.listingId, p.aangemaakt);
+    const teller = leesTeller();
+    const res = await plaatsEenPost(teller);
+    if (res.ok) {
+      schrijfTeller(teller + 1);
+      try {
+        if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+        fs.writeFileSync(SOCIAL_AUTO_STAMP, amsDatum(nu), "utf8");
+      } catch { /* niet fataal */ }
     }
-    const nooit = live.filter((l) => !laatst.has(l.id));
-    const kandidaat = nooit.length
-      ? nooit.slice().sort((a, b) =>
-          (b.uitgelicht ? 1 : 0) - (a.uitgelicht ? 1 : 0) ||
-          String(b.aangemaakt).localeCompare(String(a.aangemaakt)))[0]
-      : live.slice().sort((a, b) =>
-          String(laatst.get(a.id) || "").localeCompare(String(laatst.get(b.id) || "")))[0];
-    if (!kandidaat) return;
-
-    const caption = await genereerSocialCaption(kandidaat).catch(() => undefined);
-    addSocialPost({
-      listingId: kandidaat.id,
-      kanaal: "instagram",
-      prioriteit: false,
-      status: "wachtrij",
-      bron: "automatisch",
-      tekst: caption || kandidaat.titel,
-      fotoUrl: kandidaat.fotos?.[0],
-    });
-
-    try {
-      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-      fs.writeFileSync(SOCIAL_AUTO_STAMP, vandaag(nu), "utf8");
-    } catch { /* niet fataal */ }
+    // Mislukt? Geen stempel → volgende tick (binnen 30 min) probeert opnieuw.
   } finally {
     bezigOrganisch = false;
   }
+}
+
+// Handmatig/testen: forceer nu één organische post (zonder dag/tijd-check).
+export async function forceerOrganischePost(): Promise<{ soort: string; ok: boolean; detail: string }> {
+  if (!metricoolEnabled() && !instagramEnabled()) return { soort: "-", ok: false, detail: "Geen Instagram/Metricool-koppeling" };
+  const teller = leesTeller();
+  const res = await plaatsEenPost(teller);
+  if (res.ok) schrijfTeller(teller + 1);
+  return res;
 }
 
 // Zet een betaalde "Blikvanger" (uitgelicht met einddatum) automatisch weer uit
