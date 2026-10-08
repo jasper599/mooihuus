@@ -13,6 +13,7 @@ import { NieuwsbriefVerstuur } from "@/components/NieuwsbriefVerstuur";
 import { FeedImportKnop } from "@/components/FeedImportKnop";
 import { MakelaarFactuurKnop } from "@/components/MakelaarFactuurKnop";
 import { BetalingStatusKnop } from "@/components/BetalingStatusKnop";
+import { WoningVerwijderKnop } from "@/components/WoningVerwijderKnop";
 import { SocialWachtrij } from "@/components/SocialWachtrij";
 import { KortingscodeBeheer } from "@/components/KortingscodeBeheer";
 import { GebruikerVerwijderKnop } from "@/components/GebruikerVerwijderKnop";
@@ -249,7 +250,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
               </div>
             </div>
             <div className="text-sm text-grijs mb-2">{zichtbaar.length} {zichtbaar.length === 1 ? "woning" : "woningen"}{bronFilter ? " · bron " + bronLabel(bronFilter) : ""}{kantoorFilter ? " · " + (kantoren[kantoorFilter]?.naam || "kantoor") : ""}{doelFilter ? " · " + (doelFilter === "huur" ? "te huur" : "te koop") : ""}</div>
-            <Table head={["Titel", "Bron", "Makelaar / kantoor", "Doel", "Status", "Prijs"]}>
+            <Table head={["Titel", "Bron", "Makelaar / kantoor", "Doel", "Status", "Prijs", ""]}>
               {zichtbaar.map((l) => (
                 <tr key={l.id} className="border-t border-lijn">
                   <Td>{l.titel}</Td>
@@ -258,6 +259,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
                   <Td>{l.doel === "huur" ? "Te huur" : "Te koop"}</Td>
                   <Td>{statusLabel(l.status)}</Td>
                   <Td>{euro(l.prijs)}</Td>
+                  <Td>{l.source === "eigen" ? <WoningVerwijderKnop id={l.id} /> : <span className="text-grijs text-xs" title="Feed-woningen verdwijnen weer bij de volgende synchronisatie — verwijderen heeft hier geen zin.">—</span>}</Td>
                 </tr>
               ))}
             </Table>

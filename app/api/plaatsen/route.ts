@@ -57,6 +57,7 @@ export async function POST(req: Request) {
     status: "wacht_op_betaling",
     postcode: b.postcode ? String(b.postcode) : undefined,
     uitjes: Array.isArray(b.uitjes) ? b.uitjes.map(String).slice(0, 12) : undefined,
+    fotos: Array.isArray(b.fotos) ? b.fotos.map(String).slice(0, 24) : undefined,
   });
 
   // Prijs: particuliere volumekorting (staffel) + optionele kortingscode.

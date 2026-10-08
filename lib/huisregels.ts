@@ -11,6 +11,15 @@
 
 import { vraagAnthropic } from "./anthropic";
 
+// Verwijzingen naar Mooihuus zelf zijn toegestaan — het ís het platform,
+// geen doorverwijzing naar een andere site. Haal het eigen domein weg vóór
+// de link-controles, zodat "mooihuus.nl" niet als externe website wordt
+// geblokkeerd (maar echte externe domeinen nog wél).
+const EIGEN_DOMEIN = /(?:https?:\/\/)?(?:www\.)?mooihuus\.nl(?:\/[^\s]*)?/gi;
+function zonderEigenDomein(tekst: string): string {
+  return tekst.replace(EIGEN_DOMEIN, "Mooihuus");
+}
+
 export type HuisregelResultaat = {
   ok: boolean;              // true = geen blokkerende overtredingen
   problemen: string[];      // blokkerend — plaatsen/opslaan wordt tegengehouden
@@ -139,8 +148,9 @@ export async function handhaafHuisregels(velden: { titel?: string; omschrijving?
   const tekst = [velden.titel || "", velden.omschrijving || ""].join("\n").trim();
   if (!tekst) return { ok: true, problemen: [], waarschuwingen: [] };
 
-  const basis = scan(tekst);
-  const ai = await scanAI(tekst);
+  const schoon = zonderEigenDomein(tekst);
+  const basis = scan(schoon);
+  const ai = await scanAI(schoon);
 
   const problemen = Array.from(new Set([...basis.problemen, ...ai.problemen]));
   const waarschuwingen = Array.from(new Set([...basis.waarschuwingen, ...ai.waarschuwingen])).filter(
@@ -152,5 +162,5 @@ export async function handhaafHuisregels(velden: { titel?: string; omschrijving?
 // Synchronen variant (alleen regex) voor plekken zonder async/AI-behoefte.
 export function controleerHuisregels(velden: { titel?: string; omschrijving?: string }): HuisregelResultaat {
   const tekst = [velden.titel || "", velden.omschrijving || ""].join("\n").trim();
-  return tekst ? scan(tekst) : { ok: true, problemen: [], waarschuwingen: [] };
+  return tekst ? scan(zonderEigenDomein(tekst)) : { ok: true, problemen: [], waarschuwingen: [] };
 }

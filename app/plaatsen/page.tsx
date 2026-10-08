@@ -32,8 +32,9 @@ export default function Plaatsen() {
     grond: "",
     park: "Park De Veluwe",
     postcode: "",
-    videoUrl: "",
   });
+  const [fotos, setFotos] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [uitjes, setUitjes] = useState<string[]>([]);
   const [uitjeInput, setUitjeInput] = useState("");
   function addUitje(v: string) {
@@ -66,6 +67,23 @@ export default function Plaatsen() {
   const [fout, setFout] = useState("");
   const [code, setCode] = useState("");
 
+  async function upload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setUploading(true);
+    setFout("");
+    for (const file of files) {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.url) setFotos((p) => [...p, data.url]);
+      else setFout(data.error || "Uploaden van een foto mislukt. Probeer het opnieuw.");
+    }
+    setUploading(false);
+    e.target.value = "";
+  }
+
   async function publiceer() {
     setBusy(true);
     setFout("");
@@ -83,8 +101,8 @@ export default function Plaatsen() {
         prijs: Number(f.prijs),
         prijsSuffix: f.prijsSuffix,
         grond: f.grond,
-        videoUrl: f.videoUrl,
         omschrijving,
+        fotos,
         pakket,
         postcode: f.postcode,
         uitjes,
@@ -174,32 +192,42 @@ export default function Plaatsen() {
           </Field>
           <Field label="Recreatiepark"><input className="field" value={f.park} onChange={(e) => setF({ ...f, park: e.target.value })} /></Field>
           <Field label="Postcode"><input className="field" value={f.postcode} onChange={(e) => setF({ ...f, postcode: e.target.value })} placeholder="1234 AB" /></Field>
-          <div className="sm:col-span-2"><Field label="Video / rondleiding (optioneel — YouTube, Vimeo of Matterport)"><input className="field" value={f.videoUrl} onChange={(e) => setF({ ...f, videoUrl: e.target.value })} placeholder="https://youtu.be/… of Matterport-link" /></Field></div>
           <div className="sm:col-span-2 text-right"><button className="btn" onClick={() => setStep(2)}>Volgende →</button></div>
         </div>
       )}
 
       {step === 2 && (
         <div className="card">
-          <p className="font-semibold">De AI schrijft een titel en omschrijving in de Mooihuus-stijl.</p>
+          <p className="font-semibold">Titel en omschrijving</p>
+          <p className="text-sm text-grijs mt-1">
+            Vul ze zelf in, of laat de AI een voorzet schrijven in de Mooihuus-stijl — je kunt daarna alles aanpassen.
+          </p>
           <button className="btn btn-green mt-3" onClick={genereer} disabled={busy}>
-            {busy ? "Bezig…" : "✨ Genereer tekst"}
+            {busy ? "Bezig…" : ai ? "✨ Opnieuw genereren" : "✨ Genereer tekst (optioneel)"}
           </button>
+
+          <label className="label mt-3">Titel</label>
+          <input
+            className="field"
+            value={titel}
+            onChange={(e) => setTitel(e.target.value)}
+            placeholder="bijv. Sfeervol chalet aan de bosrand"
+          />
+          <label className="label">Omschrijving</label>
+          <textarea
+            className="field min-h-[160px]"
+            value={omschrijving}
+            onChange={(e) => setOmschrijving(e.target.value)}
+            placeholder="Beschrijf je woning: sfeer, ligging en bijzonderheden. Laat dit gerust leeg of gebruik ✨ Genereer tekst."
+          />
+
           {ai && (
-            <>
-              <div className="bg-[#EAF4EC] border border-[#CADFCF] rounded-xl p-3.5 mt-3">
-                <div className="font-display font-bold text-bosgroen-dk text-sm">✨ AI-voorstel — pas gerust aan</div>
-              </div>
-              <label className="label">Titel</label>
-              <input className="field" value={titel} onChange={(e) => setTitel(e.target.value)} />
-              <label className="label">Omschrijving</label>
-              <textarea className="field min-h-[120px]" value={omschrijving} onChange={(e) => setOmschrijving(e.target.value)} />
-              <div className="bg-[#FBEEE4] border border-[#F0D6C1] rounded-xl p-3.5 mt-3">
-                <div className="font-display font-bold text-oranje-dk text-sm">💶 Prijsindicatie (Huuswaarde)</div>
-                <div className="text-sm mt-1">{ai.prijsindicatie}</div>
-              </div>
-            </>
+            <div className="bg-[#FBEEE4] border border-[#F0D6C1] rounded-xl p-3.5 mt-3">
+              <div className="font-display font-bold text-oranje-dk text-sm">💶 Prijsindicatie (Huuswaarde)</div>
+              <div className="text-sm mt-1">{ai.prijsindicatie}</div>
+            </div>
           )}
+
           <div className="flex justify-between mt-4">
             <button className="btn btn-ghost" onClick={() => setStep(1)}>← Terug</button>
             <button className="btn" onClick={() => setStep(3)}>Volgende →</button>
@@ -209,18 +237,49 @@ export default function Plaatsen() {
 
       {step === 3 && (
         <div className="card">
-          <p className="font-semibold">Voeg foto's toe. De AI adviseert de sterkste openingsfoto.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-            <div className="h-20 rounded-[10px] relative" style={{ background: "linear-gradient(135deg,#9CC7A5,#5F9A72)" }}>
-              <span className="absolute bottom-1 left-1 bg-oranje text-white text-[0.6rem] font-bold px-1.5 py-0.5 rounded font-display">AI: beste opener</span>
+          <p className="font-semibold">Voeg foto's toe.</p>
+          <p className="text-xs text-grijs mb-2">
+            De eerste foto is je openingsfoto (ook gebruikt op Instagram). Foto's zijn niet verplicht — je kunt ze ook later in het bewerkscherm toevoegen of wijzigen.
+          </p>
+          <label className={`btn btn-green text-sm inline-flex items-center gap-2 cursor-pointer ${uploading ? "opacity-60 pointer-events-none" : ""}`}>
+            {uploading ? "Bezig met uploaden…" : "📷 Foto's kiezen"}
+            <input type="file" accept="image/*" multiple className="hidden" onChange={upload} disabled={uploading} />
+          </label>
+
+          {fotos.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+              {fotos.map((url, i) => (
+                <div key={url} className="relative h-24 rounded-[10px] overflow-hidden border border-lijn">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  {i === 0 && (
+                    <span className="absolute bottom-1 left-1 bg-oranje text-white text-[0.6rem] font-bold px-1.5 py-0.5 rounded font-display">Openingsfoto</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setFotos(fotos.filter((u) => u !== url))}
+                    className="absolute top-1 right-1 bg-white/90 text-[#8A2E22] rounded-full w-5 h-5 text-sm leading-none"
+                    title="Verwijder deze foto"
+                  >
+                    ×
+                  </button>
+                  {i !== 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setFotos([url, ...fotos.filter((u) => u !== url)])}
+                      className="absolute bottom-1 right-1 bg-white/90 text-bosgroen rounded px-1 text-[0.6rem] font-semibold"
+                    >
+                      maak opener
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
-            <div className="h-20 rounded-[10px]" style={{ background: "linear-gradient(135deg,#E8B77E,#D89A55)" }} />
-            <div className="h-20 rounded-[10px]" style={{ background: "linear-gradient(135deg,#A9CBB4,#7CAE86)" }} />
-            <div className="h-20 rounded-[10px] bg-creme border-2 border-dashed border-salie flex items-center justify-center text-grijs text-sm">+ upload</div>
-          </div>
-          <div className="bg-[#EAF4EC] border border-[#CADFCF] rounded-xl p-3.5 mt-3 text-sm">
-            ✅ Volledigheidscheck: nog aan te vullen zijn energielabel en een plattegrond.
-          </div>
+          ) : (
+            <div className="bg-[#EAF4EC] border border-[#CADFCF] rounded-xl p-3.5 mt-3 text-sm text-grijs">
+              Nog geen foto's toegevoegd. Een woning mét foto's valt veel beter op — maar je kunt dit ook later doen.
+            </div>
+          )}
 
           <div className="mt-5">
             <div className="font-semibold text-sm">Uitjes in de buurt</div>
