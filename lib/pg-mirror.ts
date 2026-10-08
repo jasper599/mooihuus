@@ -206,6 +206,53 @@ export async function syncNaarPg(): Promise<void> {
   }
 }
 
+/**
+ * Fase 2: leest de VOLLEDIGE database uit Postgres terug in de db.json-vorm,
+ * zodat de app bij opstarten z'n cache hieruit kan vullen i.p.v. uit db.json.
+ * Geeft null terug bij een fout of lege/onvolledige data → de app valt dan
+ * veilig terug op db.json.
+ */
+export async function loadFromPg(): Promise<any | null> {
+  if (!prisma) return null;
+  try {
+    await ensureTabellen();
+    const db: any = {};
+    for (const c of COLLECTIES) {
+      const rows = await prisma[c.model].findMany();
+      db[c.veld] = rows.map((r: any) => r.data);
+    }
+    const metas = await prisma.meta.findMany();
+    for (const m of metas) db[m.key] = m.value;
+    if (typeof db.seq !== "number") db.seq = 100;
+    // Sanity: zonder gebruikers klopt er iets niet → laat de app terugvallen op db.json.
+    if (!Array.isArray(db.users) || db.users.length === 0) return null;
+    return db;
+  } catch (e: any) {
+    // eslint-disable-next-line no-console
+    console.error("[pg-mirror] loadFromPg fout:", e?.message || e);
+    return null;
+  }
+}
+
+/**
+ * Markeert de meegegeven data als "al in sync" met Postgres (vult de interne
+ * diff-maps). Gebruikt bij Fase-2-boot: de cache komt dan ÚIT Postgres, dus de
+ * eerstvolgende sync hoeft niks opnieuw weg te schrijven — alleen echte latere
+ * wijzigingen.
+ */
+export function markSynced(db: any): void {
+  for (const c of COLLECTIES) {
+    const arr: any[] = Array.isArray(db[c.veld]) ? db[c.veld] : [];
+    const m = mapVoor(c.model);
+    m.clear();
+    arr.forEach((e, i) => m.set(String(c.id(e, i) ?? `auto-${c.veld}-${i}`), JSON.stringify(e)));
+  }
+  const meta = mapVoor("__meta");
+  meta.clear();
+  for (const k of META_VELDEN) if (db[k] !== undefined) meta.set(k, JSON.stringify(db[k]));
+  tabellenKlaar = true;
+}
+
 /** Telt de rijen per model in Postgres (voor verificatie na een sync). */
 export async function pgTellingen(): Promise<Record<string, number> | null> {
   if (!prisma) return null;

@@ -166,6 +166,32 @@ function load(): DB {
   return cache;
 }
  
+// Fase 2: als de app op Postgres draait (PG_PRIMARY), schrijft elke save() de
+// wijziging óók door naar Postgres. db.json blijft als vangnet gewoon meeschrijven,
+// zodat terugvallen altijd mogelijk is zonder dataverlies.
+let pgPrimary = false;
+let pgSyncFn: (() => void) | null = null;
+export function configurePgPrimary(syncFn: () => void): void {
+  pgPrimary = true;
+  pgSyncFn = syncFn;
+}
+export function isPgPrimary(): boolean {
+  return pgPrimary;
+}
+// Vult de in-memory cache rechtstreeks uit Postgres (gebruikt bij Fase-2-boot,
+// vóór de eerste request). Defensief: zorgt dat alle verwachte arrays bestaan.
+export function setCacheFromPg(data: DB): void {
+  const d: any = data;
+  const arrays = [
+    "users", "listings", "leads", "payments", "emails", "enquetes", "huusmeesters",
+    "zoekopdrachten", "reviews", "partnerkliks", "pageviews", "postcodegeo",
+    "nieuwsbrief", "socialPosts", "blogPosts", "kortingscodes",
+  ];
+  for (const k of arrays) if (!Array.isArray(d[k])) d[k] = [];
+  if (typeof d.seq !== "number") d.seq = 100;
+  cache = data;
+}
+
 function save() {
   ensureDir();
   // Atomair: eerst naar een tijdelijk bestand, dan hernoemen. Zo kan een crash
@@ -174,6 +200,10 @@ function save() {
   const tmp = `${DB_FILE}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(cache), "utf8");
   fs.renameSync(tmp, DB_FILE);
+  // Schrijf de wijziging door naar Postgres (alleen in Fase 2). Nooit fataal.
+  if (pgPrimary && pgSyncFn) {
+    try { pgSyncFn(); } catch { /* db.json is al weggeschreven; PG volgt bij de volgende sync */ }
+  }
 }
 
 // Bezoekers-tellen schrijft niet bij élke paginaweergave de hele database weg,
