@@ -1,0 +1,122 @@
+// Mooihuus — Postgres-datamodel (Spoor 2).
+//
+// Pragmatische, risico-arme opzet: per "collectie" uit de huidige db.json een
+// eigen tabel met het object als JSON (`data`). Zo behoudt elke woning, betaling,
+// enz. exact z'n huidige vorm en hoeven we de app-code nauwelijks aan te raken:
+//   - bij opstarten laden we alle rijen één keer in het geheugen (zoals nu de
+//     db.json), dus alle filteren/zoeken blijft razendsnel en synchroon;
+//   - bij een wijziging schrijven we alleen DIE ene rij weg (geen heel bestand
+//     meer herschrijven), atomair en veilig bij veel tegelijk.
+//
+// Losse "singleton"-waarden (teller, laatste nieuwsbrief, integraties, ...) staan
+// in de key/value-tabel Meta.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Listing {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Lead {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Payment {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Email {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Enquete {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Huusmeester {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Zoekopdracht {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Review {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model PartnerKlik {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Pageview {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model PostcodeGeo {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model NieuwsbriefLid {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model SocialPost {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model BlogPost {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Kortingscode {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}
+
+model Meta {
+  key   String @id
+  value Json
+}
