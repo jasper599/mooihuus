@@ -27,8 +27,9 @@ const STAMP_FILE = path.join(DATA_DIR, "last-onderhoud.txt");
 const BLOG_STAMP = path.join(DATA_DIR, "last-blog.txt");
 const FEED_STAMP = path.join(DATA_DIR, "last-feeds.txt");
 const KOLIBRI_STAMP = path.join(DATA_DIR, "last-kolibri.txt");
-const SOCIAL_AUTO_STAMP = path.join(DATA_DIR, "last-social-auto.txt");
 const SOCIAL_ROT_STAMP = path.join(DATA_DIR, "social-rotatie.txt");
+const GEPLAND_TOT_STAMP = path.join(DATA_DIR, "social-gepland-tot.txt");
+const WEKEN_VOORUIT = 3; // contentkalender zoveel weken vooruit gevuld houden
 const INTERVAL = 30 * 60 * 1000; // elke 30 minuten kijken of het al gedraaid is
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 const FEED_INTERVAL = 6 * 60 * 60 * 1000; // huurfeeds elke 6 uur verversen
@@ -195,9 +196,6 @@ const SOORTEN = ["woning", "blog", "huusmeester"] as const;
 function amsWeekdag(d: Date): string {
   return new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Amsterdam", weekday: "short" }).format(d);
 }
-function amsUur(d: Date): number {
-  return Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Amsterdam", hour: "2-digit", hour12: false }).format(d));
-}
 function amsDatum(d: Date): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Amsterdam" }).format(d); // YYYY-MM-DD
 }
@@ -253,9 +251,8 @@ function kiesWoning(): any {
 
 // Plaatst één post van de soort die bij deze rotatiestand hoort. Valt bij een
 // lege soort (geen blogs/categorieën) netjes terug op een woning.
-async function plaatsEenPost(teller: number): Promise<{ soort: string; ok: boolean; detail: string }> {
+async function plaatsEenPost(teller: number, publishAt: string): Promise<{ soort: string; ok: boolean; detail: string }> {
   const soort = SOORTEN[teller % SOORTEN.length];
-  const publishAt = volgendeSlot(true, new Date()); // ~15 min later
 
   if (soort === "blog") {
     const blogs = getBlogPosts();
@@ -290,40 +287,70 @@ async function plaatsEenPost(teller: number): Promise<{ soort: string; ok: boole
   return { soort: "woning", ok: !!r.ok, detail: r.ok ? `woning: ${w.titel}` : `woning mislukt: ${r.error}` };
 }
 
+// Hoeveel Amsterdam-minuten loopt de klok vóór op UTC op moment d (zomer/winter).
+function amsOffsetMin(d: Date): number {
+  const p: any = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Amsterdam", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  }).formatToParts(d).reduce((a: any, x) => { a[x.type] = x.value; return a; }, {});
+  const asWall = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
+  return Math.round((asWall - d.getTime()) / 60000);
+}
+
+// Alle ma/wo/vr 09:15 (Amsterdam) momenten die ná 'vanaf' en t/m 'tot' vallen.
+function komendeSlots(vanaf: Date, tot: Date): Date[] {
+  const slots: Date[] = [];
+  const gezien = new Set<string>();
+  for (let i = 0; i < 40; i++) {
+    // Anker op 12:00 UTC per dag — ver van middernacht, dus DST-veilig.
+    const anker = new Date(Date.UTC(vanaf.getUTCFullYear(), vanaf.getUTCMonth(), vanaf.getUTCDate(), 12, 0, 0) + i * 86400000);
+    const ymd = amsDatum(anker);
+    if (gezien.has(ymd)) continue;
+    gezien.add(ymd);
+    if (!POST_DAGEN.has(amsWeekdag(anker))) continue;
+    const [Y, M, D] = ymd.split("-").map(Number);
+    const gok = Date.UTC(Y, M - 1, D, 9, 15, 0);
+    const slot = new Date(gok - amsOffsetMin(new Date(gok)) * 60000); // 09:15 Amsterdam → UTC-instant
+    if (slot.getTime() > vanaf.getTime() && slot.getTime() <= tot.getTime()) slots.push(slot);
+  }
+  return slots;
+}
+
+// Houdt de contentkalender ~3 weken vooruit gevuld: plant op elk nog-leeg
+// ma/wo/vr-slot één post in (rouleren woning/blog/huusmeester). Zo staat alles
+// ruim van tevoren in Metricool én in je beheer, en kun je het nog aanpassen.
 let bezigOrganisch = false;
-async function draaiOrganischSocial(nu: Date): Promise<void> {
+async function vulAgenda(nu: Date): Promise<void> {
   if (process.env.SOCIAL_AUTO !== "1") return;
   if (bezigOrganisch || (!metricoolEnabled() && !instagramEnabled())) return;
   bezigOrganisch = true;
   try {
-    // 3× per week (ma/wo/vr), overdag (vanaf 9u), hooguit één post per dag.
-    if (!POST_DAGEN.has(amsWeekdag(nu))) return;
-    const uur = amsUur(nu);
-    if (uur < 9 || uur >= 20) return;
-    try {
-      if (fs.existsSync(SOCIAL_AUTO_STAMP) && fs.readFileSync(SOCIAL_AUTO_STAMP, "utf8").trim() === amsDatum(nu)) return;
-    } catch { /* ga door */ }
-
-    const teller = leesTeller();
-    const res = await plaatsEenPost(teller);
-    if (res.ok) {
-      schrijfTeller(teller + 1);
+    let geplandTot = 0;
+    try { geplandTot = Number(fs.readFileSync(GEPLAND_TOT_STAMP, "utf8").trim()) || 0; } catch { /* leeg */ }
+    const vanaf = new Date(Math.max(nu.getTime(), geplandTot));
+    const tot = new Date(nu.getTime() + WEKEN_VOORUIT * 7 * 86400000);
+    const slots = komendeSlots(vanaf, tot);
+    let teller = leesTeller();
+    for (const slot of slots) {
+      const res = await plaatsEenPost(teller, slot.toISOString());
+      if (!res.ok) break; // stop bij een fout; volgende tick pakt het weer op
+      teller += 1;
+      schrijfTeller(teller);
       try {
         if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-        fs.writeFileSync(SOCIAL_AUTO_STAMP, amsDatum(nu), "utf8");
+        fs.writeFileSync(GEPLAND_TOT_STAMP, String(slot.getTime()), "utf8");
       } catch { /* niet fataal */ }
     }
-    // Mislukt? Geen stempel → volgende tick (binnen 30 min) probeert opnieuw.
   } finally {
     bezigOrganisch = false;
   }
 }
 
-// Handmatig/testen: forceer nu één organische post (zonder dag/tijd-check).
+// Handmatig/testen: forceer nu direct één post (~15 min vooruit).
 export async function forceerOrganischePost(): Promise<{ soort: string; ok: boolean; detail: string }> {
   if (!metricoolEnabled() && !instagramEnabled()) return { soort: "-", ok: false, detail: "Geen Instagram/Metricool-koppeling" };
   const teller = leesTeller();
-  const res = await plaatsEenPost(teller);
+  const res = await plaatsEenPost(teller, volgendeSlot(true, new Date()));
   if (res.ok) schrijfTeller(teller + 1);
   return res;
 }
@@ -361,7 +388,7 @@ function tick(): void {
   void draaiBlog(new Date()).catch(() => {});
   void draaiFeeds(new Date()).catch(() => {});
   void draaiKolibri(new Date()).catch(() => {});
-  void draaiOrganischSocial(new Date()).catch(() => {});
+  void vulAgenda(new Date()).catch(() => {});
   void draaiSocial().catch(() => {});
 }
 
