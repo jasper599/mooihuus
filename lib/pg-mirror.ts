@@ -177,6 +177,25 @@ export async function syncNaarPg(): Promise<void> {
     }
 
     laatsteSync = { tijd: new Date().toISOString(), ok: true, fout: null, rijen };
+
+    // Verificatie in de logs (secret-vrij leesbaar via Railway): telt na de sync
+    // de rijen in Postgres en vergelijkt met db.json. "gelijk: true" = de spiegel
+    // loopt exact mee. Alleen loggen als er iets veranderde of bij de eerste ronde.
+    if (rijen > 0) {
+      try {
+        const tellingen = await pgTellingen();
+        const jsonN: Record<string, number> = {};
+        let totJson = 0, totPg = 0, gelijk = true;
+        for (const c of COLLECTIES) {
+          const n = Array.isArray(db[c.veld]) ? db[c.veld].length : 0;
+          jsonN[c.veld] = n; totJson += n;
+          const p = tellingen ? (tellingen as any)[c.veld] || 0 : -1;
+          totPg += p > 0 ? p : 0;
+          if (tellingen && p !== n) gelijk = false;
+        }
+        console.log("[pg-mirror] sync ok", JSON.stringify({ rijenAangeraakt: rijen, totaalJson: totJson, totaalPg: totPg, gelijk, perCollectie: jsonN }));
+      } catch { /* logging mag nooit de sync raken */ }
+    }
   } catch (e: any) {
     // Nooit fataal — db.json blijft de bron van waarheid.
     laatsteSync = { tijd: new Date().toISOString(), ok: false, fout: `${e?.message || e}`.slice(0, 300), rijen };
