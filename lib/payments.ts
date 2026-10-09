@@ -5,6 +5,11 @@ import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metrico
 import { genereerSocialCaption } from "./social-caption";
 import { activeerVerlenging } from "./verlenging";
 import { instagramEnabled, postToInstagram } from "./instagram";
+import { guusBeltJasperOpAchtergrond } from "./guus-bel";
+
+function euroKort(n: number): string {
+  return "€" + (Math.round((n || 0) * 100) / 100).toLocaleString("nl-NL");
+}
 
 // Markeer een betaling als betaald. Idempotent — dubbel aanroepen (bijv.
 // webhook + redirect) doet niets extra's.
@@ -120,6 +125,14 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
     const mail = renderBetalingsbewijs(updated, listing, owner.naam);
     await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "betalingsbewijs", html: mail.html });
     await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie: ${mail.onderwerp}`, soort: "betalingsbewijs", html: mail.html });
+  }
+
+  // Nieuwe betaalde plaatsing: Guus belt Jasper even met het goede nieuws.
+  if (listing) {
+    const wie = owner?.bedrijfsnaam || owner?.naam || "een particulier";
+    guusBeltJasperOpAchtergrond(
+      `Hoi Jasper, met Guus. Goed nieuws: er is net een nieuwe betaalde plaatsing. ${wie} heeft ${listing.titel} online gezet, pakket ${payment.pakket}, voor ${euroKort(payment.bedrag)}.`
+    );
   }
   return true;
 }

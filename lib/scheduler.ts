@@ -21,6 +21,8 @@ import { syncKolibri } from "./feed-import";
 import { kolibriGeconfigureerd } from "./kolibri";
 import { HUUSMEESTERS_CATEGORIEEN, huusmeesterSlug } from "./partners";
 import { COMPANY } from "./company";
+import { sendEmail, renderSimpel } from "./email";
+import { guusDagoverzicht, guusOverzichtHtml } from "./guus-overzicht";
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 const STAMP_FILE = path.join(DATA_DIR, "last-onderhoud.txt");
@@ -29,6 +31,11 @@ const FEED_STAMP = path.join(DATA_DIR, "last-feeds.txt");
 const KOLIBRI_STAMP = path.join(DATA_DIR, "last-kolibri.txt");
 const SOCIAL_ROT_STAMP = path.join(DATA_DIR, "social-rotatie.txt");
 const GEPLAND_TOT_STAMP = path.join(DATA_DIR, "social-gepland-tot.txt");
+const GUUS_MAIL_STAMP = path.join(DATA_DIR, "last-guus-mail.txt");
+// Ontvanger + tijdstip van Guus' ochtendmail (werkdagen, vanaf dit tijdstip).
+const GUUS_MAIL_AAN = process.env.GUUS_MAIL_AAN || "jasper@luytenmakelaardij.nl";
+const GUUS_MAIL_MINUUT = 7 * 60 + 45; // 07:45 Amsterdam (vóór Max' belletje om 08:05)
+const WERKDAGEN = new Set(["Mon", "Tue", "Wed", "Thu", "Fri"]);
 const WEKEN_VOORUIT = 3; // contentkalender zoveel weken vooruit gevuld houden
 const INTERVAL = 30 * 60 * 1000; // elke 30 minuten kijken of het al gedraaid is
 const WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -367,6 +374,57 @@ function draaiUitgelicht(): void {
   }
 }
 
+// Minuten sinds middernacht in Amsterdam (zomer/winter-correct).
+function amsMinuten(d: Date): number {
+  const p: any = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Amsterdam", hour: "2-digit", minute: "2-digit", hour12: false,
+  }).formatToParts(d).reduce((a: any, x) => { a[x.type] = x.value; return a; }, {});
+  return (+p.hour) * 60 + (+p.minute);
+}
+
+// Guus' ochtendmail: één keer per werkdag (ma–vr), vanaf 07:45 Amsterdam, een
+// kort Mooihuus-overzicht naar Jasper. Datumstempel voorkomt dubbel sturen; het
+// tijdvenster rekt mee met hoe lang het geleden is (zo pakt maandag het weekend).
+let bezigGuusMail = false;
+async function draaiGuusOchtendmail(nu: Date): Promise<void> {
+  if (process.env.GUUS_MAIL_UIT === "1") return;
+  if (bezigGuusMail) return;
+  if (!WERKDAGEN.has(amsWeekdag(nu))) return;
+  if (amsMinuten(nu) < GUUS_MAIL_MINUUT) return;
+
+  let laatstIso = "";
+  try { laatstIso = fs.readFileSync(GUUS_MAIL_STAMP, "utf8").trim(); } catch { /* nog nooit */ }
+  if (laatstIso && amsDatum(new Date(laatstIso)) === amsDatum(nu)) return; // vandaag al gestuurd
+
+  // Tijdvenster: sinds de vorige mail (min 24u, max 96u), anders 24u.
+  let uren = 24;
+  if (laatstIso) {
+    const verstreken = (nu.getTime() - new Date(laatstIso).getTime()) / 3600_000;
+    if (Number.isFinite(verstreken)) uren = Math.min(96, Math.max(24, Math.round(verstreken)));
+  }
+
+  bezigGuusMail = true;
+  try {
+    const overzicht = guusDagoverzicht(uren);
+    const mail = renderSimpel("Mooihuus — ochtendoverzicht", guusOverzichtHtml(overzicht));
+    await sendEmail({
+      aan: GUUS_MAIL_AAN,
+      onderwerp: "☀️ " + mail.onderwerp,
+      soort: "alert",
+      html: mail.html,
+      van: `Guus <${COMPANY.email}>`,
+    });
+    try {
+      if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+      fs.writeFileSync(GUUS_MAIL_STAMP, nu.toISOString(), "utf8");
+    } catch { /* niet fataal */ }
+  } catch {
+    /* mail mislukt — volgende tick probeert het opnieuw (stamp niet gezet) */
+  } finally {
+    bezigGuusMail = false;
+  }
+}
+
 let bezig = false;
 async function draaiDagelijks(): Promise<void> {
   if (bezig || alGedraaidVandaag()) return;
@@ -390,6 +448,7 @@ function tick(): void {
   void draaiKolibri(new Date()).catch(() => {});
   void vulAgenda(new Date()).catch(() => {});
   void draaiSocial().catch(() => {});
+  void draaiGuusOchtendmail(new Date()).catch(() => {});
 }
 
 let gestart = false;

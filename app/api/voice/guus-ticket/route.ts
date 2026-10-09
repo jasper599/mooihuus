@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { addLead } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { COMPANY } from "@/lib/company";
+import { guusBeltJasperOpAchtergrond } from "@/lib/guus-bel";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -76,6 +77,13 @@ export async function POST(req: Request) {
   } catch {
     // mail mag de ticketflow nooit blokkeren
   }
+
+  // Guus belt Jasper even over dit nieuwe ticket (op de achtergrond, blokkeert
+  // de ticketflow nooit).
+  const korteOmschrijving = omschrijving.replace(/\s+/g, " ").slice(0, 180);
+  guusBeltJasperOpAchtergrond(
+    `Hoi Jasper, met Guus. Er is net telefonisch een nieuw support-ticket binnengekomen van ${naam}, over ${onderwerp}. ${korteOmschrijving} Ik heb het ticket al aangemaakt en het team een mail gestuurd.`
+  );
 
   return NextResponse.json({
     ok: true,
