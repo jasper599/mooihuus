@@ -22,7 +22,7 @@ export default function BlogIndex() {
     <div className="max-w-5xl mx-auto">
       <h1 className="font-display font-extrabold text-3xl md:text-4xl text-bosgroen-dk">Blog</h1>
       <p className="text-grijs mt-2 max-w-2xl">
-        Tips, feitjes en inspiratie rond je tweede huus — van tuinonderhoud en gevelbekleding tot
+        Tips, feitjes en inspiratie rond je tweede huus: van tuinonderhoud en gevelbekleding tot
         slim verhuren en de mooiste plekken van Nederland. Elke week iets nieuws.
       </p>
 

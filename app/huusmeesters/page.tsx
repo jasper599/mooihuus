@@ -23,7 +23,7 @@ export default function HuusmeestersPage() {
         Huusmeesters
       </h1>
       <p className="text-grijs mt-2 max-w-2xl">
-        Je tweede huus op afstand? De Huusmeesters zijn er voor alles eromheen — van verzekering en
+        Je tweede huus op afstand? De Huusmeesters zijn er voor alles eromheen: van verzekering en
         financiering tot schoonmaak, tuin, onderhoud, interieur, bergingen en wellness. We werken
         samen met betrouwbare partners en vakmensen. Vertel ons waar je mee zit, dan brengen we je in
         contact met de juiste persoon.
@@ -34,7 +34,7 @@ export default function HuusmeestersPage() {
         <div className="text-3xl">🎉</div>
         <div className="flex-1 min-w-[220px]">
           <div className="font-display font-bold text-bosgroen-dk">U heeft uw woning verkocht. Wat nu?!</div>
-          <div className="text-sm text-grijs">Een helder stappenplan van notaris tot sleuteloverdracht — en contractuele begeleiding via Luyten als u dat wilt.</div>
+          <div className="text-sm text-grijs">Een helder stappenplan van notaris tot sleuteloverdracht, met contractuele begeleiding via Luyten als u dat wilt.</div>
         </div>
         <span className="btn btn-green text-sm">Bekijk het stappenplan →</span>
       </Link>
@@ -43,7 +43,7 @@ export default function HuusmeestersPage() {
       <Link href="/fotografie" className="mt-4 rounded-2xl bg-bosgroen text-white p-5 flex gap-4 items-center flex-wrap hover:shadow-md transition-shadow">
         <div className="text-3xl">📸</div>
         <div className="flex-1 min-w-[220px]">
-          <div className="font-display font-bold">Foto's, plattegrond én video — € 450</div>
+          <div className="font-display font-bold">Foto's, plattegrond én video voor € 450</div>
           <div className="text-sm text-salie-lt">Laat je recreatiewoning professioneel vastleggen: fotoshoot, plattegrond en een YouTube-rondleiding. Compleet pakket, vrijblijvend aan te vragen.</div>
         </div>
         <span className="btn text-sm">Bekijk het pakket →</span>
@@ -54,7 +54,7 @@ export default function HuusmeestersPage() {
         <div className="text-3xl">⛱️</div>
         <div className="flex-1 min-w-[220px]">
           <div className="text-xs font-semibold text-salie-lt uppercase tracking-wide">Even er tussenuit</div>
-          <div className="font-display font-bold mt-0.5">Huusje Huren — vakantiewoningen te huur</div>
+          <div className="font-display font-bold mt-0.5">Huusje Huren: vakantiewoningen te huur</div>
           <div className="text-sm text-salie-lt">Recreatiewoningen, chalets en lodges op de mooiste parken van Nederland, via onze verhuurpartners.</div>
         </div>
         <span className="btn bg-white text-bosgroen-dk hover:bg-white/90 text-sm">Bekijk het huuraanbod →</span>
@@ -64,7 +64,7 @@ export default function HuusmeestersPage() {
       <Link href="/guest-experience" className="mt-3 rounded-2xl bg-creme border border-salie p-5 flex gap-4 items-center flex-wrap hover:shadow-md transition-shadow">
         <div className="flex-1 min-w-[220px]">
           <div className="text-xs font-semibold text-oranje-dk uppercase tracking-wide">Voor parken &amp; organisaties</div>
-          <div className="font-display font-bold text-bosgroen-dk mt-0.5">Guest Experience — anonieme gasttest</div>
+          <div className="font-display font-bold text-bosgroen-dk mt-0.5">Guest Experience: anonieme gasttest</div>
           <div className="text-sm text-grijs">Een anonieme gast test jullie complete beleving en levert een rapport met concrete verbeterpunten. Excl. boekings- en verblijfskosten.</div>
         </div>
         <span className="btn btn-green text-sm">Bekijk de dienst →</span>
@@ -128,7 +128,7 @@ export default function HuusmeestersPage() {
         <h2 className="font-display font-bold text-xl text-bosgroen-dk">Waar kunnen we je mee helpen?</h2>
         <p className="text-grijs text-sm mt-1 mb-4 max-w-2xl">
           Laat weten waar je hulp of een product voor nodig hebt en in welke regio je woning staat. We
-          zoeken de juiste Huusmeester of partner erbij en nemen contact met je op — vrijblijvend.
+          zoeken de juiste Huusmeester of partner erbij en nemen vrijblijvend contact met je op.
         </p>
         <ContactForm hulp defaultOnderwerp="Hulpvraag Huusmeesters" knop="Vraag hulp aan" />
       </div>
@@ -138,7 +138,7 @@ export default function HuusmeestersPage() {
         <h2 className="font-display font-extrabold text-2xl">Hier als Huusmeester staan?</h2>
         <p className="text-salie-lt mt-2 max-w-2xl">
           Ben je hovenier, schoonmaker, klusbedrijf, interieurspecialist, of lever je bijvoorbeeld
-          bergingen of wellness — voor jouw regio of landelijk? Meld je bedrijf gratis aan. We nemen
+          bergingen of wellness, voor jouw regio of landelijk? Meld je bedrijf gratis aan. We nemen
           contact op om je in ons Huusmeesters-netwerk op te nemen.
         </p>
         <div className="bg-white text-inkt rounded-xl p-4 mt-5">

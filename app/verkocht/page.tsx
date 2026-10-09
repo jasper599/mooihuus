@@ -4,16 +4,16 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "U heeft uw woning verkocht. Wat nu?! | Mooihuus",
   description:
-    "Uw recreatiewoning is verkocht — en dan? Een helder stappenplan van notaris tot sleuteloverdracht. En wilt u contractuele begeleiding? Dat kan zeker, via Luyten Makelaardij.",
+    "Uw recreatiewoning is verkocht. En dan? Een helder stappenplan van park en notaris tot sleuteloverdracht. En wilt u contractuele begeleiding? Dat kan zeker, via Luyten Makelaardij.",
   alternates: { canonical: "/verkocht" },
 };
 
 const STAPPEN = [
-  { icon: "⚖️", titel: "1. Naar de notaris", tekst: "De eigendomsoverdracht en de akte regelt u bij de notaris. Wij werken samen met ervaren notariskantoren." },
-  { icon: "🔑", titel: "2. Sleutel- en inventarisoverdracht", tekst: "Spreek de opleverdatum en eventuele inboedel/inventaris af met de koper." },
-  { icon: "🛡️", titel: "3. Verzekering & nutsvoorzieningen", tekst: "Zeg uw opstal- en inboedelverzekering en de abonnementen (water, energie) op of zet ze over." },
-  { icon: "🏕️", titel: "4. Park of VvE informeren", tekst: "Meld de verkoop bij het recreatiepark of de vereniging en regel de overdracht van lidmaatschap en servicekosten." },
-  { icon: "💶", titel: "5. Financiën & belasting", tekst: "Los een eventuele financiering af en denk aan de fiscale kant (o.a. box 3)." },
+  { icon: "🏕️", titel: "1. Park of VvE informeren", tekst: "Meld de verkoop bij het recreatiepark of de vereniging. Vaak is hun toestemming nodig vóór de overdracht, samen met het overzetten van lidmaatschap en servicekosten." },
+  { icon: "⚖️", titel: "2. Naar de notaris", tekst: "De eigendomsoverdracht en de akte regelt u bij de notaris. Een eventuele financiering wordt op dat moment afgelost. Wij werken samen met ervaren notariskantoren." },
+  { icon: "🔑", titel: "3. Sleutel- en inventarisoverdracht", tekst: "Spreek de opleverdatum en eventuele inboedel en inventaris af met de koper." },
+  { icon: "🛡️", titel: "4. Verzekering & nutsvoorzieningen", tekst: "Zeg uw opstal- en inboedelverzekering en de abonnementen voor water en energie op, of zet ze over naar de koper." },
+  { icon: "💶", titel: "5. Financiën & belasting", tekst: "Rond de financiële kant af en denk aan de fiscale gevolgen, bijvoorbeeld box 3." },
   { icon: "🤝", titel: "6. Hulp nodig?", tekst: "Twijfelt u ergens over? De Huusmeesters en onze makelaar denken vrijblijvend met u mee." },
 ];
 
@@ -24,7 +24,7 @@ export default function VerkochtPage() {
       <h1 className="font-display font-extrabold text-3xl md:text-4xl text-bosgroen-dk mt-2">U heeft uw woning verkocht. Wat nu?!</h1>
       <p className="text-grijs mt-2 max-w-2xl">
         Gefeliciteerd! Na de verkoop komt er nog een aantal dingen kijken. Met dit stappenplan rondt u het netjes en
-        zonder zorgen af — en waar nodig helpen wij u graag verder.
+        zonder zorgen af, en waar nodig helpen wij u graag verder.
       </p>
 
       <div className="grid gap-3 sm:grid-cols-2 mt-6">
@@ -44,8 +44,8 @@ export default function VerkochtPage() {
         <h2 className="font-display font-extrabold text-2xl">Wilt u contractuele begeleiding?</h2>
         <p className="text-salie-lt mt-2 max-w-2xl">
           Dat kan zeker! Bij de verkoop, de contracten en de juridische afwikkeling hoeft u het niet alleen te doen.
-          Via <strong className="text-white">Luyten Makelaardij</strong> krijgt u professionele, contractuele begeleiding —
-          van het opstellen en controleren van de koopovereenkomst tot een soepele overdracht. Zelf de regie, nooit alleen.
+          Via <strong className="text-white">Luyten Makelaardij</strong> krijgt u professionele, contractuele begeleiding
+          bij alles van het opstellen en controleren van de koopovereenkomst tot een soepele overdracht. Zelf de regie, maar nooit alleen.
         </p>
         <div className="mt-5">
           <Link

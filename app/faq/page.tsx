@@ -25,7 +25,7 @@ const CONTENT: Record<Locale, Content> = {
       ]},
       { titel: "Betalen & leads", items: [
         { v: "Hoe betaal ik?", a: "Met iDEAL. Na betaling gaat je advertentie live en ontvang je een betalingsbewijs per e-mail." },
-        { v: "Hoe komen reacties binnen?", a: "Rechtstreeks bij jou — per e-mail én in je dashboard. Mooihuus zit er niet tussen." },
+        { v: "Hoe komen reacties binnen?", a: "Rechtstreeks bij jou, per e-mail én in je dashboard. Mooihuus zit er niet tussen." },
         { v: "Kan ik mijn woning verhuren?", a: "Ja, via een verhuurpartner. Die regelt boekingen en betalingen; jij houdt geen kalender bij." },
       ]},
     ],

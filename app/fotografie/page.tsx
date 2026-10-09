@@ -13,14 +13,14 @@ export const metadata: Metadata = {
 
 const INBEGREPEN = [
   { icon: "📸", titel: "Professionele fotoreportage", tekst: "Een fotograaf legt je woning van binnen en buiten sfeervol vast, met oog voor licht en detail. Je ontvangt de bewerkte foto's in hoge resolutie." },
-  { icon: "📐", titel: "Plattegrond", tekst: "Een duidelijke, nette plattegrond zodat kijkers meteen de indeling en verhoudingen zien — scheelt veel vragen en trekt serieuzere kopers." },
+  { icon: "📐", titel: "Plattegrond", tekst: "Een duidelijke, nette plattegrond zodat kijkers meteen de indeling en verhoudingen zien. Dat scheelt veel vragen en trekt serieuzere kopers." },
   { icon: "🎬", titel: "YouTube-rondleiding", tekst: "Een korte videorondleiding die je direct op je woningpagina kunt tonen en overal kunt delen. Video verkoopt: kijkers krijgen echt een gevoel bij de woning." },
 ];
 
 const STAPPEN = [
-  { n: "1", titel: "Je vraagt aan", tekst: "Vul het formulier in met je gegevens en het adres van de woning. Vrijblijvend — je zit nergens aan vast." },
+  { n: "1", titel: "Je vraagt aan", tekst: "Vul het formulier in met je gegevens en het adres van de woning. Helemaal vrijblijvend, je zit nergens aan vast." },
   { n: "2", titel: "We plannen de shoot", tekst: "We nemen contact met je op om een datum en tijd te prikken die jou uitkomt." },
-  { n: "3", titel: "Je ontvangt alles", tekst: "Na de shoot lever je de foto's, plattegrond en video aan — klaar om je woning te laten stralen. De factuur van € 450 volgt daarna." },
+  { n: "3", titel: "Je ontvangt alles", tekst: "Na de shoot lever je de foto's, plattegrond en video aan, klaar om je woning te laten stralen. De factuur van € 450 volgt daarna." },
 ];
 
 export default function FotografiePage() {
@@ -31,7 +31,7 @@ export default function FotografiePage() {
         <div className="relative z-10 max-w-2xl">
           <span className="inline-block bg-salie/25 text-white font-display font-semibold text-xs px-3 py-1 rounded-full">Nieuw · Mediapakket</span>
           <h1 className="font-display font-extrabold text-3xl md:text-4xl leading-tight mt-3">
-            Foto's, plattegrond én video — voor één vaste prijs
+            Foto's, plattegrond én video voor één vaste prijs
           </h1>
           <p className="text-[#DDECE0] mt-3">
             Een woning met goede foto's, een heldere plattegrond en een korte video valt meteen op en verkoopt sneller.
@@ -48,7 +48,7 @@ export default function FotografiePage() {
 
       {/* Wat je krijgt */}
       <section className="mt-8">
-        <h2 className="font-display font-extrabold text-2xl text-bosgroen-dk">Wat zit erin?</h2>
+        <h2 className="font-display font-extrabold text-2xl text-bosgroen-dk">Inbegrepen?</h2>
         <div className="grid gap-3 sm:grid-cols-3 mt-4">
           {INBEGREPEN.map((i) => (
             <div key={i.titel} className="card">
@@ -81,13 +81,13 @@ export default function FotografiePage() {
         <h2 className="font-display font-bold text-xl text-bosgroen-dk">Vraag het fotografiepakket aan</h2>
         <p className="text-grijs text-sm mt-1 mb-4 max-w-2xl">
           Laat je gegevens en het adres van de woning achter. We nemen contact met je op om de fotoshoot in te
-          plannen. Je betaalt pas na afspraak — de aanvraag is vrijblijvend.
+          plannen. Je betaalt pas na afspraak en de aanvraag is helemaal vrijblijvend.
         </p>
         <FotografieForm />
       </section>
 
       <p className="text-sm text-grijs mt-6">
-        Liever eerst je woning plaatsen? Dat kan los —{" "}
+        Liever eerst je woning plaatsen? Dat kan los,{" "}
         <Link href="/plaatsen" className="text-bosgroen font-semibold underline">plaats je huus</Link>{" "}
         en boek de fotografie er gerust bij.
       </p>

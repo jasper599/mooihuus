@@ -24,7 +24,7 @@ export default function OpenhuizenPage() {
       <p className="text-grijs mt-2 max-w-2xl mb-6">Aankomende open dagen bij recreatiewoningen. Loop binnen, kijk rond en beleef je toekomstige vakantiewoning zelf.</p>
 
       {woningen.length === 0 ? (
-        <div className="card text-grijs">Op dit moment staan er geen open huizen gepland. <Link href="/zoeker" className="text-bosgroen font-semibold">Zet een woning-alert →</Link> dan mis je er geen.</div>
+        <div className="card text-grijs">Op dit moment staan er geen open huizen gepland. <Link href="/zoeker" className="text-bosgroen font-semibold">Stel een woning-alert in →</Link> dan krijg je een seintje zodra er eentje op de agenda staat.</div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {woningen.map((l) => {

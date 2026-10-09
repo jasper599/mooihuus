@@ -92,7 +92,7 @@ export default function Home() {
           <div className="text-3xl">⛱️</div>
           <div className="flex-1 min-w-[220px]">
             <div className="font-display font-extrabold text-xl">Liever even weg? Huusje Huren</div>
-            <div className="text-salie-lt text-sm mt-0.5">Vakantiewoningen te huur op de mooiste parken van Nederland — via onze verhuurpartners.</div>
+            <div className="text-salie-lt text-sm mt-0.5">Vakantiewoningen te huur op de mooiste parken van Nederland, via onze verhuurpartners.</div>
           </div>
           <span className="btn bg-white text-bosgroen-dk hover:bg-white/90 text-sm">Bekijk het huuraanbod →</span>
         </div>

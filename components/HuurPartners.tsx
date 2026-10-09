@@ -9,8 +9,8 @@ export function HuurPartners({ locale }: { locale?: Locale }) {
   if (!HUURPARTNERS.length) return null;
   return (
     <section className="mt-12">
-      <h2 className="font-display font-extrabold text-2xl text-bosgroen-dk">Liever huren?</h2>
-      <p className="text-grijs mt-1 max-w-2xl">Ook op vakantie in een recreatiewoning? Bekijk het aanbod van onze partners.</p>
+      <h2 className="font-display font-extrabold text-2xl text-bosgroen-dk">Niet gevonden wat je zocht?</h2>
+      <p className="text-grijs mt-1 max-w-2xl">Bekijk ook het aanbod van onze verhuurpartners.</p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mt-4">
         {HUURPARTNERS.map((p) => (
           <a

@@ -15,7 +15,7 @@ export default function ContactPage({ searchParams }: { searchParams?: { onderwe
       <h1 className="font-display font-extrabold text-3xl md:text-4xl text-bosgroen-dk">Contact</h1>
       <p className="text-grijs mt-2 max-w-2xl">
         Een vraag over adverteren, je account, verhuur of de Huusmeesters? Stuur ons
-        gerust een bericht — we helpen je graag verder. Je hoort meestal binnen één werkdag van ons.
+        gerust een bericht. We helpen je graag verder en je hoort meestal binnen één werkdag van ons.
       </p>
 
       <div className="grid gap-6 md:grid-cols-[1fr_260px] mt-6">

@@ -3,6 +3,7 @@ import { Listing } from "@/lib/types";
 import { gradient, euro, prijsSuffix, grondInfo, openhuisInfo } from "@/lib/format";
 import { Locale, t, localeHref, vertaalType } from "@/lib/i18n";
 import { FavButton } from "./FavButton";
+import { CardFoto } from "./CardFoto";
 
 export function ListingCard({ listing, locale = "nl" }: { listing: Listing; locale?: Locale }) {
   const extern = !!listing.externalUrl;
@@ -14,8 +15,7 @@ export function ListingCard({ listing, locale = "nl" }: { listing: Listing; loca
     <>
       <div className="h-40 relative overflow-hidden" style={{ background: gradient(listing.kleur) }}>
         {listing.fotos && listing.fotos[0] && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={listing.fotos[0]} alt={listing.titel} loading="lazy" className="absolute inset-0 w-full h-full object-cover" />
+          <CardFoto src={listing.fotos[0]} alt={listing.titel} />
         )}
         <span className="absolute top-2.5 left-2.5 bg-bosgroen text-white font-display font-semibold text-[0.68rem] px-2.5 py-0.5 rounded-full">
           {listing.doel === "huur" ? t(locale, "home.huur") : t(locale, "home.koop")}

@@ -31,7 +31,7 @@ export default function VerhuurPage() {
           <h1 className="font-display font-extrabold text-3xl md:text-4xl leading-tight">Huusje Huren</h1>
           <p className="text-[#DDECE0] mt-3">
             Er even tussenuit? Huur een recreatiewoning, chalet of lodge op de mooiste vakantieparken van Nederland.
-            Al het aanbod hieronder komt van onze verhuurpartners — je boekt rechtstreeks bij hen.
+            Al het aanbod hieronder komt van onze verhuurpartners. Je boekt rechtstreeks bij hen.
           </p>
         </div>
         <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-salie/25" />
