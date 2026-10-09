@@ -80,7 +80,7 @@ export function ListingsBrowser({
       if (range && !(l.prijs >= range.min && l.prijs < range.max)) return false;
       if (opp && !((l.m2 || 0) >= opp.min && (l.m2 || 0) < opp.max)) return false;
       if (term) {
-        const hay = `${l.titel} ${l.park} ${l.provincie} ${l.type}`.toLowerCase();
+        const hay = `${l.titel} ${l.provincie} ${l.postcode ?? ""} ${l.park} ${l.type}`.toLowerCase();
         if (!hay.includes(term)) return false;
       }
       return true;
