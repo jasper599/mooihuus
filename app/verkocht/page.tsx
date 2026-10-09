@@ -4,17 +4,16 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "U heeft uw woning verkocht. Wat nu?! | Mooihuus",
   description:
-    "Uw recreatiewoning is verkocht. En dan? Een helder stappenplan van park en notaris tot sleuteloverdracht. En wilt u contractuele begeleiding? Dat kan zeker, via Luyten Makelaardij.",
+    "Uw recreatiewoning is verkocht. En dan? Een helder stappenplan van het informeren van het park tot de overdracht bij de notaris. En wilt u contractuele begeleiding? Dat kan zeker, via Luyten Makelaardij.",
   alternates: { canonical: "/verkocht" },
 };
 
 const STAPPEN = [
   { icon: "🏕️", titel: "1. Park of VvE informeren", tekst: "Meld de verkoop bij het recreatiepark of de vereniging. Vaak is hun toestemming nodig vóór de overdracht, samen met het overzetten van lidmaatschap en servicekosten." },
-  { icon: "⚖️", titel: "2. Naar de notaris", tekst: "De eigendomsoverdracht en de akte regelt u bij de notaris. Een eventuele financiering wordt op dat moment afgelost. Wij werken samen met ervaren notariskantoren." },
+  { icon: "🛡️", titel: "2. Verzekering & nutsvoorzieningen", tekst: "Zeg uw opstal- en inboedelverzekering en de abonnementen voor water en energie op, of zet ze over naar de koper." },
   { icon: "🔑", titel: "3. Sleutel- en inventarisoverdracht", tekst: "Spreek de opleverdatum en eventuele inboedel en inventaris af met de koper." },
-  { icon: "🛡️", titel: "4. Verzekering & nutsvoorzieningen", tekst: "Zeg uw opstal- en inboedelverzekering en de abonnementen voor water en energie op, of zet ze over naar de koper." },
+  { icon: "⚖️", titel: "4. Naar de notaris", tekst: "De eigendomsoverdracht en de akte regelt u bij de notaris. Een eventuele financiering wordt op dat moment afgelost. Wij werken samen met ervaren notariskantoren." },
   { icon: "💶", titel: "5. Financiën & belasting", tekst: "Rond de financiële kant af en denk aan de fiscale gevolgen, bijvoorbeeld box 3." },
-  { icon: "🤝", titel: "6. Hulp nodig?", tekst: "Twijfelt u ergens over? De Huusmeesters en onze makelaar denken vrijblijvend met u mee." },
 ];
 
 export default function VerkochtPage() {
@@ -37,6 +36,15 @@ export default function VerkochtPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Hulp bij een van deze stappen (geen stap, maar een aanbod) */}
+      <div className="mt-4 rounded-2xl bg-creme border border-salie p-4 flex gap-3 items-center flex-wrap">
+        <div className="text-2xl">🤝</div>
+        <div className="flex-1 min-w-[220px] text-sm text-grijs">
+          Hulp nodig bij een van deze stappen? De Huusmeesters en onze makelaar denken vrijblijvend met u mee.
+        </div>
+        <Link href="/huusmeesters" className="btn btn-green text-sm">Naar de Huusmeesters</Link>
       </div>
 
       {/* Contractuele begeleiding */}
