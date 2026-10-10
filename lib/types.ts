@@ -119,6 +119,8 @@ export interface Payment {
   mollieId?: string;
   aangemaakt: string;
   betaaldOp?: string;
+  geboektInEboekhouden?: boolean;   // al als verkoopfactuur in e-Boekhouden gezet
+  eboekhoudenFactuurId?: string;    // referentie van de aangemaakte e-Boekhouden-factuur
 }
  
 // Kortingscode / cadeaucode voor adverteren en opvallers. Een code met
