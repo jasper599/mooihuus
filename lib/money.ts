@@ -8,8 +8,8 @@ export const PAKKET_PRIJS: Record<Pakket, number> = {
 
 export const PAKKET_INFO: Record<Pakket, { sub: string; feats: string[] }> = {
   Basis: { sub: "eenmalig · 1 jaar online", feats: ["Tot 12 foto's", "AI-basistekst", "Leads direct naar jou"] },
-  Plus: { sub: "eenmalig", feats: ["20 foto's + plattegrond", "Volledige AI-assistent", "Hoger in resultaten", "Contracthulp"] },
-  Premium: { sub: "eenmalig", feats: ["Uitgelicht op de homepage", "Je woning als voorbeeld in onze marketing & ad-banners", "Voorrang bij de Huusmeesters"] },
+  Plus: { sub: "eenmalig", feats: ["20 foto's + plattegrond", "Hoger in resultaten"] },
+  Premium: { sub: "eenmalig", feats: ["Uitgelicht op de homepage", "Je woning als voorbeeld in onze marketing & ad-banners"] },
 };
 
 // Volumekorting voor (zakelijke) accounts met meerdere objecten.

@@ -7,8 +7,8 @@ import { suggestUitjes } from "@/lib/uitjes";
 type Doel = "koop" | "huur";
 const pakketten = [
   { naam: "Basis", prijs: "€ 25", sub: "eenmalig · 1 jaar online", feats: ["Tot 12 foto's", "AI-basistekst", "Leads direct naar jou"] },
-  { naam: "Plus", prijs: "€ 49", sub: "eenmalig", feats: ["20 foto's + plattegrond", "Volledige AI-assistent", "Hoger in resultaten", "Contracthulp"], feat: true },
-  { naam: "Premium", prijs: "€ 79", sub: "eenmalig", feats: ["Uitgelicht op de homepage", "Je woning als voorbeeld in onze marketing & ad-banners", "Voorrang bij de Huusmeesters"] },
+  { naam: "Plus", prijs: "€ 49", sub: "eenmalig", feats: ["20 foto's + plattegrond", "Hoger in resultaten"], feat: true },
+  { naam: "Premium", prijs: "€ 79", sub: "eenmalig", feats: ["Uitgelicht op de homepage", "Je woning als voorbeeld in onze marketing & ad-banners"] },
 ];
 
 const PROVINCIES = [
@@ -35,6 +35,9 @@ export default function Plaatsen() {
   });
   const [fotos, setFotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [plattegrond, setPlattegrond] = useState<string>("");
+  const [videoUrl, setVideoUrl] = useState<string>("");
+  const [pgUploading, setPgUploading] = useState(false);
   const [uitjes, setUitjes] = useState<string[]>([]);
   const [uitjeInput, setUitjeInput] = useState("");
   function addUitje(v: string) {
@@ -84,6 +87,21 @@ export default function Plaatsen() {
     e.target.value = "";
   }
 
+  async function uploadPlattegrond(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = (e.target.files || [])[0];
+    if (!file) return;
+    setPgUploading(true);
+    setFout("");
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.url) setPlattegrond(data.url);
+    else setFout(data.error || "Uploaden van de plattegrond mislukt. Probeer het opnieuw.");
+    setPgUploading(false);
+    e.target.value = "";
+  }
+
   async function publiceer() {
     setBusy(true);
     setFout("");
@@ -103,6 +121,8 @@ export default function Plaatsen() {
         grond: f.grond,
         omschrijving,
         fotos,
+        plattegrond: plattegrond || undefined,
+        videoUrl: videoUrl.trim() || undefined,
         pakket,
         postcode: f.postcode,
         uitjes,
@@ -280,6 +300,32 @@ export default function Plaatsen() {
               Nog geen foto's toegevoegd. Een woning mét foto's valt veel beter op — maar je kunt dit ook later doen.
             </div>
           )}
+
+          <div className="mt-5">
+            <div className="font-semibold text-sm">Plattegrond <span className="text-grijs font-normal">(optioneel — PDF of afbeelding)</span></div>
+            <p className="text-xs text-grijs mb-2">Hoort bij Plus en Premium. Je kunt &apos;m ook later in het bewerkscherm toevoegen.</p>
+            <label className={`btn btn-green text-sm inline-flex items-center gap-2 cursor-pointer ${pgUploading ? "opacity-60 pointer-events-none" : ""}`}>
+              {pgUploading ? "Bezig met uploaden…" : "\U0001F4D0 Plattegrond kiezen"}
+              <input type="file" accept="image/*,application/pdf" className="hidden" onChange={uploadPlattegrond} disabled={pgUploading} />
+            </label>
+            {plattegrond && (
+              <div className="flex items-center gap-2 mt-2 text-sm text-bosgroen">
+                <span>✓ Plattegrond toegevoegd</span>
+                <button type="button" onClick={() => setPlattegrond("")} className="text-[#8A2E22] font-semibold">verwijderen</button>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-5">
+            <div className="font-semibold text-sm">Video of rondleiding <span className="text-grijs font-normal">(optioneel)</span></div>
+            <p className="text-xs text-grijs mb-2">Plak een link naar je video of virtuele rondleiding (YouTube, Vimeo of Matterport).</p>
+            <input
+              className="field"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              placeholder="https://www.youtube.com/watch?v=…"
+            />
+          </div>
 
           <div className="mt-5">
             <div className="font-semibold text-sm">Uitjes in de buurt</div>
