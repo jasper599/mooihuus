@@ -171,6 +171,27 @@ export default function Plaatsen() {
       </div>
 
       {step === 1 && (
+        <div className="card mb-5">
+          <p className="font-semibold text-sm mb-1">Wat kost het?</p>
+          <p className="text-xs text-grijs mb-3">Eenmalig, je woning staat een jaar online. Je kiest je pakket aan het eind — hier zie je vast wat het kost.</p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {pakketten.map((p) => (
+              <div key={p.naam} className={`rounded-[10px] border p-3 ${p.feat ? "border-oranje" : "border-lijn"}`}>
+                <div className="font-display font-bold text-bosgroen-dk text-sm">{p.naam}</div>
+                <div className="font-display font-extrabold">{p.prijs} <span className="text-[0.65rem] text-grijs font-medium">{p.sub}</span></div>
+                <ul className="mt-1 space-y-0.5">
+                  {p.feats.map((ft) => (
+                    <li key={ft} className="text-xs pl-4 relative before:content-['✓'] before:absolute before:left-0 before:text-bosgroen before:font-bold">{ft}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-grijs mt-3">Vanaf 5 objecten 15% korting, vanaf 10 objecten 25%. Losse opvallers (extra zichtbaarheid) vanaf € 1,95.</p>
+        </div>
+      )}
+
+      {step === 1 && (
         <div className="card grid gap-3 sm:grid-cols-2">
           <Field label="Aanbieden als">
             <select className="field" value={f.doel} onChange={(e) => setF({ ...f, doel: e.target.value as Doel })}>
