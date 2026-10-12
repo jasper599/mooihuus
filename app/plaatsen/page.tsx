@@ -7,8 +7,8 @@ import { suggestUitjes } from "@/lib/uitjes";
 type Doel = "koop" | "huur";
 const pakketten = [
   { naam: "Basis", prijs: "€ 25", sub: "eenmalig · 1 jaar online", feats: ["Tot 12 foto's", "AI-basistekst", "Leads direct naar jou"] },
-  { naam: "Plus", prijs: "€ 49", sub: "eenmalig", feats: ["20 foto's + plattegrond", "Hoger in resultaten"], feat: true },
-  { naam: "Premium", prijs: "€ 79", sub: "eenmalig", feats: ["Uitgelicht op de homepage", "Je woning als voorbeeld in onze marketing & ad-banners"] },
+  { naam: "Plus", prijs: "€ 49", sub: "eenmalig", feats: ["Alles van Basis", "Tot 20 foto's", "Plattegrond erbij"], feat: true },
+  { naam: "Premium", prijs: "€ 79", sub: "eenmalig", feats: ["Alles van Plus", "Video of rondleiding", "Uitgelicht op de homepage"] },
 ];
 
 const PROVINCIES = [
