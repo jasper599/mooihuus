@@ -10,6 +10,7 @@ import { euro, euroCents } from "@/lib/money";
 import { metricoolEnabled } from "@/lib/metricool";
 import { ReviewModeratie } from "@/components/ReviewModeratie";
 import { NieuwsbriefVerstuur } from "@/components/NieuwsbriefVerstuur";
+import { NieuwsbriefLeden } from "@/components/NieuwsbriefLeden";
 import { FeedImportKnop } from "@/components/FeedImportKnop";
 import { MakelaarFactuurKnop } from "@/components/MakelaarFactuurKnop";
 import { BetalingStatusKnop } from "@/components/BetalingStatusKnop";
@@ -464,14 +465,11 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
           {nieuwsbrief.length === 0 ? (
             <div className="card text-grijs text-sm">Nog geen inschrijvingen.</div>
           ) : (
-            <Table head={["E-mail", "Aangemeld"]}>
-              {nieuwsbrief.map((l) => (
-                <tr key={l.id} className="border-t border-lijn">
-                  <Td>{l.email}</Td>
-                  <Td>{new Date(l.datum).toLocaleDateString("nl-NL")}</Td>
-                </tr>
-              ))}
-            </Table>
+            <div className="card">
+              <div className="font-display font-bold mb-2">Inschrijvers</div>
+              <p className="text-sm text-grijs mb-3">Nieuwe aanmeldingen bevestigen eerst via e-mail (dubbele opt-in), dus bots komen er niet meer in. Verdachte of ongewenste adressen kun je hieronder verwijderen.</p>
+              <NieuwsbriefLeden leden={nieuwsbrief} />
+            </div>
           )}
         </>
       )}

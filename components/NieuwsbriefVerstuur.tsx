@@ -18,8 +18,15 @@ export function NieuwsbriefVerstuur({ aantal }: { aantal: number }) {
     });
     const d = await res.json();
     setBusy(false);
-    if (d.reden === "al verstuurd") setMsg("Dit artikel is al verstuurd. Gebruik 'Toch opnieuw versturen' als je het nogmaals wilt sturen.");
-    else setMsg(`✓ Verstuurd naar ${d.verzonden} inschrijver(s).`);
+    if (d.verzonden > 0) {
+      setMsg(`✓ Verstuurd naar ${d.verzonden} inschrijver(s).`);
+    } else if (d.reden === "al verstuurd") {
+      setMsg("Dit artikel is al verstuurd. Gebruik 'Toch opnieuw versturen' als je het nogmaals wilt sturen.");
+    } else if (typeof d.reden === "string" && d.reden.startsWith("geblokkeerd")) {
+      setMsg("⛔ Geblokkeerd: er is kort geleden al een nieuwsbrief verstuurd. Om dubbele verzending te voorkomen kan dit pas na 20 uur opnieuw.");
+    } else {
+      setMsg(`Niets verstuurd${d.reden ? ` (${d.reden})` : ""}.`);
+    }
     router.refresh();
   }
 

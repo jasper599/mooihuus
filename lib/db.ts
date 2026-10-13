@@ -1,6 +1,7 @@
 
 import fs from "fs";
 import path from "path";
+import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
 import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost, Kortingscode } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
@@ -26,6 +27,7 @@ interface DB {
   pageviews: Pageview[];
   postcodegeo: PostcodeGeo[];
   nieuwsbrief: NieuwsbriefLid[];
+  nieuwsbriefPending: { email: string; token: string; aangemaakt: string }[]; // nog te bevestigen (dubbele opt-in)
   socialPosts: SocialPost[];
   blogPosts: BlogPost[];
   kortingscodes: Kortingscode[];
@@ -58,7 +60,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], socialPosts: [], blogPosts: [], kortingscodes: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], nieuwsbriefPending: [], socialPosts: [], blogPosts: [], kortingscodes: [], seq: 100 };
 }
  
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -158,6 +160,7 @@ function load(): DB {
     if (!l.source) { l.source = l.id.startsWith("lm-") ? "luyten" : "eigen"; migrated = true; }
   }
   if (!Array.isArray(cache.nieuwsbrief)) { cache.nieuwsbrief = []; migrated = true; }
+  if (!Array.isArray(cache.nieuwsbriefPending)) { cache.nieuwsbriefPending = []; migrated = true; }
   if (!Array.isArray(cache.socialPosts)) { cache.socialPosts = []; migrated = true; }
   if (!Array.isArray(cache.blogPosts)) { cache.blogPosts = []; migrated = true; }
   if (!Array.isArray(cache.kortingscodes)) { cache.kortingscodes = []; migrated = true; }
@@ -762,6 +765,55 @@ export function verwijderNieuwsbriefLid(email: string): boolean {
   db.nieuwsbrief = db.nieuwsbrief.filter((l) => l.email !== e);
   if (db.nieuwsbrief.length !== voor) { save(); return true; }
   return false;
+}
+// Bulk verwijderen (opschonen): geeft terug hoeveel adressen zijn verwijderd.
+export function verwijderNieuwsbriefLeden(emails: string[]): number {
+  const db = load();
+  const set = new Set(emails.map((x) => String(x).trim().toLowerCase()));
+  const voor = db.nieuwsbrief.length;
+  db.nieuwsbrief = db.nieuwsbrief.filter((l) => !set.has(l.email));
+  const weg = voor - db.nieuwsbrief.length;
+  if (weg > 0) save();
+  return weg;
+}
+
+// ---------- Nieuwsbrief: dubbele opt-in (nog te bevestigen) ----------
+const PENDING_GELDIG_DAGEN = 7;
+
+function opschoonPending(db: DB): void {
+  const grens = Date.now() - PENDING_GELDIG_DAGEN * 86400_000;
+  db.nieuwsbriefPending = (db.nieuwsbriefPending || []).filter(
+    (p) => new Date(p.aangemaakt).getTime() >= grens,
+  );
+}
+
+// Zet een aanmelding op de 'nog te bevestigen'-lijst en geeft een token terug.
+// Is het adres al bevestigd lid, dan hoeft er niets gemaild te worden.
+export function addNieuwsbriefPending(email: string): { token?: string; alLid: boolean } {
+  const db = load();
+  const e = email.trim().toLowerCase();
+  if (db.nieuwsbrief.some((l) => l.email === e)) return { alLid: true };
+  opschoonPending(db);
+  const token = randomBytes(24).toString("hex");
+  // Eén openstaande bevestiging per adres: vervang een eerdere.
+  db.nieuwsbriefPending = db.nieuwsbriefPending.filter((p) => p.email !== e);
+  db.nieuwsbriefPending.push({ email: e, token, aangemaakt: new Date().toISOString() });
+  save();
+  return { token, alLid: false };
+}
+
+// Bevestig via token: verplaatst het adres van pending naar de echte lijst.
+export function bevestigNieuwsbrief(token: string): { ok: boolean; email?: string } {
+  const db = load();
+  opschoonPending(db);
+  const p = db.nieuwsbriefPending.find((x) => x.token === token);
+  if (!p) { save(); return { ok: false }; }
+  db.nieuwsbriefPending = db.nieuwsbriefPending.filter((x) => x.token !== token);
+  if (!db.nieuwsbrief.some((l) => l.email === p.email)) {
+    db.nieuwsbrief.unshift({ id: nextId("nb-"), email: p.email, datum: new Date().toISOString() });
+  }
+  save();
+  return { ok: true, email: p.email };
 }
 export function getLaatsteNieuwsbriefSlug(): string | undefined {
   return load().laatsteNieuwsbriefSlug;
