@@ -50,9 +50,23 @@ function ticketOnderwerp(bericht: string): string {
 
 export function guusDagoverzicht(sindsUren = 24): GuusOverzicht {
   const grens = Date.now() - Math.max(1, sindsUren) * 3600_000;
+  // Leads worden opgeslagen met toLocaleString("nl-NL") → "13-10-2026, 06:13:58",
+  // wat new Date() niet kan parsen (Invalid Date → lead viel altijd buiten het
+  // venster). Daarom beide formaten aan: ISO (toISOString) én het Nederlandse
+  // DD-MM-YYYY-formaat.
+  const parseDatum = (s?: string): number => {
+    if (!s) return NaN;
+    const str = String(s).trim();
+    const nl = /^(\d{1,2})-(\d{1,2})-(\d{4})(?:[,\s]+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/.exec(str);
+    if (nl) {
+      const [, d, mo, y, h, mi, sec] = nl;
+      return new Date(+y, +mo - 1, +d, +(h || 0), +(mi || 0), +(sec || 0)).getTime();
+    }
+    const t = new Date(str).getTime();
+    return Number.isFinite(t) ? t : NaN;
+  };
   const recent = (iso?: string): boolean => {
-    if (!iso) return false;
-    const t = new Date(iso).getTime();
+    const t = parseDatum(iso);
     return Number.isFinite(t) && t >= grens;
   };
 
