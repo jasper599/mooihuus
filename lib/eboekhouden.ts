@@ -132,6 +132,38 @@ export async function maakVerkoopfactuur(args: {
   return ebFetch(`/invoice`, { method: "POST", body: JSON.stringify(body) });
 }
 
+// ---- Grootboekrekeningen uitlezen (voor het kiezen van de omzetrekening) --
+
+export interface Grootboek {
+  id: any;
+  code: any;
+  omschrijving: any;
+  categorie?: any;
+}
+
+// Leest de grootboekrekeningen uit de Huus B.V.-administratie. Met `zoek`
+// filtert 'ie op omschrijving/code (bv. "advert" om de advertentie-omzet te
+// vinden). Read-only; vereist EBOEKHOUDEN_MOOIHUUS_TOKEN.
+export async function leesGrootboekrekeningen(zoek?: string): Promise<Grootboek[]> {
+  const res = await ebFetch(`/ledger`);
+  const items = (res && (res.items || res)) || [];
+  const lijst: Grootboek[] = (Array.isArray(items) ? items : []).map((l: any) => ({
+    id: l.id,
+    code: l.code,
+    omschrijving: l.description ?? l.omschrijving ?? "",
+    categorie: l.category ?? l.categorie,
+  }));
+  if (zoek && zoek.trim()) {
+    const q = zoek.trim().toLowerCase();
+    return lijst.filter(
+      (l) =>
+        String(l.omschrijving || "").toLowerCase().includes(q) ||
+        String(l.code || "").toLowerCase().includes(q),
+    );
+  }
+  return lijst;
+}
+
 // ---- Sync: betaalde Mooihuus-facturen naar e-Boekhouden -------------------
 
 export interface SyncVoorstel {
