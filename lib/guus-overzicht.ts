@@ -154,3 +154,53 @@ export function guusOverzichtHtml(o: GuusOverzicht): string {
 
   return `<p style="color:#44524A;font-size:14px;margin:0 0 6px;">Goedemorgen Jasper, hier is de Mooihuus-stand van de afgelopen ${o.sindsUren} uur.</p>${body}<p style="color:#8A978E;font-size:12px;margin-top:16px;">Automatisch samengesteld door Guus.</p>`;
 }
+
+// Gesproken samenvatting voor Guus (de stem) om hardop voor te lezen. Bewust
+// in natuurlijke zinnen, kort en zonder opmaak — Guus leest dit letterlijk voor.
+export function guusGesprokenTekst(o: GuusOverzicht): string {
+  const n = (arr: unknown[]) => (arr ? arr.length : 0);
+  const zinnen: string[] = [];
+
+  if (n(o.aanvragen)) {
+    const namen = o.aanvragen
+      .slice(0, 5)
+      .map((a) => (a.titel ? `${a.naam} voor ${a.titel}` : a.naam))
+      .join(", ");
+    zinnen.push(
+      `${meervoud(o.aanvragen.length, "nieuwe aanvraag", "nieuwe aanvragen")}` +
+        (namen ? `: ${namen}.` : ".")
+    );
+  }
+  if (n(o.plaatsingen)) {
+    const p = o.plaatsingen
+      .slice(0, 5)
+      .map((x) => `${x.titel} (${x.pakket}) van ${x.kantoor}`)
+      .join(", ");
+    zinnen.push(
+      `${meervoud(o.plaatsingen.length, "nieuwe betaalde plaatsing", "nieuwe betaalde plaatsingen")}` +
+        (p ? `: ${p}.` : ".")
+    );
+  }
+  if (n(o.tickets)) {
+    const t = o.tickets.slice(0, 5).map((x) => `${x.naam} over ${x.onderwerp}`).join(", ");
+    zinnen.push(
+      `${meervoud(o.tickets.length, "telefonisch ticket", "telefonische tickets")}` +
+        (t ? `: ${t}.` : ".")
+    );
+  }
+  if (n(o.mislukt)) {
+    zinnen.push(
+      `Let op: ${meervoud(o.mislukt.length, "mislukte betaling", "mislukte betalingen")}.`
+    );
+  }
+
+  const kern = zinnen.length
+    ? zinnen.join(" ")
+    : "Het is rustig, geen nieuwe aanvragen, plaatsingen of tickets.";
+
+  return (
+    `Hier is de Mooihuus-stand van de afgelopen ${o.sindsUren} uur. ` +
+    kern +
+    (zinnen.length ? " Dat was het." : "")
+  );
+}
