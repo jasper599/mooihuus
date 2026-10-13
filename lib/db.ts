@@ -30,6 +30,7 @@ interface DB {
   blogPosts: BlogPost[];
   kortingscodes: Kortingscode[];
   laatsteNieuwsbriefSlug?: string;
+  laatsteNieuwsbriefTijd?: string; // ISO-tijd van de laatst verstuurde nieuwsbrief (dubbel-verzend-grendel)
   laatsteMaandrapportMaand?: string; // "yyyy-mm" van de laatst verstuurde ronde
   resetTokens?: { token: string; userId: string; expires: number }[];
   aiStyling?: { datum: string; totaal: number; perUser: Record<string, number> };
@@ -768,6 +769,14 @@ export function getLaatsteNieuwsbriefSlug(): string | undefined {
 export function setLaatsteNieuwsbriefSlug(slug: string): void {
   const db = load();
   db.laatsteNieuwsbriefSlug = slug;
+  save();
+}
+export function getLaatsteNieuwsbriefTijd(): string | undefined {
+  return load().laatsteNieuwsbriefTijd;
+}
+export function setLaatsteNieuwsbriefTijd(iso: string): void {
+  const db = load();
+  db.laatsteNieuwsbriefTijd = iso;
   save();
 }
 export function getLaatsteMaandrapportMaand(): string | undefined {
