@@ -23,6 +23,11 @@ function kiesWoningen(doel: "koop" | "huur", n: number): Listing[] {
 const MIN_INTERVAL_UUR = 20;
 
 export async function stuurNieuwsteBlog(force = false): Promise<{ verzonden: number; slug?: string; reden?: string }> {
+  // NOODREM: met NIEUWSBRIEF_UIT=1 wordt er sowieso niets verstuurd,
+  // ongeacht de aanroep (cron, beheer, force). Hard vóór alle logica.
+  if (/^(1|true|ja|yes|aan)$/i.test((process.env.NIEUWSBRIEF_UIT || "").trim())) {
+    return { verzonden: 0, reden: "nieuwsbrief staat uit (NIEUWSBRIEF_UIT)" };
+  }
   const post = getBlogPosts()[0];
   if (!post) return { verzonden: 0, reden: "geen artikel" };
 
