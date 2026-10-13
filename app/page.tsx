@@ -3,7 +3,7 @@ import { getLiveListings } from "@/lib/db";
 import { ListingsBrowser } from "@/components/ListingsBrowser";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
-import { markeerHuidigeBlogAlsBasis, stuurNieuwsteBlog } from "@/lib/nieuwsbrief";
+import { markeerHuidigeBlogAlsBasis } from "@/lib/nieuwsbrief";
 import { markeerHuidigeMaandAlsBasis, stuurMaandrapportenIndienNieuweMaand } from "@/lib/maandrapport";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +12,9 @@ export default function Home() {
   // Nieuwsbrief: eerste keer een basislijn zetten (geen oude artikelen sturen),
   // daarna gaat een nieuw blogartikel automatisch naar de inschrijvers.
   markeerHuidigeBlogAlsBasis();
-  stuurNieuwsteBlog().catch(() => {});
+  // Nieuwsbrief wordt NIET meer vanaf de homepage verstuurd (dat vuurde bij
+  // elke render/redeploy opnieuw af). Verzenden gaat voortaan alleen bewust
+  // via /api/beheer/nieuwsbrief, en staat extra geborgd via NIEUWSBRIEF_UIT.
   // Maandrapport: automatisch één keer per maand naar alle makelaars.
   markeerHuidigeMaandAlsBasis();
   stuurMaandrapportenIndienNieuweMaand().catch(() => {});
