@@ -2,6 +2,7 @@ import { Listing, User } from "./types";
 import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails } from "./db";
 import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt } from "./email";
 import { kolibriTariefNu, maakWoningBetaling } from "./facturatie";
+import { genereerFactuurPdfBase64 } from "./factuur-pdf";
 import { COMPANY } from "./company";
 import {
   getAllMediaContracts,
@@ -37,12 +38,15 @@ async function stuurWelkomInloggegevens(profiel: User): Promise<void> {
 }
 
 // 2) Bedankmail voor de aanmelding + betaallink — altijd, ongeacht of er al een profiel was.
-async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[]): Promise<void> {
+async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[], bijlagen?: { filename: string; content: string; contentType?: string }[]): Promise<void> {
   try {
     const naam = profiel.bedrijfsnaam || profiel.naam;
     const mail = renderMakelaarBedankt(naam, regels, kolibriTariefNu());
-    await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html });
-    await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie \u2014 aanmelding " + naam + " (" + regels.length + " woning(en))", soort: "welkom", html: mail.html });
+    const van = process.env.MAIL_FROM_FACTUUR || "Mooihuus <facturen@mooihuus.nl>";
+    const kopie = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
+    const replyTo = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
+    await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
+    await sendEmail({ aan: kopie, onderwerp: "Kopie \u2014 aanmelding " + naam + " (" + regels.length + " woning(en))", soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
   } catch {
     /* mail mislukt - sync niet laten falen */
   }
@@ -80,11 +84,32 @@ async function verwerkNieuweKantorenWelkom(): Promise<void> {
     if (nieuwe.length === 0) continue;
 
     const regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[] = [];
+    const bijlagen: { filename: string; content: string; contentType?: string }[] = [];
     for (const l of nieuwe) {
       const b = await maakWoningBetaling(u.id, l);
-      if (b.ok && b.betaalUrl) regels.push({ titel: l.titel, betaalUrl: b.betaalUrl, bedrag: b.bedrag || 0, factuurnummer: b.factuurnummer });
+      if (b.ok && b.betaalUrl) {
+        regels.push({ titel: l.titel, betaalUrl: b.betaalUrl, bedrag: b.bedrag || 0, factuurnummer: b.factuurnummer });
+        try {
+          const totaal = b.bedrag || 0;
+          const subtotaal = Math.round((totaal / 1.21) * 100) / 100;
+          const btw = Math.round((totaal - subtotaal) * 100) / 100;
+          const pdf = await genereerFactuurPdfBase64({
+            kantoor: u.bedrijfsnaam || u.naam,
+            factuurnummer: b.factuurnummer || "",
+            objecten: [{ titel: l.titel, prijs: subtotaal }],
+            prijsPerObject: subtotaal,
+            subtotaal,
+            btw,
+            totaal,
+            betaalUrl: b.betaalUrl,
+          });
+          bijlagen.push({ filename: "Factuur " + (b.factuurnummer || "") + " Mooihuus.pdf", content: pdf, contentType: "application/pdf" });
+        } catch {
+          /* PDF niet kunnen maken is niet fataal */
+        }
+      }
     }
-    if (regels.length > 0) await stuurBedanktAanmelding(u, regels);
+    if (regels.length > 0) await stuurBedanktAanmelding(u, regels, bijlagen);
   }
 }
 
