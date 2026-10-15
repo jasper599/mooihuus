@@ -40,7 +40,7 @@ const WEKEN_VOORUIT = 3; // contentkalender zoveel weken vooruit gevuld houden
 const INTERVAL = 30 * 60 * 1000; // elke 30 minuten kijken of het al gedraaid is
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 const FEED_INTERVAL = 6 * 60 * 60 * 1000; // huurfeeds elke 6 uur verversen
-const KOLIBRI_INTERVAL = 60 * 60 * 1000; // Kolibri elk uur synchroniseren
+const KOLIBRI_INTERVAL = 5 * 60 * 1000; // Kolibri elke 5 min synchroniseren (nieuw aanbod snel oppikken + factuur eruit)
 
 function vandaag(d = new Date()): string {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
@@ -459,4 +459,7 @@ export function startScheduler(): void {
   // na deploy gegenereerd als er die week nog geen is.
   setTimeout(tick, 20000);
   setInterval(tick, INTERVAL);
+  // Kolibri vaker checken dan de 30-min-tick, zodat nieuw aanbod snel binnenkomt
+  // en de factuur eruit kan. Pull-based: Kolibri stuurt zelf geen seintje.
+  setInterval(() => { void draaiKolibri(new Date()).catch(() => {}); }, KOLIBRI_INTERVAL);
 }

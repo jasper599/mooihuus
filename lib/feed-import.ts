@@ -300,8 +300,10 @@ export const kolibriAdapter: FeedAdapter = {
           if (bestaandeListing) {
             // Bestaand aanbod laten staan; alleen een verkocht/ingetrokken-status uit de feed overnemen.
             if (data.status !== "verkocht" && data.status !== "offline") data.status = bestaandeListing.status;
+          } else if (data.status === "live") {
+            // Nieuw aanbod staat offline tot de factuur is betaald; dan pas live.
+            data.status = "offline";
           }
-          // Nieuw aanbod gaat direct live (regulier systeem; Luyten betaalt).
         }
         objecten.push({ externalId, data });
 
@@ -512,8 +514,10 @@ export const realworksAdapter: FeedAdapter = {
           const bestaand = getFeedListing("realworks", externalId);
           if (bestaand) {
             if (data.status !== "verkocht" && data.status !== "offline") data.status = bestaand.status;
+          } else if (data.status === "live") {
+            // Nieuw aanbod staat offline tot de factuur is betaald; dan pas live.
+            data.status = "offline";
           }
-          // Nieuw aanbod gaat direct live (regulier systeem; Luyten betaalt).
         }
         objecten.push({ externalId, data });
       }
