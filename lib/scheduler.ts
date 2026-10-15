@@ -40,7 +40,7 @@ const WEKEN_VOORUIT = 3; // contentkalender zoveel weken vooruit gevuld houden
 const INTERVAL = 30 * 60 * 1000; // elke 30 minuten kijken of het al gedraaid is
 const WEEK = 7 * 24 * 60 * 60 * 1000;
 const FEED_INTERVAL = 6 * 60 * 60 * 1000; // huurfeeds elke 6 uur verversen
-const KOLIBRI_INTERVAL = 5 * 60 * 1000; // Kolibri elke 5 min synchroniseren (nieuw aanbod snel oppikken + factuur eruit)
+const KOLIBRI_INTERVAL = 2 * 60 * 1000; // Kolibri elke 2 min synchroniseren (nieuw aanbod snel oppikken + factuur eruit)
 
 function vandaag(d = new Date()): string {
   return d.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
