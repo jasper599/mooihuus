@@ -1,6 +1,7 @@
 import { getUser, getUsers, getListingsByOwner, getPayments, addPayment, updatePayment, updateListing } from "./db";
 import { mollieEnabled, createMolliePayment } from "./mollie";
 import { renderMakelaarFactuur, sendEmail } from "./email";
+import { genereerFactuurPdfBase64 } from "./factuur-pdf";
 import { COMPANY } from "./company";
 
 // Makelaars publiceren met het Premiumpakket tegen een vast makelaarstarief
@@ -56,6 +57,29 @@ export function factureerbareObjecten(ownerId: string) {
 
 function baseUrl(): string {
   return process.env.NEXTAUTH_URL || COMPANY.website;
+}
+
+const FACTUUR_VAN = process.env.MAIL_FROM_FACTUUR || "Mooihuus <facturen@mooihuus.nl>";
+const FACTUUR_KOPIE = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
+const FACTUUR_REPLYTO = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
+
+// Stuurt de factuurmail met PDF-bijlage naar de ontvanger, plus een kopie met
+// dezelfde PDF naar facturen@mooihuus.nl. Verstuurd vanaf en met antwoordadres
+// facturen@mooihuus.nl.
+async function verstuurFactuurMetPdf(
+  ontvanger: string,
+  mail: { onderwerp: string; html: string },
+  pdfData: Parameters<typeof genereerFactuurPdfBase64>[0]
+): Promise<void> {
+  let attachments: { filename: string; content: string; contentType?: string }[] | undefined;
+  try {
+    const pdf = await genereerFactuurPdfBase64(pdfData);
+    attachments = [{ filename: "Factuur " + pdfData.factuurnummer + " Mooihuus.pdf", content: pdf, contentType: "application/pdf" }];
+  } catch {
+    attachments = undefined;
+  }
+  await sendEmail({ aan: ontvanger, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments });
+  await sendEmail({ aan: FACTUUR_KOPIE, onderwerp: "Kopie — " + mail.onderwerp, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments });
 }
 
 // Maakt een factuur voor één makelaar/kantoor: telt de objecten, maakt een
@@ -119,8 +143,14 @@ export async function maakMakelaarFactuur(ownerId: string, stil = false): Promis
     betaalUrl,
   });
   if (!stil) {
-    await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
-    await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie — ${mail.onderwerp}`, soort: "factuur", html: mail.html });
+    await verstuurFactuurMetPdf(owner.email, mail, {
+      kantoor,
+      factuurnummer: updated.factuurnummer,
+      objecten: regels,
+      prijsPerObject: regels[0]?.prijs ?? makelaarBasisTarief(),
+      totaal: bedrag,
+      betaalUrl,
+    });
   }
 
   return { ok: true, aantal: objecten.length, bedrag, betaalUrl, factuurnummer: updated.factuurnummer };
@@ -179,9 +209,15 @@ export async function maakLosseFactuur(args: {
       totaal: bedrag,
       betaalUrl,
     });
-    // Naar de betaler (het profiel) én een kopie naar Mooihuus zelf.
-    await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
-    await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie — ${mail.onderwerp}`, soort: "factuur", html: mail.html });
+    // Naar de betaler, met PDF-bijlage, én een kopie met PDF naar facturen@.
+    await verstuurFactuurMetPdf(owner.email, mail, {
+      kantoor,
+      factuurnummer: payment.factuurnummer,
+      objecten: [{ titel: omschrijving, prijs: bedrag }],
+      prijsPerObject: bedrag,
+      totaal: bedrag,
+      betaalUrl,
+    });
   }
 
   return { ok: true, bedrag, betaalUrl, factuurnummer: payment.factuurnummer, paymentId: payment.id };
