@@ -99,8 +99,12 @@ export async function maakMakelaarFactuur(ownerId: string, stil = false): Promis
   if (objecten.length === 0) return { ok: false, reden: "Geen factureerbare (feed-)objecten voor deze makelaar." };
 
   const regels = objecten.map((o) => ({ titel: o.titel, prijs: objectPrijs(o) }));
-  const bedrag = Math.round(regels.reduce((s, r) => s + r.prijs, 0) * 100) / 100;
+  const bedrag = Math.round(regels.reduce((s, r) => s + r.prijs, 0) * 100) / 100; // incl. btw (tarief is incl.)
   const kantoor = owner.bedrijfsnaam || owner.naam;
+  // Tarief is inclusief btw; voor de factuur lichten we de btw eruit en tonen we de regels excl. btw.
+  const regelsExBtw = regels.map((r) => ({ titel: r.titel, prijs: Math.round((r.prijs / 1.21) * 100) / 100 }));
+  const subtotaal = Math.round(regelsExBtw.reduce((s, r) => s + r.prijs, 0) * 100) / 100;
+  const btwBedrag = Math.round((bedrag - subtotaal) * 100) / 100;
 
   // Registreer de factuur als betaling (open).
   const payment = addPayment({
@@ -137,8 +141,10 @@ export async function maakMakelaarFactuur(ownerId: string, stil = false): Promis
   const mail = renderMakelaarFactuur({
     kantoor,
     factuurnummer: updated.factuurnummer,
-    objecten: regels,
-    prijsPerObject: regels[0]?.prijs ?? makelaarBasisTarief(),
+    objecten: regelsExBtw,
+    prijsPerObject: regelsExBtw[0]?.prijs ?? makelaarBasisTarief(),
+    subtotaal,
+    btw: btwBedrag,
     totaal: bedrag,
     betaalUrl,
   });
@@ -146,8 +152,10 @@ export async function maakMakelaarFactuur(ownerId: string, stil = false): Promis
     await verstuurFactuurMetPdf(owner.email, mail, {
       kantoor,
       factuurnummer: updated.factuurnummer,
-      objecten: regels,
-      prijsPerObject: regels[0]?.prijs ?? makelaarBasisTarief(),
+      objecten: regelsExBtw,
+      prijsPerObject: regelsExBtw[0]?.prijs ?? makelaarBasisTarief(),
+      subtotaal,
+      btw: btwBedrag,
       totaal: bedrag,
       betaalUrl,
     });
@@ -169,7 +177,8 @@ export async function maakLosseFactuur(args: {
   if (!owner) return { ok: false, reden: "Profiel niet gevonden." };
   const netto = Math.round(Number(args.nettoBedrag) * 100) / 100;
   if (!(netto > 0)) return { ok: false, reden: "Vul een geldig bedrag in." };
-  const bedrag = args.btw ? Math.round(netto * 1.21 * 100) / 100 : netto;
+  const btwBedrag = args.btw ? Math.round(netto * 0.21 * 100) / 100 : 0;
+  const bedrag = Math.round((netto + btwBedrag) * 100) / 100;
   const kantoor = owner.bedrijfsnaam || owner.naam;
   const omschrijving = (args.omschrijving || "").trim() || "Advertentie op Mooihuus";
 
@@ -204,8 +213,9 @@ export async function maakLosseFactuur(args: {
     const mail = renderMakelaarFactuur({
       kantoor,
       factuurnummer: payment.factuurnummer,
-      objecten: [{ titel: omschrijving }],
-      prijsPerObject: bedrag,
+      objecten: [{ titel: omschrijving, prijs: netto }],
+      prijsPerObject: netto,
+      ...(args.btw ? { subtotaal: netto, btw: btwBedrag } : {}),
       totaal: bedrag,
       betaalUrl,
     });
@@ -213,8 +223,9 @@ export async function maakLosseFactuur(args: {
     await verstuurFactuurMetPdf(owner.email, mail, {
       kantoor,
       factuurnummer: payment.factuurnummer,
-      objecten: [{ titel: omschrijving, prijs: bedrag }],
-      prijsPerObject: bedrag,
+      objecten: [{ titel: omschrijving, prijs: netto }],
+      prijsPerObject: netto,
+      ...(args.btw ? { subtotaal: netto, btw: btwBedrag } : {}),
       totaal: bedrag,
       betaalUrl,
     });

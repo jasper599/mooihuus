@@ -383,6 +383,8 @@ export function renderMakelaarFactuur(d: {
   factuurnummer: string;
   objecten: { titel: string; prijs?: number }[];
   prijsPerObject: number;
+  subtotaal?: number;
+  btw?: number;
   totaal: number;
   betaalUrl: string;
 }): { onderwerp: string; html: string } {
@@ -394,6 +396,16 @@ export function renderMakelaarFactuur(d: {
     </tr>`
     )
     .join("");
+  const heeftBtw = typeof d.subtotaal === "number" && typeof d.btw === "number";
+  const totalen = heeftBtw
+    ? `<tr><td style="padding:12px 0 2px;font-size:13px;color:${BRAND.grijs};">Subtotaal (excl. btw)</td>
+          <td style="padding:12px 0 2px;font-size:13px;text-align:right;">${euroCents(d.subtotaal as number)}</td></tr>
+      <tr><td style="padding:2px 0 8px;font-size:13px;color:${BRAND.grijs};">Btw 21%</td>
+          <td style="padding:2px 0 8px;font-size:13px;text-align:right;">${euroCents(d.btw as number)}</td></tr>
+      <tr><td style="padding:10px 0 0;font-weight:bold;font-size:15px;border-top:2px solid ${BRAND.lijn};">Totaal (incl. btw)</td>
+          <td style="padding:10px 0 0;font-weight:bold;font-size:15px;text-align:right;color:${BRAND.oranjeDk};border-top:2px solid ${BRAND.lijn};">${euroCents(d.totaal)}</td></tr>`
+    : `<tr><td style="padding:12px 0 0;font-weight:bold;font-size:15px;">Totaal (${d.objecten.length} objecten)</td>
+          <td style="padding:12px 0 0;font-weight:bold;font-size:15px;text-align:right;color:${BRAND.oranjeDk};">${euroCents(d.totaal)}</td></tr>`;
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 4px;">Factuur — advertenties op Mooihuus</h1>
     <div style="color:${BRAND.grijs};font-size:13px;margin-bottom:14px;">Factuurnr. ${d.factuurnummer} · ${d.kantoor}</div>
@@ -401,8 +413,7 @@ export function renderMakelaarFactuur(d: {
       <tr><td style="padding:6px 0;color:${BRAND.grijs};font-size:12px;text-transform:uppercase;letter-spacing:.04em;">Object</td>
           <td style="padding:6px 0;color:${BRAND.grijs};font-size:12px;text-align:right;text-transform:uppercase;letter-spacing:.04em;">Bedrag</td></tr>
       ${rows}
-      <tr><td style="padding:12px 0 0;font-weight:bold;font-size:15px;">Totaal (${d.objecten.length} objecten)</td>
-          <td style="padding:12px 0 0;font-weight:bold;font-size:15px;text-align:right;color:${BRAND.oranjeDk};">${euroCents(d.totaal)}</td></tr>
+      ${totalen}
     </table>
     <p style="margin:22px 0 8px;">${btn(d.betaalUrl, "Betaal deze factuur")}</p>
     <p style="line-height:1.5;color:${BRAND.grijs};font-size:12px;word-break:break-all;">Werkt de knop niet? Betaal via: ${d.betaalUrl}</p>
