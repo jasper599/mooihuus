@@ -452,18 +452,12 @@ export function bewaarFeeds(): void {
 }
 
 // Zet woningen van deze bron die niet meer in de feed voorkomen op offline.
-export function sweepFeed(source: string, seenExternalIds: string[], opslaan = true): number {
-  const db = load();
-  const seen = new Set(seenExternalIds);
-  let n = 0;
-  for (const l of db.listings) {
-    if (l.source === source && l.externalId && !seen.has(l.externalId) && l.status === "live") {
-      l.status = "offline";
-      n++;
-    }
-  }
-  if (n && opslaan) save();
-  return n;
+export function sweepFeed(_source: string, _seenExternalIds: string[], _opslaan = true): number {
+  // Beleid (okt 2026): feed-woningen die uit de feed verdwijnen worden NIET meer
+  // automatisch offline gehaald. Bestaand aanbod blijft staan zodat we kunnen
+  // volgen of er iets verkocht is; verkocht/ingetrokken komt binnen via de
+  // feed-status, niet via verwijderen.
+  return 0;
 }
 
 // Ontdubbelt externe (affiliate/feed) woningen: staat hetzelfde object in twee
