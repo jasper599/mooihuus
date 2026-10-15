@@ -422,6 +422,20 @@ export function renderMakelaarFactuur(d: {
 }
 
 // Factuur/betaalbewijs dat ná een geslaagde betaling wordt verstuurd.
+export function renderCreditnota(naam: string, d: { origineel: string; creditnummer: string; titel: string; bedrag: number }): { onderwerp: string; html: string } {
+  const inner = `
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Creditnota ${d.creditnummer}</h1>
+    <p style="line-height:1.6;">Beste ${naam}, de factuur <strong>${d.origineel}</strong> voor "${d.titel}" is niet binnen de betaaltermijn voldaan. Wij hebben de betaallink gesloten en deze factuur met een creditnota afgeboekt \u2014 u hoeft niets te betalen.</p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:16px 0;">
+      <tr><td style="padding:12px 16px;background:${BRAND.creme};font-size:13px;color:${BRAND.grijs};">Gecrediteerd (incl. btw)</td>
+          <td style="padding:12px 16px;background:${BRAND.creme};text-align:right;font-weight:bold;">${euroCents(d.bedrag)}</td></tr>
+    </table>
+    <p style="line-height:1.6;">Wilt u de woning alsnog op Mooihuus plaatsen? Meld 'm dan opnieuw aan via Kolibri: haal 'm uit het Mooihuus-kanaal en zet 'm daarna weer aan. U ontvangt dan automatisch een nieuwe factuur met betaallink.</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">De creditnota vindt u als PDF in de bijlage.</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Hartelijke groet,<br>Team Mooihuus</p>`;
+  return { onderwerp: "Creditnota " + d.creditnummer + " \u2014 factuur " + d.origineel + " vervallen", html: layout("Creditnota Mooihuus", inner) };
+}
+
 export function renderFactuurBetaald(p: Payment, kantoor: string): { onderwerp: string; html: string } {
   const excl = p.bedrag / 1.21;
   const btw = p.bedrag - excl;

@@ -51,6 +51,8 @@ export interface Listing {
   kleur: number;
   pakket: Pakket;
   status: ListingStatus;
+  vervallen?: boolean;   // factuur niet op tijd betaald -> on hold tot opnieuw aangemeld via de feed
+  vervallenOp?: string;
   postcode?: string;
   uitjes?: string[];
   uitgelicht?: boolean;
@@ -112,7 +114,7 @@ export interface Payment {
   kortingPct?: number;
   kortingscode?: string;   // toegepaste kortingscode (indien gebruikt)
   kortingBedrag?: number;  // bedrag dat de code eraf haalde (euro)
-  soort?: "advertentie" | "opvaller" | "makelaar-factuur" | "verlenging";
+  soort?: "advertentie" | "opvaller" | "makelaar-factuur" | "verlenging" | "creditnota";
   aantalObjecten?: number; // bij een makelaar-factuur: aantal gefactureerde objecten
   listingIds?: string[];   // bij een verlenging: welke woningen deze betaling verlengt
   omschrijving?: string;

@@ -39,3 +39,18 @@ export async function getMollieStatus(mollieId: string): Promise<Payment["status
   if (["failed", "canceled", "expired"].includes(payment.status)) return "failed";
   return "open";
 }
+
+export async function cancelMolliePayment(mollieId: string): Promise<boolean> {
+  try {
+    const { default: createMollieClient } = (await import("@mollie/api-client")) as any;
+    const client = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY as string });
+    const payment = await client.payments.get(mollieId);
+    if (payment && payment.isCancelable) {
+      await client.payments.cancel(mollieId);
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}

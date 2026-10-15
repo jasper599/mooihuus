@@ -1,8 +1,9 @@
 import { Listing, User } from "./types";
-import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails } from "./db";
+import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails, releaseVervallenFeedListings } from "./db";
 import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt } from "./email";
 import { kolibriTariefNu, maakWoningBetaling } from "./facturatie";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
+import { verwerkVervallenAdvertenties } from "./verval";
 import { COMPANY } from "./company";
 import {
   getAllMediaContracts,
@@ -80,7 +81,7 @@ async function verwerkNieuweKantorenWelkom(): Promise<void> {
           (p.listingId === listingId || (p.listingIds || []).includes(listingId)) &&
           (p.soort === "advertentie" || p.soort === "verlenging")
       );
-    const nieuwe = woningen.filter((l) => l.status === "offline" && !heeftBetaling(l.id));
+    const nieuwe = woningen.filter((l) => l.status === "offline" && !l.vervallen && !heeftBetaling(l.id));
     if (nieuwe.length === 0) continue;
 
     const regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[] = [];
@@ -141,6 +142,7 @@ export async function importFeed(adapter: FeedAdapter): Promise<FeedResultaat> {
     seen.push(o.externalId);
   }
   const offline = sweepFeed(adapter.source, seen, false);
+  releaseVervallenFeedListings(adapter.source, seen);
   bewaarFeeds(); // één keer wegschrijven na de hele batch
   return { source: adapter.source, verwerkt: objects.length, offline };
 }
@@ -358,6 +360,7 @@ export async function syncKolibri(): Promise<FeedResultaat> {
   dedupliceerExterneWoningen();
   if (process.env.FACTURATIE_AUTO === "1") {
     try { await verwerkNieuweKantorenWelkom(); } catch { /* welkom/facturatie mag de sync niet breken */ }
+    try { await verwerkVervallenAdvertenties(); } catch { /* verval mag de sync niet breken */ }
   }
   return res;
 }

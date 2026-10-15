@@ -1140,3 +1140,19 @@ export function verwijderZoekopdrachten(ids: string[]): number {
   if (n) save();
   return n;
 }
+
+// Her-activatie: verwijder "vervallen" feed-woningen die niet meer in de feed
+// staan (de makelaar heeft ze in Kolibri uit het kanaal gehaald), inclusief hun
+// betalingen. Een nieuwe publicatie telt daarna weer als nieuwe aanmelding en
+// levert een nieuwe factuur op.
+export function releaseVervallenFeedListings(source: string, seenExternalIds: string[]): number {
+  const db = load();
+  const seen = new Set(seenExternalIds);
+  const weg = db.listings.filter((l) => l.source === source && l.vervallen && l.externalId && !seen.has(l.externalId));
+  if (weg.length === 0) return 0;
+  const ids = new Set(weg.map((l) => l.id));
+  db.listings = db.listings.filter((l) => !ids.has(l.id));
+  db.payments = db.payments.filter((p) => !ids.has(p.listingId));
+  save();
+  return weg.length;
+}

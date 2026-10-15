@@ -1,7 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { COMPANY } from "./company";
 
-// Mooihuus-huisstijl (0..1)
 const C = {
   bosgroen: rgb(0x2C / 255, 0x6B / 255, 0x45 / 255),
   bosgroenDk: rgb(0x1F / 255, 0x4E / 255, 0x32 / 255),
@@ -27,17 +26,20 @@ export interface FactuurPdfData {
   factuurnummer: string;
   objecten: { titel: string; prijs?: number }[];
   prijsPerObject?: number;
-  subtotaal?: number; // excl. btw
-  btw?: number;       // 21%-bedrag
-  totaal: number;     // incl. btw (bedrag dat betaald wordt)
+  subtotaal?: number;
+  btw?: number;
+  totaal: number;
   betaalUrl: string;
   datum?: number | string | Date;
   omschrijving?: string;
+  credit?: boolean;              // true = creditnota i.p.v. factuur
+  origineelFactuurnummer?: string;
 }
 
 export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8Array> {
+  const credit = !!d.credit;
   const doc = await PDFDocument.create();
-  doc.setTitle("Factuur " + d.factuurnummer + " — Mooihuus");
+  doc.setTitle((credit ? "Creditnota " : "Factuur ") + d.factuurnummer + " — Mooihuus");
   doc.setProducer("Mooihuus.nl");
   const page = doc.addPage([595.28, 841.89]);
   const W = 595.28, H = 841.89;
@@ -53,7 +55,6 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
 
   const heeftBtw = typeof d.subtotaal === "number" && typeof d.btw === "number";
 
-  // Header
   const hH = 104;
   page.drawRectangle({ x: 0, y: H - hH, width: W, height: hH, color: C.bosgroenDk });
   let wx = M; const wy = H - 52, wsz = 22;
@@ -61,10 +62,9 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
   text("huus", wx, wy, wsz, bold, C.wit); wx += bold.widthOfTextAtSize("huus", wsz);
   text(".nl", wx, wy, wsz, bold, C.oranje);
   text("Het platform voor recreatiewoningen", M, H - 72, 9.5, reg, C.salie);
-  textR("FACTUUR", W - M, H - 50, 24, bold, C.wit);
-  textR("Betaalkenmerk " + d.factuurnummer, W - M, H - 72, 9.5, reg, rgb(0.81, 0.88, 0.83));
+  textR(credit ? "CREDITNOTA" : "FACTUUR", W - M, H - 50, 24, bold, C.wit);
+  textR((credit ? "Creditnr. " : "Betaalkenmerk ") + d.factuurnummer, W - M, H - 72, 9.5, reg, rgb(0.81, 0.88, 0.83));
 
-  // Factuur aan + meta
   let y = H - hH - 42;
   text("FACTUUR AAN", M, y, 9, bold, C.grijs);
   text(d.kantoor || "—", M, y - 17, 13, bold, C.inkt);
@@ -73,11 +73,10 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
     text(label, metaX, yy, 9.5, reg, C.grijs);
     textR(val, metaVal, yy, 9.5, bold, C.inkt);
   };
-  metaRow("Factuurnummer", d.factuurnummer, y);
-  metaRow("Factuurdatum", datumNL(d.datum || Date.now()), y - 15);
-  metaRow("Betaalwijze", "iDEAL (betaallink)", y - 30);
+  metaRow(credit ? "Creditnummer" : "Factuurnummer", d.factuurnummer, y);
+  metaRow(credit ? "Creditdatum" : "Factuurdatum", datumNL(d.datum || Date.now()), y - 15);
+  metaRow(credit ? "Bij factuur" : "Betaalwijze", credit ? (d.origineelFactuurnummer || "—") : "iDEAL (betaallink)", y - 30);
 
-  // Tabel
   y -= 66;
   page.drawRectangle({ x: M, y: y - 6, width: W - 2 * M, height: 22, color: C.zand });
   text("OMSCHRIJVING", M + 10, y, 9, bold, C.grijs);
@@ -98,7 +97,6 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
     y -= 17;
   });
 
-  // Totalen
   y -= 6;
   if (heeftBtw) {
     const lblX = W - M - 190;
@@ -111,21 +109,29 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
     page.drawLine({ start: { x: lblX, y }, end: { x: W - M - 10, y }, thickness: 0.6, color: C.lijn }); y -= 14;
   }
   page.drawRectangle({ x: M, y: y - 8, width: W - 2 * M, height: 30, color: C.bosgroenDk });
-  text(heeftBtw ? "Totaal te voldoen (incl. btw)" : ("Totaal te voldoen (" + regels.length + " " + (regels.length === 1 ? "object" : "objecten") + ")"), M + 10, y, 12, bold, C.wit);
+  const totLabel = credit ? "Totaal gecrediteerd (incl. btw)" : (heeftBtw ? "Totaal te voldoen (incl. btw)" : ("Totaal te voldoen (" + regels.length + " " + (regels.length === 1 ? "object" : "objecten") + ")"));
+  text(totLabel, M + 10, y, 12, bold, C.wit);
   textR(euro(d.totaal), W - M - 10, y, 14, bold, C.wit);
   y -= 36;
 
-  // Betaalblok
-  text("Betalen", M, y, 11, bold, C.bosgroenDk); y -= 16;
-  for (const r of ["Betaal deze factuur veilig via iDEAL met de betaallink. Zodra de betaling", "binnen is, gaat de woning automatisch online op Mooihuus.nl."]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
-  y -= 2;
-  text("Betaallink:", M, y, 9.5, bold, C.grijs);
-  let link = d.betaalUrl || ""; const volLink = link;
-  while (reg.widthOfTextAtSize(link, 9) > (W - 2 * M - 70) && link.length > 10) link = link.slice(0, -2);
-  if (link !== volLink) link += "…";
-  text(link, M + 58, y, 9, reg, C.oranjeDk);
+  if (credit) {
+    text("Creditnota", M, y, 11, bold, C.bosgroenDk); y -= 16;
+    for (const r of [
+      "Deze creditnota verrekent factuur " + (d.origineelFactuurnummer || "") + ", die niet binnen de",
+      "betaaltermijn is voldaan. Er hoeft niets betaald te worden; de oorspronkelijke",
+      "factuur komt hiermee te vervallen.",
+    ]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
+  } else {
+    text("Betalen", M, y, 11, bold, C.bosgroenDk); y -= 16;
+    for (const r of ["Betaal deze factuur veilig via iDEAL met de betaallink. Zodra de betaling", "binnen is, gaat de woning automatisch online op Mooihuus.nl."]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
+    y -= 2;
+    text("Betaallink:", M, y, 9.5, bold, C.grijs);
+    let link = d.betaalUrl || ""; const volLink = link;
+    while (reg.widthOfTextAtSize(link, 9) > (W - 2 * M - 70) && link.length > 10) link = link.slice(0, -2);
+    if (link !== volLink) link += "…";
+    text(link, M + 58, y, 9, reg, C.oranjeDk);
+  }
 
-  // Footer
   const fy = 60;
   page.drawLine({ start: { x: M, y: fy + 20 }, end: { x: W - M, y: fy + 20 }, thickness: 0.6, color: C.lijn });
   const web = (COMPANY.website || "").replace(/^https?:\/\//, "");
