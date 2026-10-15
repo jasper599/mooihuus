@@ -4,6 +4,7 @@ import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt } from "./email"
 import { kolibriTariefNu, maakWoningBetaling } from "./facturatie";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
 import { verwerkVervallenAdvertenties } from "./verval";
+import { verwerkOpenstaandeBetalingen } from "./payments";
 import { COMPANY } from "./company";
 import {
   getAllMediaContracts,
@@ -269,6 +270,7 @@ function mapKolibriPand(p: any): Partial<Listing> | null {
 
   const data: Partial<Listing> = {
     doel,
+    pakket: "Premium" as any,
     titel: titel || "Recreatiewoning",
     type,
     provincie,
@@ -358,6 +360,7 @@ export const kolibriAdapter: FeedAdapter = {
 export async function syncKolibri(): Promise<FeedResultaat> {
   const res = await importFeed(kolibriAdapter);
   dedupliceerExterneWoningen();
+  try { await verwerkOpenstaandeBetalingen(); } catch { /* betaalcheck mag de sync niet breken */ }
   if (process.env.FACTURATIE_AUTO === "1") {
     try { await verwerkNieuweKantorenWelkom(); } catch { /* welkom/facturatie mag de sync niet breken */ }
     try { await verwerkVervallenAdvertenties(); } catch { /* verval mag de sync niet breken */ }
@@ -478,6 +481,7 @@ function mapRealworksObject(o: any): Partial<Listing> | null {
 
   const data: Partial<Listing> = {
     doel,
+    pakket: "Premium" as any,
     titel: titel || "Recreatiewoning",
     type,
     provincie,

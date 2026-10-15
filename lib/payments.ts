@@ -1,4 +1,5 @@
-import { getPayment, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning, addSocialPost, updateSocialPost } from "./db";
+import { getPayment, getPayments, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning, addSocialPost, updateSocialPost } from "./db";
+import { mollieEnabled, getMollieStatus } from "./mollie";
 import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, renderVerlengBevestiging, renderSocialTopperAlert, sendEmail } from "./email";
 import { COMPANY } from "./company";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
@@ -135,4 +136,25 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
     );
   }
   return true;
+}
+
+// Vangnet voor gemiste Mollie-webhooks: controleer openstaande betalingen met
+// een Mollie-id bij Mollie en zet ze alsnog door als de betaling 'paid' is.
+// Zo gaat een betaalde woning altijd live, ook als de webhook ooit niet aankwam.
+export async function verwerkOpenstaandeBetalingen(): Promise<{ gecontroleerd: number; betaald: number }> {
+  if (!mollieEnabled()) return { gecontroleerd: 0, betaald: 0 };
+  const open = getPayments().filter((p) => p.status === "open" && !!p.mollieId);
+  let betaald = 0;
+  for (const p of open) {
+    try {
+      const status = await getMollieStatus(p.mollieId as string);
+      if (status === "paid") {
+        await markPaymentPaid(p.id, "iDEAL");
+        betaald++;
+      }
+    } catch {
+      /* volgende run opnieuw */
+    }
+  }
+  return { gecontroleerd: open.length, betaald };
 }
