@@ -79,7 +79,7 @@ async function verstuurFactuurMetPdf(
     attachments = undefined;
   }
   await sendEmail({ aan: ontvanger, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments });
-  await sendEmail({ aan: FACTUUR_KOPIE, onderwerp: "Kopie — " + mail.onderwerp, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments });
+  await sendEmail({ aan: [FACTUUR_KOPIE, COMPANY.email], onderwerp: "Kopie — " + mail.onderwerp, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments });
 }
 
 // Maakt een factuur voor één makelaar/kantoor: telt de objecten, maakt een

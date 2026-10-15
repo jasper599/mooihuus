@@ -2,6 +2,7 @@ import { getPayments, getListing, getUser, addPayment, updatePayment, updateList
 import { mollieEnabled, cancelMolliePayment } from "./mollie";
 import { sendEmail, renderCreditnota } from "./email";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
+import { COMPANY } from "./company";
 
 const FACTUUR_VAN = process.env.MAIL_FROM_FACTUUR || "Mooihuus <facturen@mooihuus.nl>";
 const FACTUUR_KOPIE = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
@@ -72,7 +73,7 @@ export async function verwerkVervallenAdvertenties(): Promise<{ verwerkt: number
         });
         const bijlage = [{ filename: "Creditnota " + credit.factuurnummer + " Mooihuus.pdf", content: pdf, contentType: "application/pdf" }];
         await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments: bijlage });
-        await sendEmail({ aan: FACTUUR_KOPIE, onderwerp: "Kopie — " + mail.onderwerp, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments: bijlage });
+        await sendEmail({ aan: [FACTUUR_KOPIE, COMPANY.email], onderwerp: "Kopie — " + mail.onderwerp, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments: bijlage });
       } catch { /* mail niet fataal */ }
     }
 

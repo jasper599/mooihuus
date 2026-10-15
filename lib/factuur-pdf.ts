@@ -34,10 +34,13 @@ export interface FactuurPdfData {
   omschrijving?: string;
   credit?: boolean;              // true = creditnota i.p.v. factuur
   origineelFactuurnummer?: string;
+  betaald?: boolean;             // true = factuur is voldaan (betaalbewijs)
+  betaaldOp?: number | string | Date;
 }
 
 export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8Array> {
   const credit = !!d.credit;
+  const betaald = !!d.betaald;
   const doc = await PDFDocument.create();
   doc.setTitle((credit ? "Creditnota " : "Factuur ") + d.factuurnummer + " — Mooihuus");
   doc.setProducer("Mooihuus.nl");
@@ -75,7 +78,7 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
   };
   metaRow(credit ? "Creditnummer" : "Factuurnummer", d.factuurnummer, y);
   metaRow(credit ? "Creditdatum" : "Factuurdatum", datumNL(d.datum || Date.now()), y - 15);
-  metaRow(credit ? "Bij factuur" : "Betaalwijze", credit ? (d.origineelFactuurnummer || "—") : "iDEAL (betaallink)", y - 30);
+  metaRow(credit ? "Bij factuur" : "Betaalwijze", credit ? (d.origineelFactuurnummer || "—") : (betaald ? "iDEAL (voldaan)" : "iDEAL (betaallink)"), y - 30);
 
   y -= 66;
   page.drawRectangle({ x: M, y: y - 6, width: W - 2 * M, height: 22, color: C.zand });
@@ -109,7 +112,7 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
     page.drawLine({ start: { x: lblX, y }, end: { x: W - M - 10, y }, thickness: 0.6, color: C.lijn }); y -= 14;
   }
   page.drawRectangle({ x: M, y: y - 8, width: W - 2 * M, height: 30, color: C.bosgroenDk });
-  const totLabel = credit ? "Totaal gecrediteerd (incl. btw)" : (heeftBtw ? "Totaal te voldoen (incl. btw)" : ("Totaal te voldoen (" + regels.length + " " + (regels.length === 1 ? "object" : "objecten") + ")"));
+  const totLabel = credit ? "Totaal gecrediteerd (incl. btw)" : betaald ? "Totaal betaald (incl. btw)" : (heeftBtw ? "Totaal te voldoen (incl. btw)" : ("Totaal te voldoen (" + regels.length + " " + (regels.length === 1 ? "object" : "objecten") + ")"));
   text(totLabel, M + 10, y, 12, bold, C.wit);
   textR(euro(d.totaal), W - M - 10, y, 14, bold, C.wit);
   y -= 36;
@@ -121,6 +124,10 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
       "betaaltermijn is voldaan. Er hoeft niets betaald te worden; de oorspronkelijke",
       "factuur komt hiermee te vervallen.",
     ]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
+  } else if (betaald) {
+    text("Betaald", M, y, 11, bold, C.bosgroen); y -= 16;
+    text("Deze factuur is voldaan op " + datumNL(d.betaaldOp || Date.now()) + " via iDEAL.", M, y, 10, reg, C.inkt); y -= 14;
+    text("Bewaar deze factuur als betaalbewijs.", M, y, 10, reg, C.inkt); y -= 14;
   } else {
     text("Betalen", M, y, 11, bold, C.bosgroenDk); y -= 16;
     for (const r of ["Betaal deze factuur veilig via iDEAL met de betaallink. Zodra de betaling", "binnen is, gaat de woning automatisch online op Mooihuus.nl."]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }

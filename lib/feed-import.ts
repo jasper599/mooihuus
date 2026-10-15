@@ -4,7 +4,7 @@ import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt } from "./email"
 import { kolibriTariefNu, maakWoningBetaling } from "./facturatie";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
 import { verwerkVervallenAdvertenties } from "./verval";
-import { verwerkOpenstaandeBetalingen } from "./payments";
+import { verwerkOpenstaandeBetalingen, corrigeerMakelaarPakket } from "./payments";
 import { COMPANY } from "./company";
 import {
   getAllMediaContracts,
@@ -48,7 +48,7 @@ async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; be
     const kopie = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
     const replyTo = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
     await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
-    await sendEmail({ aan: kopie, onderwerp: "Kopie \u2014 aanmelding " + naam + " (" + regels.length + " woning(en))", soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
+    await sendEmail({ aan: [kopie, COMPANY.email], onderwerp: "Kopie \u2014 aanmelding " + naam + " (" + regels.length + " woning(en))", soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
   } catch {
     /* mail mislukt - sync niet laten falen */
   }
@@ -361,6 +361,7 @@ export async function syncKolibri(): Promise<FeedResultaat> {
   const res = await importFeed(kolibriAdapter);
   dedupliceerExterneWoningen();
   try { await verwerkOpenstaandeBetalingen(); } catch { /* betaalcheck mag de sync niet breken */ }
+  try { corrigeerMakelaarPakket(); } catch { /* pakket-correctie mag de sync niet breken */ }
   if (process.env.FACTURATIE_AUTO === "1") {
     try { await verwerkNieuweKantorenWelkom(); } catch { /* welkom/facturatie mag de sync niet breken */ }
     try { await verwerkVervallenAdvertenties(); } catch { /* verval mag de sync niet breken */ }

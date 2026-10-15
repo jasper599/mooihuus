@@ -7,6 +7,11 @@ import { genereerSocialCaption } from "./social-caption";
 import { activeerVerlenging } from "./verlenging";
 import { instagramEnabled, postToInstagram } from "./instagram";
 import { guusBeltJasperOpAchtergrond } from "./guus-bel";
+import { genereerFactuurPdfBase64 } from "./factuur-pdf";
+
+const FACTUUR_VAN = process.env.MAIL_FROM_FACTUUR || "Mooihuus <facturen@mooihuus.nl>";
+const FACTUUR_KOPIE = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
+const FACTUUR_REPLYTO = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
 
 function euroKort(n: number): string {
   return "€" + (Math.round((n || 0) * 100) / 100).toLocaleString("nl-NL");
@@ -31,8 +36,8 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
     if (kantoor) {
       const updated = getPayment(payment.id)!;
       const mail = renderFactuurBetaald(updated, kantoor.bedrijfsnaam || kantoor.naam);
-      await sendEmail({ aan: kantoor.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
-      await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie: ${mail.onderwerp}`, soort: "factuur", html: mail.html });
+      await sendEmail({ aan: kantoor.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO });
+      await sendEmail({ aan: [FACTUUR_KOPIE, COMPANY.email], onderwerp: `Kopie: ${mail.onderwerp}`, soort: "factuur", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO });
     }
     return true;
   }
@@ -124,8 +129,29 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
   if (owner && listing) {
     const updated = getPayment(payment.id)!;
     const mail = renderBetalingsbewijs(updated, listing, owner.naam);
-    await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "betalingsbewijs", html: mail.html });
-    await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie: ${mail.onderwerp}`, soort: "betalingsbewijs", html: mail.html });
+    let bijlage: { filename: string; content: string; contentType?: string }[] | undefined;
+    try {
+      const totaalIncl = Math.round(Math.abs(updated.bedrag) * 100) / 100;
+      const sub = Math.round((totaalIncl / 1.21) * 100) / 100;
+      const btw = Math.round((totaalIncl - sub) * 100) / 100;
+      const pdf = await genereerFactuurPdfBase64({
+        kantoor: owner.bedrijfsnaam || owner.naam,
+        factuurnummer: updated.factuurnummer,
+        objecten: [{ titel: listing.titel, prijs: sub }],
+        prijsPerObject: sub,
+        subtotaal: sub,
+        btw,
+        totaal: totaalIncl,
+        betaalUrl: "",
+        betaald: true,
+        betaaldOp: updated.betaaldOp || nu,
+      });
+      bijlage = [{ filename: "Factuur " + updated.factuurnummer + " (betaald) Mooihuus.pdf", content: pdf, contentType: "application/pdf" }];
+    } catch {
+      bijlage = undefined;
+    }
+    await sendEmail({ aan: owner.email, onderwerp: mail.onderwerp, soort: "betalingsbewijs", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments: bijlage });
+    await sendEmail({ aan: [FACTUUR_KOPIE, COMPANY.email], onderwerp: `Kopie: ${mail.onderwerp}`, soort: "betalingsbewijs", html: mail.html, van: FACTUUR_VAN, replyTo: FACTUUR_REPLYTO, attachments: bijlage });
   }
 
   // Nieuwe betaalde plaatsing: Guus belt Jasper even met het goede nieuws.
@@ -157,4 +183,21 @@ export async function verwerkOpenstaandeBetalingen(): Promise<{ gecontroleerd: n
     }
   }
   return { gecontroleerd: open.length, betaald };
+}
+
+// Eenmalige/idempotente correctie: zet bestaande advertentie-, factuur- en
+// verlengbetalingen van feed-makelaars op pakket "Premium" (voorheen stond er
+// per abuis "Basis"). Draait mee met de sync en doet na de eerste keer niets meer.
+export function corrigeerMakelaarPakket(): number {
+  let n = 0;
+  for (const p of getPayments()) {
+    if ((p.pakket as any) === "Premium") continue;
+    if (p.soort !== "advertentie" && p.soort !== "makelaar-factuur" && p.soort !== "verlenging") continue;
+    const listing = getListing(p.listingId);
+    const feed = !!listing && (listing.source === "kolibri" || listing.source === "realworks");
+    const u = getUser(p.userId);
+    const makelaar = !!u && u.type === "zakelijk" && !!u.realtorId;
+    if (feed || makelaar) { updatePayment(p.id, { pakket: "Premium" as any }); n++; }
+  }
+  return n;
 }
