@@ -14,6 +14,38 @@ export function prijsPerObject(_aantal = 1): number {
   return makelaarBasisTarief();
 }
 
+// --- Lanceringskorting Kolibri -------------------------------------------
+// Tijdelijke actie: objecten die via de Kolibri-koppeling binnenkomen krijgen
+// t/m de einddatum een lager tarief (standaard EUR 55 i.p.v. EUR 65). De
+// korting vervalt automatisch OP de einddatum. Alles instelbaar via env:
+//   MAKELAAR_KOLIBRI_LANCERING_PRIJS  (default 55)
+//   MAKELAAR_KOLIBRI_LANCERING_TOT    (default 2026-12-16, NL-tijd)
+const KOLIBRI_LANCERING_TOT_DEFAULT = "2026-12-16";
+export function kolibriLanceringTot(): Date {
+  const s = process.env.MAKELAAR_KOLIBRI_LANCERING_TOT || KOLIBRI_LANCERING_TOT_DEFAULT;
+  const d = new Date(`${s}T00:00:00+01:00`);
+  return isNaN(d.getTime()) ? new Date(`${KOLIBRI_LANCERING_TOT_DEFAULT}T00:00:00+01:00`) : d;
+}
+export function kolibriLanceringActief(op: Date = new Date()): boolean {
+  return op.getTime() < kolibriLanceringTot().getTime();
+}
+export function kolibriLanceringsTarief(): number {
+  const v = Number(process.env.MAKELAAR_KOLIBRI_LANCERING_PRIJS);
+  return isFinite(v) && v > 0 ? v : 55;
+}
+// Tarief dat nu geldt voor een nieuwe Kolibri-plaatsing (voor weergave).
+export function kolibriTariefNu(op: Date = new Date()): number {
+  return kolibriLanceringActief(op) ? kolibriLanceringsTarief() : makelaarBasisTarief();
+}
+// Prijs voor een enkel object: Kolibri-objecten krijgen t/m de einddatum het
+// lanceringstarief; overige bronnen (bijv. Realworks) het basistarief.
+export function objectPrijs(listing: { source?: string }, op: Date = new Date()): number {
+  if (listing && listing.source === "kolibri" && kolibriLanceringActief(op)) {
+    return kolibriLanceringsTarief();
+  }
+  return makelaarBasisTarief();
+}
+
 // Objecten die we een makelaar in rekening brengen: hun live woningen die via
 // een feed (Kolibri/Realworks) zijn gepubliceerd.
 export function factureerbareObjecten(ownerId: string) {
@@ -42,8 +74,8 @@ export async function maakMakelaarFactuur(ownerId: string, stil = false): Promis
   const objecten = factureerbareObjecten(ownerId);
   if (objecten.length === 0) return { ok: false, reden: "Geen factureerbare (feed-)objecten voor deze makelaar." };
 
-  const prijs = prijsPerObject(objecten.length);
-  const bedrag = Math.round(objecten.length * prijs * 100) / 100;
+  const regels = objecten.map((o) => ({ titel: o.titel, prijs: objectPrijs(o) }));
+  const bedrag = Math.round(regels.reduce((s, r) => s + r.prijs, 0) * 100) / 100;
   const kantoor = owner.bedrijfsnaam || owner.naam;
 
   // Registreer de factuur als betaling (open).
@@ -81,8 +113,8 @@ export async function maakMakelaarFactuur(ownerId: string, stil = false): Promis
   const mail = renderMakelaarFactuur({
     kantoor,
     factuurnummer: updated.factuurnummer,
-    objecten: objecten.map((o) => ({ titel: o.titel })),
-    prijsPerObject: prijs,
+    objecten: regels,
+    prijsPerObject: regels[0]?.prijs ?? makelaarBasisTarief(),
     totaal: bedrag,
     betaalUrl,
   });
@@ -197,11 +229,11 @@ export async function verwerkMakelaarFacturatie(): Promise<{ actief: boolean; ge
 // Prijs: het makelaarstarief per woning per jaar.
 export async function maakWoningBetaling(
   ownerId: string,
-  listing: { id: string; titel: string; pakket?: any }
+  listing: { id: string; titel: string; pakket?: any; source?: string }
 ): Promise<{ ok: boolean; betaalUrl?: string; bedrag?: number; paymentId?: string; factuurnummer?: string }> {
   const owner = getUser(ownerId);
   if (!owner) return { ok: false };
-  const bedrag = makelaarBasisTarief();
+  const bedrag = objectPrijs(listing);
   const payment = addPayment({
     listingId: listing.id,
     userId: ownerId,

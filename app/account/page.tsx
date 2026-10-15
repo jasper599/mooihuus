@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getUser, getPaymentsByUser, getListing, getListingsByOwner } from "@/lib/db";
 import { euroCents, euro } from "@/lib/money";
-import { makelaarBasisTarief } from "@/lib/facturatie";
+import { makelaarBasisTarief, kolibriTariefNu, kolibriLanceringActief } from "@/lib/facturatie";
 import { WachtwoordWijzigen } from "@/components/WachtwoordWijzigen";
 import { BedrijfsgegevensForm } from "@/components/BedrijfsgegevensForm";
 
@@ -35,12 +35,14 @@ export default async function Account() {
       {user.type === "zakelijk" && (user as any).realtorId && (() => {
         const adv = getListingsByOwner(userId).filter((l) => l.source === "kolibri" || l.source === "realworks");
         const live = adv.filter((l) => l.status === "live").length;
-        const tarief = makelaarBasisTarief();
+        const tarief = kolibriTariefNu();
+        const actie = kolibriLanceringActief();
         return (
           <div className="card mb-5 border-salie">
             <h2 className="font-display font-bold text-lg mb-1">Advertentietarief</h2>
             <p className="text-grijs text-sm mb-3">Je adverteert via de Kolibri-koppeling. Je betaalt per advertentie.</p>
             <Row k="Prijs per advertentie" v={`${euro(tarief)} per woning per jaar`} />
+            {actie && <p className="text-xs text-bosgroen-dk mt-1">🎉 Lanceringskorting t/m 15 december 2026 — daarna {euro(makelaarBasisTarief())} per woning per jaar.</p>}
             <Row k="Aangemelde advertenties" v={String(adv.length)} />
             <Row k="Online (live)" v={String(live)} />
             <p className="text-xs text-grijs mt-2">Elke woning gaat online zodra de bijbehorende factuur is betaald. Openstaande facturen vind je hieronder bij Betalingen.</p>

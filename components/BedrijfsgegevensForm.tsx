@@ -51,7 +51,7 @@ export function BedrijfsgegevensForm({ user }: { user: User }) {
             <div><label className="label">Website</label><input className="field" value={f.website} onChange={(e) => set("website", e.target.value)} /></div>
           </div>
           <div className="bg-[#EAF4EC] border border-[#CADFCF] rounded-xl p-3 text-sm text-bosgroen-dk">
-            🏷️ Als makelaar publiceer je met het <strong>Premiumpakket voor € 65 per object</strong> — inclusief automatische volumekorting (vanaf 5 objecten 15%, vanaf 10 objecten 25%).
+            🏷️ Als makelaar publiceer je met het <strong>Premiumpakket</strong>: je betaalt <strong>per object</strong>, geen abonnement. <strong>Lanceringskorting: € 55 per object t/m 15 december 2026</strong> (daarna € 65).
           </div>
         </>
       )}

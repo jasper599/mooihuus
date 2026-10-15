@@ -381,7 +381,7 @@ export function renderSimpel(titel: string, innerHtml: string): { onderwerp: str
 export function renderMakelaarFactuur(d: {
   kantoor: string;
   factuurnummer: string;
-  objecten: { titel: string }[];
+  objecten: { titel: string; prijs?: number }[];
   prijsPerObject: number;
   totaal: number;
   betaalUrl: string;
@@ -390,7 +390,7 @@ export function renderMakelaarFactuur(d: {
     .map(
       (o, i) => `<tr>
       <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;">${i + 1}. ${o.titel}</td>
-      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;text-align:right;">${euroCents(d.prijsPerObject)}</td>
+      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;text-align:right;">${euroCents(o.prijs ?? d.prijsPerObject)}</td>
     </tr>`
     )
     .join("");

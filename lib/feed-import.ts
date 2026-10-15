@@ -1,7 +1,7 @@
 import { Listing, User } from "./types";
 import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails } from "./db";
 import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt } from "./email";
-import { makelaarBasisTarief, maakWoningBetaling } from "./facturatie";
+import { kolibriTariefNu, maakWoningBetaling } from "./facturatie";
 import { COMPANY } from "./company";
 import {
   getAllMediaContracts,
@@ -40,7 +40,7 @@ async function stuurWelkomInloggegevens(profiel: User): Promise<void> {
 async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[]): Promise<void> {
   try {
     const naam = profiel.bedrijfsnaam || profiel.naam;
-    const mail = renderMakelaarBedankt(naam, regels, makelaarBasisTarief());
+    const mail = renderMakelaarBedankt(naam, regels, kolibriTariefNu());
     await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html });
     await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie \u2014 aanmelding " + naam + " (" + regels.length + " woning(en))", soort: "welkom", html: mail.html });
   } catch {
