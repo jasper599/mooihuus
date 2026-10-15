@@ -337,14 +337,205 @@ export async function syncKolibri(): Promise<FeedResultaat> {
   return res;
 }
 
+// --- Realworks (Wonen API) -------------------------------------------------
+// Haalt het woningaanbod van een makelaar op via de Realworks Wonen API en
+// filtert op recreatiewoningen (bestemmingRecreatiewoning). Zelfde opzet als
+// de Kolibri-adapter; alleen het ophalen/mappen verschilt per bron.
+// Config via env:
+//   REALWORKS_TOKEN       (verplicht) RW auth token: de dev-token of een
+//                         per-makelaar token uit het Realworks Developer Portal.
+//   REALWORKS_API_URL     (optioneel) default https://api.realworks.nl
+//                         (gebruik https://devapi-test.realworks.nl voor testdata)
+//   REALWORKS_AUTH_PREFIX (optioneel) schema voor de Authorization-header,
+//                         default "rwauth " (te bevestigen met de dev-token).
+function realworksBase(): string {
+  return (process.env.REALWORKS_API_URL || "https://api.realworks.nl").replace(/\/*$/, "");
+}
+export function realworksGeconfigureerd(): boolean {
+  return !!process.env.REALWORKS_TOKEN;
+}
+function realworksAuthHeader(): string {
+  const t = process.env.REALWORKS_TOKEN;
+  if (!t) throw new Error("REALWORKS_TOKEN ontbreekt - Realworks-koppeling niet geconfigureerd.");
+  const prefix = process.env.REALWORKS_AUTH_PREFIX ?? "rwauth ";
+  return `${prefix}${t}`;
+}
+
+const RW_PROVINCIE: Record<string, string> = {
+  DRENTHE: "Drenthe", FLEVOLAND: "Flevoland", FRIESLAND: "Friesland", GELDERLAND: "Gelderland",
+  GRONINGEN: "Groningen", LIMBURG: "Limburg", NOORD_BRABANT: "Noord-Brabant", NOORD_HOLLAND: "Noord-Holland",
+  OVERIJSSEL: "Overijssel", UTRECHT: "Utrecht", ZEELAND: "Zeeland", ZUID_HOLLAND: "Zuid-Holland",
+};
+
+function rwStatus(status: string): Listing["status"] {
+  const s = (status || "").toUpperCase();
+  if (["VERKOCHT", "VERHUURD", "VERKOCHT_ONDER_VOORBEHOUD", "VERHUURD_ONDER_VOORBEHOUD", "GEVEILD", "VERKOCHT_BIJ_INSCHRIJVING"].includes(s)) return "verkocht";
+  if (["BESCHIKBAAR", "ONDER_BOD", "ONDER_OPTIE"].includes(s)) return "live";
+  return "offline"; // PROSPECT, IN_AANMELDING, IN_VOORBEREIDING, INGETROKKEN(_TIJDELIJK), GEANNULEERD
+}
+
+function rwType(o: any): string {
+  const parts = [o?.algemeen?.woonhuistype, o?.algemeen?.woonhuissoort, o?.object?.type?.objecttype].map((x: any) => String(x || "").toUpperCase());
+  const has = (re: RegExp) => parts.some((t) => re.test(t));
+  if (has(/BUNGALOW/)) return "Bungalow";
+  if (has(/VILLA|LANDHUIS|LANDGOED/)) return "Villa";
+  if (has(/APPARTEMENT/)) return "Appartement";
+  if (has(/STACARAVAN|WOONWAGEN|CHALET/)) return "Chalet";
+  if (has(/WOONBOOT/)) return "Woonboot";
+  if (has(/BOERDERIJ/)) return "Vakantiehuis";
+  if (has(/WOONHUIS|WONING|EENGEZINS|VRIJSTAAND/)) return "Vakantiehuis";
+  return "Recreatiewoning";
+}
+
+function rwPrijs(ov: any): { doel: "koop" | "huur"; prijs: number; suffix?: string } {
+  const koop = num(ov?.koopprijs);
+  const huur = num(ov?.huurprijs);
+  if (huur > 0 && !(koop > 0)) {
+    const per = String(ov?.huurconditie || "").toUpperCase();
+    const suffix = per === "PER_MAAND" ? "p.m." : per === "PER_JAAR" ? "p.j." : per === "PER_KWARTAAL" ? "per kwartaal" : per === "PER_WEEK" ? "p.w." : undefined;
+    return { doel: "huur", prijs: Math.round(huur), suffix };
+  }
+  const cond = String(ov?.koopconditie || "").toUpperCase();
+  const suffix = cond === "VRIJ_OP_NAAM" ? "v.o.n." : cond === "KOSTEN_KOPER" ? "k.k." : undefined;
+  return { doel: "koop", prijs: Math.round(koop), suffix };
+}
+
+// Mapt een Realworks Wonen-object naar ons Listing-model. Geeft null terug voor
+// alles wat we niet publiceren (geen recreatiewoning, vertrouwelijk, inactief).
+function mapRealworksObject(o: any): Partial<Listing> | null {
+  if (!o?.algemeen?.bestemmingRecreatiewoning) return null; // alleen recreatiewoningen
+  if (o?.vertrouwelijk === true) return null;
+  if (o?.actief === false) return null;
+
+  const alg = o.algemeen || {};
+  const ov = o?.financieel?.overdracht || {};
+  const adres = o.adres || {};
+  const plaats = String(adres.plaats || "").trim();
+  const provincie = RW_PROVINCIE[String(adres.provincie || "").toUpperCase()] || plaats || "Nederland";
+  const type = rwType(o);
+  const { doel, prijs, suffix } = rwPrijs(ov);
+
+  const hn = adres.huisnummer || {};
+  const huisnr = [hn.hoofdnummer, hn.toevoeging].filter(Boolean).join(" ").trim();
+  const straatAdres = [adres.straat, huisnr].filter(Boolean).join(" ").trim();
+  const titel = straatAdres ? `${straatAdres}${plaats ? ", " + plaats : ""}` : `${type}${plaats ? " in " + plaats : ""}`;
+
+  const omschrijving = stripHtml(String(o?.teksten?.eigenSiteTekst || o?.teksten?.aanbiedingstekst || o?.teksten?.a4Tekst || "")).slice(0, 6000);
+
+  const media = Array.isArray(o.media) ? o.media : [];
+  const isFoto = (m: any) => {
+    const s = String(m?.soort || "").toUpperCase();
+    const mt = String(m?.mimetype || "").toLowerCase();
+    return (/FOTO|PHOTO/.test(s) || mt.startsWith("image/")) && !/PLATTEGROND|FLOORPLAN/.test(s);
+  };
+  const fotos = media
+    .filter((m: any) => m?.vrijgave !== false && isFoto(m) && /^https?:\/\//i.test(String(m?.link || "")))
+    .map((m: any) => ({ url: String(m.link).trim(), main: /HOOFDFOTO/.test(String(m?.soort || "").toUpperCase()), vol: num(m?.volgnummer) }))
+    .sort((a: any, b: any) => (a.main === b.main ? a.vol - b.vol : a.main ? -1 : 1))
+    .map((a: any) => a.url)
+    .slice(0, 40);
+
+  const plattegrond = media
+    .filter((m: any) => /PLATTEGROND|FLOORPLAN/.test(String(m?.soort || "").toUpperCase()) && /^https?:\/\//i.test(String(m?.link || "")))
+    .map((m: any) => String(m.link).trim())[0];
+
+  const videoUrl = media
+    .filter((m: any) => /VIDEO|FILM|TOUR|MATTERPORT|360/.test(String(m?.soort || "").toUpperCase()) && /^https?:\/\//i.test(String(m?.link || "")))
+    .map((m: any) => String(m.link).trim())[0];
+
+  const etages = Array.isArray(o?.detail?.etages) ? o.detail.etages : [];
+  const slaapkamers = etages.reduce((s: number, e: any) => s + Math.round(num(e?.aantalSlaapkamers)), 0) || undefined;
+  const bouwjaar = parseInt(String(alg.bouwjaar || ""), 10);
+  const energie = String(alg.energieklasse || "").toUpperCase().replace(/_PLUS/g, "+");
+
+  const data: Partial<Listing> = {
+    doel,
+    titel: titel || "Recreatiewoning",
+    type,
+    provincie,
+    park: "",
+    personen: (slaapkamers ? slaapkamers * 2 : 0) || 2,
+    slaapkamers,
+    m2: Math.round(num(alg.woonoppervlakte)) || 0,
+    prijs: prijs || 1,
+    prijsSuffix: suffix,
+    omschrijving,
+    fotos,
+    plattegrond,
+    videoUrl,
+    bouwjaar: isFinite(bouwjaar) && bouwjaar > 1800 ? bouwjaar : undefined,
+    energielabel: /^[A-G]\+*$/.test(energie) ? energie : undefined,
+    status: rwStatus(ov.status),
+    postcode: String(adres.postcode || "").trim() || undefined,
+    bronLabel: "",
+  };
+  return data;
+}
+
 export const realworksAdapter: FeedAdapter = {
   source: "realworks",
   async fetchObjects(): Promise<FeedObject[]> {
-    throw new Error(
-      "Realworks-koppeling nog niet geconfigureerd. Nodig: API-credentials + veld-mapping. Zodra dat er is, vullen we fetchObjects in."
-    );
+    if (!realworksGeconfigureerd()) {
+      throw new Error("REALWORKS_TOKEN ontbreekt - zet de RW auth token (dev-token of per-makelaar) als omgevingsvariabele.");
+    }
+    const auth = realworksAuthHeader();
+    const base = realworksBase();
+    const WELKOM_AAN = process.env.FACTURATIE_AUTO === "1";
+    const objecten: FeedObject[] = [];
+    const perPagina = 100;
+    let vanaf = 0;
+    let totaal = Infinity;
+    while (vanaf < totaal) {
+      const url = `${base}/wonen/v3/objecten?actief=true&aantal=${perPagina}&vanaf=${vanaf}`;
+      const res = await fetch(url, { headers: { Authorization: auth, Accept: "application/json;charset=UTF-8" } });
+      if (!res.ok) {
+        throw new Error(`Realworks Wonen API gaf ${res.status} (${res.statusText}). Controleer token, geaccepteerde voorwaarden en IP-whitelist.`);
+      }
+      const body: any = await res.json();
+      totaal = Number(body?.paginering?.totaalAantal ?? 0) || 0;
+      const resultaten: any[] = Array.isArray(body?.resultaten) ? body.resultaten : [];
+      if (resultaten.length === 0) break;
+      for (const o of resultaten) {
+        const afd = String(o?.diversen?.diversen?.afdelingscode ?? "").trim();
+        const objcode = String(o?.diversen?.diversen?.objectcode ?? o?.id ?? "").trim();
+        if (!afd || !objcode) continue;
+        const data = mapRealworksObject(o);
+        if (!data) continue; // geen recreatiewoning of niet publiceerbaar
+        const externalId = `${afd}-${objcode}`;
+        const kantoorNaam = String(o?.algemeen?.gekoppeldeMakelaar ?? "").trim();
+        const bedrijfscode = String(o?.diversen?.diversen?.bedrijfscode ?? afd).trim();
+        const profiel = zoekOfMaakMakelaar(bedrijfscode, kantoorNaam, undefined);
+        data.makelaar = kantoorNaam || undefined;
+        data.realtorId = bedrijfscode;
+        data.ownerId = profiel.id;
+        // Nieuw aanbod staat offline tot het kantoor voor dat jaar betaald heeft
+        // (zelfde regel als Kolibri); bestaand aanbod laten we staan.
+        if (WELKOM_AAN) {
+          const bestaand = getFeedListing("realworks", externalId);
+          if (bestaand) {
+            if (data.status !== "verkocht" && data.status !== "offline") data.status = bestaand.status;
+          } else if (data.status === "live") {
+            data.status = "offline";
+          }
+        }
+        objecten.push({ externalId, data });
+      }
+      vanaf += perPagina;
+      if (resultaten.length < perPagina) break;
+    }
+    return objecten;
   },
 };
+
+// Volledige Realworks-synchronisatie (voor de geplande taak en de beheer-knop).
+export async function syncRealworks(): Promise<FeedResultaat> {
+  const res = await importFeed(realworksAdapter);
+  dedupliceerExterneWoningen();
+  if (process.env.FACTURATIE_AUTO === "1") {
+    try { await verwerkNieuweKantorenWelkom(); } catch { /* facturatie mag de sync niet breken */ }
+  }
+  return res;
+}
 
 export function adapterVoor(bron: string): FeedAdapter {
   return bron === "realworks" ? realworksAdapter : kolibriAdapter;
