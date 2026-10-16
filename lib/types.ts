@@ -229,10 +229,20 @@ export interface EmailRecord {
   id: string;
   aan: string;
   onderwerp: string;
-  soort: "welkom" | "betalingsbewijs" | "lead" | "contact" | "alert" | "nieuwsbrief" | "bezichtiging" | "factuur" | "rapport";
+  soort: "welkom" | "betalingsbewijs" | "lead" | "contact" | "alert" | "nieuwsbrief" | "bezichtiging" | "factuur" | "rapport" | "idee";
   html: string;
   verzondenVia: "smtp" | "preview";
   datum: string;
 }
  
 
+
+export interface Idee {
+  id: string;
+  naam?: string;
+  email?: string;
+  categorie?: "idee" | "opmerking";
+  tekst: string;
+  behandeld: boolean; // afgehandeld in het beheer
+  datum: string;
+}

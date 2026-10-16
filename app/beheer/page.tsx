@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import {
-  getUsers, getListings, getLeads, getPayments, getEmails, getUser, getListing, getEnquetes, getAllReviews,
+  getUsers, getListings, getLeads, getPayments, getEmails, getUser, getListing, getEnquetes, getAllReviews, getAllIdeeen,
   partnerklikTotalen, getPartnerkliks, analyticsSamenvatting, getNieuwsbriefLeden, getSocialPosts, getKortingscodes,
 } from "@/lib/db";
 import { euro, euroCents } from "@/lib/money";
 import { metricoolEnabled } from "@/lib/metricool";
 import { ReviewModeratie } from "@/components/ReviewModeratie";
+import { IdeeModeratie } from "@/components/IdeeModeratie";
 import { NieuwsbriefVerstuur } from "@/components/NieuwsbriefVerstuur";
 import { NieuwsbriefLeden } from "@/components/NieuwsbriefLeden";
 import { FeedImportKnop } from "@/components/FeedImportKnop";
@@ -33,6 +34,7 @@ const TABS = [
   { key: "mailbox", label: "Mailbox" },
   { key: "enquetes", label: "Enquêtes" },
   { key: "reviews", label: "Beoordelingen" },
+  { key: "ideeen", label: "Ideeënbus" },
   { key: "partners", label: "Partners" },
   { key: "nieuwsbrief", label: "Nieuwsbrief" },
 ];
@@ -52,6 +54,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
   const emails = getEmails();
   const enquetes = getEnquetes();
   const reviews = getAllReviews();
+  const ideeen = getAllIdeeen();
   const partnerTotalen = partnerklikTotalen();
   const partnerkliks = getPartnerkliks();
   const stats = analyticsSamenvatting();
@@ -421,6 +424,30 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
               <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">
                 <div className="text-xs text-grijs">{new Date(r.datum).toLocaleString("nl-NL")}</div>
                 <ReviewModeratie id={r.id} goedgekeurd={r.goedgekeurd} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "ideeen" && (
+        <div className="space-y-2">
+          {ideeen.length === 0 ? (
+            <div className="card text-grijs text-sm">Nog geen inzendingen ontvangen.</div>
+          ) : ideeen.map((x) => (
+            <div key={x.id} className={`card ${x.behandeld ? "opacity-70 border-dashed" : ""}`}>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="font-semibold text-sm">
+                  {x.categorie === "opmerking" ? "💬 Op-/aanmerking" : "💡 Idee"}
+                  {x.naam ? <span className="text-grijs font-normal"> · {x.naam}</span> : <span className="text-grijs font-normal"> · anoniem</span>}
+                  {x.behandeld && <span className="ml-2 text-xs text-bosgroen font-semibold">(afgehandeld)</span>}
+                </div>
+                {x.email ? <a href={`mailto:${x.email}`} className="text-xs text-bosgroen-dk hover:underline">{x.email}</a> : null}
+              </div>
+              <div className="text-sm mt-1.5">&ldquo;{x.tekst}&rdquo;</div>
+              <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">
+                <div className="text-xs text-grijs">{new Date(x.datum).toLocaleString("nl-NL")}</div>
+                <IdeeModeratie id={x.id} behandeld={x.behandeld} />
               </div>
             </div>
           ))}

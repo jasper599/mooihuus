@@ -122,6 +122,13 @@ export default function Faq() {
         <div className="font-display font-semibold text-bosgroen-dk">{c.cta}</div>
         <Link href={localeHref(locale, "/plaatsen")} className="btn">{c.ctaBtn}</Link>
       </div>
+
+      <p className="mt-4 text-sm text-grijs">
+        {{ nl: "Mis je iets of heb je een idee voor Mooihuus? ", en: "Missing something or have an idea for Mooihuus? ", de: "Fehlt etwas oder hast du eine Idee für Mooihuus? " }[locale]}
+        <Link href={localeHref(locale, "/ideeenbus")} className="text-bosgroen-dk font-semibold hover:underline">
+          {{ nl: "Deel je idee", en: "Share your idea", de: "Teile deine Idee" }[locale]}
+        </Link>
+      </p>
     </div>
   );
 }

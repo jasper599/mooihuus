@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost, Kortingscode } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, Idee, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost, Kortingscode } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 import type { BlogPost } from "./blog";
  
@@ -23,6 +23,7 @@ interface DB {
   huusmeesters: Huusmeester[];
   zoekopdrachten: Zoekopdracht[];
   reviews: Review[];
+  ideeen: Idee[];
   partnerkliks: PartnerKlik[];
   pageviews: Pageview[];
   postcodegeo: PostcodeGeo[];
@@ -60,7 +61,7 @@ function seed(): DB {
   };
   // Schone start: alleen het beheeraccount. Het echte aanbod (Luyten) wordt
   // door ensureLmData toegevoegd; alle demo-data is verwijderd.
-  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], nieuwsbriefPending: [], socialPosts: [], blogPosts: [], kortingscodes: [], seq: 100 };
+  return { users: [beheerder], listings: [], leads: [], payments: [], emails: [], enquetes: [], huusmeesters: [], zoekopdrachten: [], reviews: [], ideeen: [], partnerkliks: [], pageviews: [], postcodegeo: [], nieuwsbrief: [], nieuwsbriefPending: [], socialPosts: [], blogPosts: [], kortingscodes: [], seq: 100 };
 }
  
 // Verwijdert de oude demo-woningen, demo-accounts en demo-leads uit een
@@ -152,6 +153,7 @@ function load(): DB {
   // Migratie: zorg dat nieuwere velden bestaan in oudere db.json bestanden.
   let migrated = false;
   if (!Array.isArray(cache.reviews)) { cache.reviews = []; migrated = true; }
+  if (!Array.isArray(cache.ideeen)) { cache.ideeen = []; migrated = true; }
   if (!Array.isArray(cache.partnerkliks)) { cache.partnerkliks = []; migrated = true; }
   if (!Array.isArray(cache.pageviews)) { cache.pageviews = []; migrated = true; }
   if (!Array.isArray(cache.postcodegeo)) { cache.postcodegeo = []; migrated = true; }
@@ -188,7 +190,7 @@ export function setCacheFromPg(data: DB): void {
   const d: any = data;
   const arrays = [
     "users", "listings", "leads", "payments", "emails", "enquetes", "huusmeesters",
-    "zoekopdrachten", "reviews", "partnerkliks", "pageviews", "postcodegeo",
+    "zoekopdrachten", "reviews", "ideeen", "partnerkliks", "pageviews", "postcodegeo",
     "nieuwsbrief", "socialPosts", "blogPosts", "kortingscodes",
   ];
   for (const k of arrays) if (!Array.isArray(d[k])) d[k] = [];
@@ -1155,4 +1157,43 @@ export function releaseVervallenFeedListings(source: string, seenExternalIds: st
   db.payments = db.payments.filter((p) => !ids.has(p.listingId));
   save();
   return weg.length;
+}
+
+// ---------- Ideeenbus (prive, niet openbaar) ----------
+export function getIdeeen(): Idee[] {
+  return load().ideeen;
+}
+export function getAllIdeeen(): Idee[] {
+  return load().ideeen;
+}
+export function addIdee(data: { naam?: string; email?: string; categorie?: string; tekst: string }): Idee {
+  const db = load();
+  const idee: Idee = {
+    id: nextId("idee-"),
+    naam: data.naam,
+    email: data.email,
+    categorie: data.categorie === "opmerking" ? "opmerking" : "idee",
+    tekst: data.tekst,
+    behandeld: false,
+    datum: new Date().toISOString(),
+  };
+  db.ideeen.unshift(idee);
+  save();
+  return idee;
+}
+export function setIdeeBehandeld(id: string, behandeld: boolean): Idee | undefined {
+  const db = load();
+  const x = db.ideeen.find((i) => i.id === id);
+  if (!x) return undefined;
+  x.behandeld = behandeld;
+  save();
+  return x;
+}
+export function deleteIdee(id: string): boolean {
+  const db = load();
+  const i = db.ideeen.findIndex((x) => x.id === id);
+  if (i === -1) return false;
+  db.ideeen.splice(i, 1);
+  save();
+  return true;
 }

@@ -120,3 +120,9 @@ model Meta {
   key   String @id
   value Json
 }
+
+model Idee {
+  id         String   @id
+  data       Json
+  bijgewerkt DateTime @updatedAt @default(now())
+}

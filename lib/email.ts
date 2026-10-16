@@ -645,3 +645,28 @@ export async function sendEmail(opts: {
 
   return addEmail({ aan: aanStr, onderwerp: opts.onderwerp, soort: opts.soort, html: opts.html, verzondenVia: via });
 }
+
+export function renderIdee(d: {
+  naam?: string;
+  email?: string;
+  categorie?: string;
+  tekst: string;
+}): { onderwerp: string; html: string } {
+  const soortLabel = d.categorie === "opmerking" ? "Op- of aanmerking" : "Idee";
+  const rows: [string, string][] = [
+    ["Soort", soortLabel],
+    ["Van", d.naam || "Anoniem"],
+    ...(d.email ? ([["E-mail", d.email]] as [string, string][]) : []),
+  ];
+  const inner = `
+    <span style="display:inline-block;background:${BRAND.oranje};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Nieuw via de ideeenbus</span>
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">${soortLabel} via Mooihuus.nl</h1>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
+      ${rows.map(([k, v], i) => `<tr><td style="padding:12px 16px;${i ? `border-top:1px solid ${BRAND.lijn};` : `background:${BRAND.creme};`}font-size:13px;color:${BRAND.grijs};width:120px;">${k}</td>
+          <td style="padding:12px 16px;${i ? `border-top:1px solid ${BRAND.lijn};` : `background:${BRAND.creme};`}">${k === "E-mail" ? `<a href="mailto:${v}" style="color:${BRAND.bosgroen};">${v}</a>` : v}</td></tr>`).join("")}
+      <tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};font-size:13px;color:${BRAND.grijs};vertical-align:top;">Bericht</td>
+          <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.6;">${d.tekst.replace(/</g, "&lt;")}</td></tr>
+    </table>
+    ${d.email ? `<p style="margin:22px 0;">${btn("mailto:" + d.email, "Reageer")}</p>` : `<p style="color:${BRAND.grijs};font-size:13px;">Anonieme inzending, geen e-mail achtergelaten.</p>`}`;
+  return { onderwerp: `[Mooihuus] ${soortLabel} via de ideeenbus`, html: layout("Ideeenbus", inner) };
+}

@@ -27,6 +27,7 @@ const COLLECTIES: { veld: string; model: string; id: (e: any, i: number) => stri
   { veld: "huusmeesters", model: "huusmeester", id: (e) => e.id },
   { veld: "zoekopdrachten", model: "zoekopdracht", id: (e) => e.id },
   { veld: "reviews", model: "review", id: (e) => e.id },
+  { veld: "ideeen", model: "idee", id: (e) => e.id },
   { veld: "partnerkliks", model: "partnerKlik", id: (e) => e.id },
   { veld: "pageviews", model: "pageview", id: (e) => e.id },
   { veld: "postcodegeo", model: "postcodeGeo", id: (e, i) => String(e.postcode ?? e.id ?? `pc-${i}`) },
