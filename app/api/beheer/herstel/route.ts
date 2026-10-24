@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getListing, getListings, getUsers, herstelListingRaw } from "@/lib/db";
+import { getListing, getListings, getUsers, getEmails, herstelListingRaw } from "@/lib/db";
 import { pgUpsertListing } from "@/lib/pg-upsert";
 import fs from "fs";
 import path from "path";
@@ -146,6 +146,52 @@ export async function GET(req: Request) {
       }
     }
     return NextResponse.json({ ok: true, aantal: files.length, backups: uit });
+  }
+
+  // Zoek het verloren particuliere adres via de verstuurde/gelogde mails.
+  // Alleen-lezen: huidige emails-collectie, de emails in de back-ups, én de
+  // HTML-bestanden in data/outbox (preview-mails die niet verstuurd zijn).
+  if (url.searchParams.get("scanmail") === "1") {
+    const bekend = new Set([
+      "beheer@mooihuus.nl", "info@mooihuus.nl", "noreply@mooihuus.nl", "facturen@mooihuus.nl",
+      "jasper@luytenmakelaardij.nl", "info@luytenmakelaardij.nl",
+      "advies@zorgwoning.nl", "kristof.meeuwes@telenet.be",
+    ]);
+    const boeiend = ["welkom", "betalingsbewijs", "factuur"];
+    const re = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+
+    const huidigeMails = getEmails()
+      .filter((e) => boeiend.includes(e.soort))
+      .map((e) => ({ aan: e.aan, soort: e.soort, onderwerp: e.onderwerp, via: e.verzondenVia, datum: e.datum }));
+
+    const backupMails: any[] = [];
+    try {
+      const dir = path.join(DATA_DIR, "backups");
+      for (const f of fs.readdirSync(dir).filter((x) => x.startsWith("db-") && x.endsWith(".json")).sort()) {
+        try {
+          const j: any = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+          const em: any[] = Array.isArray(j.emails) ? j.emails : [];
+          const rel = em
+            .filter((e) => e && boeiend.includes(e.soort) && e.aan && !bekend.has(String(e.aan).toLowerCase()))
+            .map((e) => ({ aan: e.aan, soort: e.soort, datum: e.datum }));
+          if (rel.length) backupMails.push({ bestand: f, mails: rel });
+        } catch { /* */ }
+      }
+    } catch { /* */ }
+
+    const outbox: any[] = [];
+    try {
+      const obdir = path.join(DATA_DIR, "outbox");
+      for (const f of fs.readdirSync(obdir).filter((x) => x.endsWith(".html")).sort()) {
+        try {
+          const html = fs.readFileSync(path.join(obdir, f), "utf8");
+          const adressen = Array.from(new Set((html.match(re) || []).map((x) => x.toLowerCase()))).filter((a) => !bekend.has(a));
+          outbox.push({ bestand: f, adressen });
+        } catch { /* */ }
+      }
+    } catch { /* */ }
+
+    return NextResponse.json({ ok: true, huidigeMails, backupMails, outbox });
   }
 
   const id = url.searchParams.get("id") || "li-5980";
