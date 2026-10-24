@@ -119,6 +119,35 @@ export async function GET(req: Request) {
     });
   }
 
+  // Scan de volume-back-ups op het verloren particuliere account (bv. Monique).
+  // Alleen-lezen: parseert elke db-*.json en vist niet-beheer-gebruikers +
+  // de betaling van li-5980 / factuur MH-2026-0009 eruit.
+  if (url.searchParams.get("scanbackups") === "1") {
+    const dir = path.join(DATA_DIR, "backups");
+    let files: string[] = [];
+    try { files = fs.readdirSync(dir).filter((f) => f.startsWith("db-") && f.endsWith(".json")).sort(); } catch { /* */ }
+    const uit: any[] = [];
+    for (const f of files) {
+      try {
+        const j: any = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+        const users: any[] = Array.isArray(j.users) ? j.users : [];
+        const particuliere = users
+          .filter((u) => u && u.id !== "u-admin" && u.rol !== "beheerder")
+          .map((u) => ({ id: u.id, email: u.email, naam: u.naam, telefoon: u.telefoon || null, plaats: u.plaats || null, type: u.type, rol: u.rol, aangemaakt: u.aangemaakt }));
+        const pays: any[] = Array.isArray(j.payments) ? j.payments : [];
+        const betaling = pays
+          .filter((p) => p && (p.listingId === "li-5980" || p.factuurnummer === "MH-2026-0009"))
+          .map((p) => ({ userId: p.userId, factuurnummer: p.factuurnummer, mollieId: p.mollieId || null, bedrag: p.bedrag }));
+        const listings: any[] = Array.isArray(j.listings) ? j.listings : [];
+        const li = listings.find((l) => l && l.id === "li-5980");
+        uit.push({ bestand: f, aantalUsers: users.length, particuliere, li5980: li ? { ownerId: li.ownerId } : null, betaling });
+      } catch (e: any) {
+        uit.push({ bestand: f, error: String(e?.message || e).slice(0, 120) });
+      }
+    }
+    return NextResponse.json({ ok: true, aantal: files.length, backups: uit });
+  }
+
   const id = url.searchParams.get("id") || "li-5980";
   const dbHas = !!getListing(id);
   const eigen = getListings().filter((l) => String(l.id).startsWith("li-")).map((l) => l.id);
