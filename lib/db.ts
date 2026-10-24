@@ -390,6 +390,14 @@ export function addListing(data: Omit<Listing, "id" | "aangemaakt">): Listing {
   save();
   return listing;
 }
+export function herstelListingRaw(l: Listing): boolean {
+  const db = load();
+  if (db.listings.some((x) => x.id === l.id)) return false;
+  db.listings.push(l);
+  save();
+  return true;
+}
+
 export function updateListing(id: string, patch: Partial<Listing>): Listing | undefined {
   const db = load();
   const l = db.listings.find((x) => x.id === id);
