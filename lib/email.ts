@@ -67,6 +67,19 @@ export function renderWelkom(naam: string, email?: string): { onderwerp: string;
   return { onderwerp: "Welkom bij Mooihuus 🌲", html: layout("Welkom", inner) };
 }
 
+// Mail voor een particuliere eigenaar van wie de woning al live staat: bevestigt
+// de plaatsing en legt uit hoe je inlogt en je wachtwoord instelt.
+export function renderEigenaarWoningLive(naam: string, email: string, titel: string, id: string): { onderwerp: string; html: string } {
+  const inner = `
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Je woning staat online, ${naam}! 🌲</h1>
+    <p style="line-height:1.6;">Goed nieuws: je recreatiewoning <strong>“${titel}”</strong> is geplaatst en staat live op Mooihuus.nl. Geïnteresseerden kunnen je nu rechtstreeks een aanvraag sturen; die ontvang je per e-mail.</p>
+    <p style="margin:22px 0;">${btn(`${COMPANY.website}/aanbod/${id}`, "Bekijk je woning")}</p>
+    <p style="line-height:1.6;"><strong>Inloggen:</strong> met je e-mailadres (<strong>${email}</strong>) op <a href="${COMPANY.website}/inloggen" style="color:${BRAND.bosgroen};">${COMPANY.website}/inloggen</a>. Stel je eigen wachtwoord in via <a href="${COMPANY.website}/wachtwoord-vergeten" style="color:${BRAND.bosgroen};">wachtwoord vergeten</a> — vul je e-mailadres in en je ontvangt een link om een wachtwoord te kiezen.</p>
+    <p style="line-height:1.6;">In <a href="${COMPANY.website}/account" style="color:${BRAND.bosgroen};">je account</a> beheer je je woning en zie je de aanvragen die binnenkomen.</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Vragen? Mail gerust naar ${COMPANY.email}.<br>Team Mooihuus</p>`;
+  return { onderwerp: "Je woning staat online op Mooihuus 🌲", html: layout("Je woning staat online", inner) };
+}
+
 export function renderMakelaarWelkom(naam: string, email: string): { onderwerp: string; html: string } {
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Welkom bij Mooihuus, ${naam}! \u{1F44B}</h1>
@@ -600,8 +613,13 @@ export async function sendEmail(opts: {
       });
       clearTimeout(timer);
       if (res.ok) via = "smtp";
-    } catch {
-      /* val terug op SMTP/preview */
+      else {
+        // Niet stil wegslikken: log de reden zodat een storing zichtbaar is in de serverlog.
+        try { console.error("[email] Resend weigerde:", res.status, (await res.text()).slice(0, 300)); }
+        catch { console.error("[email] Resend weigerde, status", res.status); }
+      }
+    } catch (e) {
+      console.error("[email] Resend-fout:", String((e as any)?.message || e).slice(0, 200));
     }
   }
 

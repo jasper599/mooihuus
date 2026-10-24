@@ -23,6 +23,7 @@ function datumNL(d: number | string | Date): string {
 
 export interface FactuurPdfData {
   kantoor: string;
+  email?: string;               // e-mailadres van de klant (op de factuur, voor de administratie)
   factuurnummer: string;
   objecten: { titel: string; prijs?: number }[];
   prijsPerObject?: number;
@@ -71,6 +72,7 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
   let y = H - hH - 42;
   text("FACTUUR AAN", M, y, 9, bold, C.grijs);
   text(d.kantoor || "—", M, y - 17, 13, bold, C.inkt);
+  if (d.email) text(d.email, M, y - 32, 9.5, reg, C.grijs);
   const metaX = 330, metaVal = W - M;
   const metaRow = (label: string, val: string, yy: number) => {
     text(label, metaX, yy, 9.5, reg, C.grijs);

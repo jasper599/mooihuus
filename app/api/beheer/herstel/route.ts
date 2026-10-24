@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getListing, getListings, getUsers, getEmails, herstelListingRaw } from "@/lib/db";
-import { pgUpsertListing } from "@/lib/pg-upsert";
+import { getListing, getListings, getUsers, getEmails, addUser, updateListing, herstelListingRaw } from "@/lib/db";
+import { pgUpsertListing, pgUpsertUser } from "@/lib/pg-upsert";
+import { renderEigenaarWoningLive, sendEmail } from "@/lib/email";
+import { randomBytes } from "crypto";
 import fs from "fs";
 import path from "path";
 
@@ -192,6 +194,43 @@ export async function GET(req: Request) {
     } catch { /* */ }
 
     return NextResponse.json({ ok: true, huidigeMails, backupMails, outbox });
+  }
+
+  // Maak (indien nodig) het particuliere account van de eigenaar aan, koppel de
+  // woning eraan en stuur optioneel de "je woning staat online"-mail. Idempotent:
+  // bestaat het account al, dan wordt het hergebruikt. Met &mail=1 gaat de mail uit.
+  if (url.searchParams.get("maakeigenaar") === "1") {
+    const email = (url.searchParams.get("email") || "humanique@me.com").trim();
+    const naam = url.searchParams.get("naam") || "Monique van der Hoeven";
+    const listingId = url.searchParams.get("id") || "li-5980";
+
+    let user = getUsers().find((u) => (u.email || "").toLowerCase() === email.toLowerCase());
+    const aangemaakt = !user;
+    if (!user) {
+      user = addUser({ naam, email, wachtwoord: randomBytes(24).toString("hex"), type: "particulier" });
+    }
+
+    let ownerNa: string | null = null;
+    const li = getListing(listingId);
+    if (li && user) {
+      updateListing(listingId, { ownerId: user.id });
+      const na = getListing(listingId);
+      if (na) { await pgUpsertListing(na); ownerNa = na.ownerId || null; }
+    }
+    if (user) await pgUpsertUser(user);
+
+    let mailVia: string | null = null;
+    if (url.searchParams.get("mail") === "1" && user && li) {
+      const { onderwerp, html } = renderEigenaarWoningLive(user.naam, user.email, li.titel, li.id);
+      const rec = await sendEmail({ aan: user.email, onderwerp, html, soort: "welkom" });
+      mailVia = rec.verzondenVia;
+    }
+
+    return NextResponse.json({
+      ok: true, actie: "maakeigenaar", userId: user?.id, email: user?.email, naam: user?.naam,
+      accountAangemaakt: aangemaakt, woningGekoppeld: !!user && ownerNa === user.id, ownerNa,
+      mailVerstuurd: mailVia, mailVia,
+    });
   }
 
   const id = url.searchParams.get("id") || "li-5980";

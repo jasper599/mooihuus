@@ -136,6 +136,7 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
       const btw = Math.round((totaalIncl - sub) * 100) / 100;
       const pdf = await genereerFactuurPdfBase64({
         kantoor: owner.bedrijfsnaam || owner.naam,
+        email: owner.email,
         factuurnummer: updated.factuurnummer,
         objecten: [{ titel: listing.titel, prijs: sub }],
         prijsPerObject: sub,

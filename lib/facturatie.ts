@@ -151,6 +151,7 @@ export async function maakMakelaarFactuur(ownerId: string, stil = false): Promis
   if (!stil) {
     await verstuurFactuurMetPdf(owner.email, mail, {
       kantoor,
+      email: owner.email,
       factuurnummer: updated.factuurnummer,
       objecten: regelsExBtw,
       prijsPerObject: regelsExBtw[0]?.prijs ?? makelaarBasisTarief(),
@@ -222,6 +223,7 @@ export async function maakLosseFactuur(args: {
     // Naar de betaler, met PDF-bijlage, én een kopie met PDF naar facturen@.
     await verstuurFactuurMetPdf(owner.email, mail, {
       kantoor,
+      email: owner.email,
       factuurnummer: payment.factuurnummer,
       objecten: [{ titel: omschrijving, prijs: netto }],
       prijsPerObject: netto,
