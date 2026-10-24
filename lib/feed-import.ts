@@ -124,16 +124,21 @@ export interface FeedAdapter {
   source: string; // "kolibri" | "realworks"
   // Haalt de huidige objecten bij de bron op en levert ze gemapt aan.
   fetchObjects(): Promise<FeedObject[]>;
+  // Optioneel: aantal objecten dat bij de laatste fetch niet opgehaald kon worden.
+  overgeslagen?: number;
 }
 
 export interface FeedResultaat {
   source: string;
   verwerkt: number;
   offline: number;
+  overgeslagen?: number; // panden die bij de bron niet opgehaald konden worden
+  opschoningOvergeslagen?: boolean; // lege feed: niets verwijderd/offline gezet
 }
 
 // Draait één volledige synchronisatie voor een bron.
 export async function importFeed(adapter: FeedAdapter): Promise<FeedResultaat> {
+  adapter.overgeslagen = 0;
   const objects = await adapter.fetchObjects();
   const seen: string[] = [];
   for (const o of objects) {
@@ -142,10 +147,20 @@ export async function importFeed(adapter: FeedAdapter): Promise<FeedResultaat> {
     upsertFeedListing(adapter.source, o.externalId, o.data, false);
     seen.push(o.externalId);
   }
-  const offline = sweepFeed(adapter.source, seen, false);
-  releaseVervallenFeedListings(adapter.source, seen);
+  // Veiligheidsstop: levert de bron niets op (storing, lege parse, verlopen token),
+  // dan niets opschonen. Anders zou releaseVervallenFeedListings alle vervallen
+  // woningen van deze bron, inclusief hun betalingen, verwijderen.
+  const opschoningOvergeslagen = objects.length === 0;
+  let offline = 0;
+  if (!opschoningOvergeslagen) {
+    offline = sweepFeed(adapter.source, seen, false);
+    releaseVervallenFeedListings(adapter.source, seen);
+  }
   bewaarFeeds(); // één keer wegschrijven na de hele batch
-  return { source: adapter.source, verwerkt: objects.length, offline };
+  const res: FeedResultaat = { source: adapter.source, verwerkt: objects.length, offline };
+  if (adapter.overgeslagen) res.overgeslagen = adapter.overgeslagen;
+  if (opschoningOvergeslagen) res.opschoningOvergeslagen = true;
+  return res;
 }
 
 // --- Kolibri (Wazzup Real Estate Connector) ---------------------------------
@@ -310,8 +325,11 @@ export const kolibriAdapter: FeedAdapter = {
         let pand: any;
         try {
           pand = await getProperty(c.RealtorID, s.RealEstateProperyID);
-        } catch {
-          continue; // één kapot pand mag de rest niet blokkeren
+        } catch (e: any) {
+          // één kapot pand mag de rest niet blokkeren, maar tel en log het wel
+          kolibriAdapter.overgeslagen = (kolibriAdapter.overgeslagen || 0) + 1;
+          console.warn(`[kolibri] pand ${c.RealtorID}-${s.RealEstateProperyID} niet opgehaald: ${e?.message || e}`);
+          continue;
         }
         const data = mapKolibriPand(pand);
         if (!data) continue;
