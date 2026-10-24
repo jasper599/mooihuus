@@ -6,6 +6,7 @@ import { getListing, updateListing, zoekopdrachtenVoorWoning } from "@/lib/db";
 import { Doel } from "@/lib/types";
 import { handhaafHuisregels } from "@/lib/huisregels";
 import { naarNederlands } from "@/lib/naar-nederlands";
+import { pgUpsertListing } from "@/lib/pg-upsert";
 import { renderPrijsdaling, sendEmail } from "@/lib/email";
  
 export async function POST(req: Request, { params }: { params: { id: string } }) {
@@ -64,6 +65,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const oudePrijs = listing.prijs;
   const updated = updateListing(params.id, patch);
+  if (updated) await pgUpsertListing(updated);
 
   // Prijsdaling-melding: bij een echte prijsverlaging de woning-alerts mailen.
   try {

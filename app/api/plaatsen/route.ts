@@ -7,6 +7,7 @@ import { Doel, Pakket } from "@/lib/types";
 import { mollieEnabled, createMolliePayment } from "@/lib/mollie";
 import { handhaafHuisregels } from "@/lib/huisregels";
 import { naarNederlands } from "@/lib/naar-nederlands";
+import { pgUpsertListing } from "@/lib/pg-upsert";
 import { markPaymentPaid } from "@/lib/payments";
 
 function baseUrl(req: Request): string {
@@ -67,6 +68,10 @@ export async function POST(req: Request) {
     uitjes: Array.isArray(b.uitjes) ? b.uitjes.map(String).slice(0, 12) : undefined,
     fotos: Array.isArray(b.fotos) ? b.fotos.map(String).slice(0, 24) : undefined,
   });
+
+  // Schrijf de nieuwe woning direct naar Postgres (de bron), zodat 'ie een
+  // herstart gegarandeerd overleeft.
+  await pgUpsertListing(listing);
 
   // Prijs: particuliere volumekorting (staffel) + optionele kortingscode.
   const aantalObjecten = getListingsByOwner(userId).length;
