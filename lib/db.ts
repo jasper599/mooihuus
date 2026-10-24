@@ -198,6 +198,28 @@ export function setCacheFromPg(data: DB): void {
   cache = data;
 }
 
+// Directe write-through naar Postgres vanuit ELKE save(), onafhankelijk van de
+// instrumentation-instantie. Gedebounced en fire-and-forget; schrijft alleen toe
+// (noDelete), zodat zelf-gemaakte data (woningen, leads, betalingen, accounts,
+// alerts, …) een herstart altijd overleeft. Nooit fataal: db.json blijft vangnet.
+let _wtTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleWriteThrough(): void {
+  if (!process.env.DATABASE_URL) return;
+  if (_wtTimer) return;
+  _wtTimer = setTimeout(() => {
+    _wtTimer = null;
+    (async () => {
+      try {
+        const m = await import("./pg-mirror");
+        await m.ensurePrisma();
+        await m.syncNaarPg({ noDelete: true });
+      } catch {
+        /* niet fataal */
+      }
+    })();
+  }, 1500);
+}
+
 function save() {
   ensureDir();
   // Atomair: eerst naar een tijdelijk bestand, dan hernoemen. Zo kan een crash
@@ -206,6 +228,7 @@ function save() {
   const tmp = `${DB_FILE}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(cache), "utf8");
   fs.renameSync(tmp, DB_FILE);
+  scheduleWriteThrough();
   // Schrijf de wijziging door naar Postgres (alleen in Fase 2). Nooit fataal.
   if (pgPrimary && pgSyncFn) {
     try { pgSyncFn(); } catch { /* db.json is al weggeschreven; PG volgt bij de volgende sync */ }

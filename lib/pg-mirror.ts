@@ -94,6 +94,19 @@ export function pgMirrorStatus() {
   };
 }
 
+/** Zorgt dat de Prisma-client bestaat in DEZE module-instantie, zonder de
+ * periodieke sync-timer te starten. Zo kan save() een directe write-through doen
+ * vanuit de route-handlers (waar de instrumentation-instantie niet actief is). */
+export async function ensurePrisma(): Promise<void> {
+  if (prisma || !pgAan()) return;
+  try {
+    const mod: any = await import("@prisma/client");
+    prisma = new mod.PrismaClient();
+  } catch {
+    prisma = null;
+  }
+}
+
 /** Start de spiegel. Idempotent en nooit fataal. */
 export async function initPgMirror(): Promise<void> {
   if (gestart || !pgAan()) return;
@@ -113,7 +126,7 @@ export async function initPgMirror(): Promise<void> {
 }
 
 /** Schrijf de huidige momentopname naar Postgres. Alleen-gewijzigde rijen. */
-export async function syncNaarPg(): Promise<void> {
+export async function syncNaarPg(opts?: { noDelete?: boolean }): Promise<void> {
   if (!prisma || bezig) return;
   bezig = true;
   let rijen = 0;
@@ -155,12 +168,16 @@ export async function syncNaarPg(): Promise<void> {
         rijen++;
       }
 
-      // Verwijderd in db.json -> ook uit Postgres halen.
-      for (const id of Array.from(prev.keys())) {
-        if (!gezien.has(id)) {
-          await prisma[c.model].delete({ where: { id } }).catch(() => {});
-          prev.delete(id);
-          rijen++;
+      // Verwijderd in db.json -> ook uit Postgres halen. Bij een write-through
+      // vanuit save() slaan we dit over (noDelete): die mag alleen toevoegen/
+      // bijwerken, nooit verwijderen — verwijderen blijft aan de periodieke sync.
+      if (!opts?.noDelete) {
+        for (const id of Array.from(prev.keys())) {
+          if (!gezien.has(id)) {
+            await prisma[c.model].delete({ where: { id } }).catch(() => {});
+            prev.delete(id);
+            rijen++;
+          }
         }
       }
     }
