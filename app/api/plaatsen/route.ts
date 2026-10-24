@@ -6,6 +6,7 @@ import { prijsMetKorting } from "@/lib/money";
 import { Doel, Pakket } from "@/lib/types";
 import { mollieEnabled, createMolliePayment } from "@/lib/mollie";
 import { handhaafHuisregels } from "@/lib/huisregels";
+import { naarNederlands } from "@/lib/naar-nederlands";
 import { markPaymentPaid } from "@/lib/payments";
 
 function baseUrl(req: Request): string {
@@ -22,8 +23,14 @@ export async function POST(req: Request) {
   const b = await req.json();
   const pakket = (["Basis", "Plus", "Premium"].includes(b.pakket) ? b.pakket : "Basis") as Pakket;
 
-  const titel = String(b.titel || `${b.type} in ${b.provincie}`);
-  const omschrijving = String(b.omschrijving || "");
+  // Normaliseer de advertentietekst naar het Nederlands (de leidende basis). Zo
+  // blijft de site consistent Nederlandstalig en verzorgen de EN/DE-knoppen de
+  // vertaling vanuit die Nederlandse basis — ook als iemand z'n tekst in een
+  // andere taal (bijv. Duits) aanlevert.
+  const [titel, omschrijving] = await Promise.all([
+    naarNederlands(String(b.titel || `${b.type} in ${b.provincie}`)),
+    naarNederlands(String(b.omschrijving || "")),
+  ]);
 
   // Huisregels automatisch handhaven vóór plaatsing.
   const check = await handhaafHuisregels({ titel, omschrijving });

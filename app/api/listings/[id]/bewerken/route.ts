@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { getListing, updateListing, zoekopdrachtenVoorWoning } from "@/lib/db";
 import { Doel } from "@/lib/types";
 import { handhaafHuisregels } from "@/lib/huisregels";
+import { naarNederlands } from "@/lib/naar-nederlands";
 import { renderPrijsdaling, sendEmail } from "@/lib/email";
  
 export async function POST(req: Request, { params }: { params: { id: string } }) {
@@ -38,6 +39,11 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   if (typeof b.openhuisTot === "string") patch.openhuisTot = b.openhuisTot.slice(0, 5);
   if (typeof b.omschrijving === "string") patch.omschrijving = b.omschrijving.slice(0, 4000);
   if (Array.isArray(b.fotos)) patch.fotos = b.fotos.filter((f: any) => typeof f === "string").slice(0, 20);
+
+  // Normaliseer gewijzigde titel/omschrijving naar het Nederlands (leidende basis),
+  // net als bij een nieuwe plaatsing — ook wanneer een beheerder tekst bijwerkt.
+  if (patch.titel !== undefined) patch.titel = (await naarNederlands(patch.titel)).slice(0, 120);
+  if (patch.omschrijving !== undefined) patch.omschrijving = (await naarNederlands(patch.omschrijving)).slice(0, 4000);
 
   // Huisregels handhaven op de (mogelijk gewijzigde) titel/omschrijving.
   if (patch.titel !== undefined || patch.omschrijving !== undefined) {

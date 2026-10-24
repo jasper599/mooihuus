@@ -45,6 +45,7 @@ export default function Voorwaarden() {
         <li>Geen misleidende, onrechtmatige of inbreukmakende inhoud; je hebt de rechten op geplaatste foto’s en teksten.</li>
         <li>Je verleent Mooihuus een niet-exclusieve licentie om de advertentie-inhoud te tonen en te promoten binnen de dienst.</li>
         <li>Wij mogen advertenties modereren, weigeren of verwijderen (bijvoorbeeld bij vermoeden van fraude).</li>
+        <li>Je plaatst je advertentie in het <strong>Nederlands</strong>. Mooihuus mag aangeleverde titel- en omschrijvingsteksten automatisch naar het Nederlands normaliseren, en toont daarnaast automatisch (machinaal) gegenereerde vertalingen, waaronder Duits en Engels. De Nederlandse versie is leidend; vertalingen zijn indicatief en hieraan kunnen geen rechten worden ontleend.</li>
       </ul>
 
       <h2>5. Prijzen en betaling</h2>
