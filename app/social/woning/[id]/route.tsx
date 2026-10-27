@@ -15,12 +15,12 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 
   return new ImageResponse(
     (
-      <div style={{ width: 1080, height: 1080, display: "flex", position: "relative", backgroundColor: "#2C6B45", fontFamily: "sans-serif" }}>
+      <div style={{ width: 1080, height: 1350, display: "flex", position: "relative", backgroundColor: "#2C6B45", fontFamily: "sans-serif" }}>
         {foto ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={foto} width={1080} height={1080} style={{ position: "absolute", top: 0, left: 0, width: 1080, height: 1080, objectFit: "cover" }} />
+          <img src={foto} width={1080} height={1350} style={{ position: "absolute", top: 0, left: 0, width: 1080, height: 1350, objectFit: "cover" }} />
         ) : null}
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 560, display: "flex", background: "linear-gradient(to top, rgba(18,38,26,0.94), rgba(18,38,26,0.0))" }} />
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 680, display: "flex", background: "linear-gradient(to top, rgba(18,38,26,0.94), rgba(18,38,26,0.0))" }} />
 
         <div style={{ position: "absolute", top: 44, left: 44, display: "flex", backgroundColor: "#ffffff", borderRadius: 999, padding: "14px 30px", fontSize: 40, fontWeight: 800, color: "#2C6B45" }}>
           Mooihuus<span style={{ color: "#E8823B" }}>.nl</span>
@@ -39,6 +39,6 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
         </div>
       </div>
     ),
-    { width: 1080, height: 1080 }
+    { width: 1080, height: 1350 }
   );
 }

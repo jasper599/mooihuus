@@ -164,7 +164,7 @@ async function draaiSocial(): Promise<void> {
     for (const post of wacht) {
       const listing = getListing(post.listingId);
       const caption = post.tekst || listing?.titel || "Mooihuus";
-      const fotoUrl = post.fotoUrl || listing?.fotos?.[0];
+      const fotoUrl = post.fotoUrl || (listing ? `${SITE}/social/woning/${listing.id}` : undefined);
       if (instagramEnabled()) {
         const r = await postToInstagram({ imageUrl: fotoUrl, caption }).catch(() => ({ ok: false, error: "verbindingsfout" } as const));
         if ((r as any).ok) {
@@ -281,7 +281,7 @@ async function plaatsEenPost(teller: number, publishAt: string): Promise<{ soort
   const w = kiesWoning();
   if (!w) return { soort: "woning", ok: false, detail: "geen geschikte woning" };
   const caption = (await genereerSocialCaption(w).catch(() => undefined)) || w.titel;
-  const r: any = await scheduleInstagramPost({ tekst: caption, fotoUrl: w.fotos?.[0], publishAt }).catch(() => ({ ok: false, error: "verbindingsfout" }));
+  const r: any = await scheduleInstagramPost({ tekst: caption, fotoUrl: `${SITE}/social/woning/${w.id}`, publishAt }).catch(() => ({ ok: false, error: "verbindingsfout" }));
   // Woning vastleggen voor /insta. 'ingepland' zodat draaiSocial 'm niet nog eens plaatst.
   addSocialPost({
     listingId: w.id, kanaal: "instagram", prioriteit: false,

@@ -11,7 +11,7 @@ export async function GET(_req: Request, { params }: { params: { slug: string } 
 
   return new ImageResponse(
     (
-      <div style={{ width: 1080, height: 1080, display: "flex", flexDirection: "column", position: "relative", backgroundColor: "#1F4E32", fontFamily: "sans-serif", padding: 80 }}>
+      <div style={{ width: 1080, height: 1350, display: "flex", flexDirection: "column", position: "relative", backgroundColor: "#1F4E32", fontFamily: "sans-serif", padding: 80 }}>
         <div style={{ position: "absolute", right: -120, bottom: -120, width: 460, height: 460, borderRadius: 999, backgroundColor: "#7CAE86", opacity: 0.3, display: "flex" }} />
         <div style={{ position: "absolute", left: -110, top: -120, width: 360, height: 360, borderRadius: 999, backgroundColor: "#E8823B", opacity: 0.22, display: "flex" }} />
 
@@ -30,6 +30,6 @@ export async function GET(_req: Request, { params }: { params: { slug: string } 
         <div style={{ display: "flex", fontSize: 40, fontWeight: 600, color: "#E8B77E" }}>Regel het via mooihuus.nl/huusmeesters</div>
       </div>
     ),
-    { width: 1080, height: 1080 }
+    { width: 1080, height: 1350 }
   );
 }
