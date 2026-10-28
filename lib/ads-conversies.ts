@@ -8,12 +8,12 @@
 // Leeg laten = die conversie wordt (nog) niet gemeten (no-op). Zo kan dit
 // veilig mee in de deploy en zet je 'm live door één string in te vullen.
 
-export const ADS_ID = "AW-18370852382";
+export const ADS_ID = "AW-807554484";
 
 export const CONVERSIES: Record<string, string> = {
-  plaatsing: "AW-18370852382/leZ0CPnr498cEJ7s87dE", // "Aankoop voltooid" — voltooide betaling (advertentie), BELANGRIJKSTE
-  opvaller: "AW-18370852382/leZ0CPnr498cEJ7s87dE",  // ook een betaalde aankoop → zelfde conversie
-  lead: "",      // Ingevuld contactformulier bij een woning (optioneel; maak evt. een aparte conversieactie aan)
+  plaatsing: "", // betaalde plaatsing — maak evt. een "Aankoop"-conversieactie onder AW-807554484 en plak het label hier
+  opvaller: "",  // idem als plaatsing
+  lead: "AW-807554484/XmvICI3Z36wdELSbiYED", // Ingevuld lead-formulier (contact / bezichtiging / zoekopdracht)
 };
 
 // Vuurt een conversie af richting Google Ads. Veilig client-side: doet niets als

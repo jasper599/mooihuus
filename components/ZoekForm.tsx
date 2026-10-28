@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { meldConversie } from "@/lib/ads-conversies";
 
 const PROVINCIES = [
   "Groningen", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Gelderland",
@@ -36,6 +37,7 @@ export function ZoekForm() {
       });
       const data = await res.json();
       if (!res.ok) { setErr(data.error || "Er ging iets mis."); setBusy(false); return; }
+      meldConversie("lead"); // Google Ads lead-conversie
       setDone(data.matches ?? 0);
     } catch {
       setErr("Er ging iets mis. Probeer het opnieuw."); setBusy(false);

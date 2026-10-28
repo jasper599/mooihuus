@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useT } from "./I18nProvider";
+import { meldConversie } from "@/lib/ads-conversies";
 
 const TIJDEN = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "in overleg"];
 
@@ -26,6 +27,7 @@ export function BezichtigingForm({ listingId }: { listingId: string }) {
     const d = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) { setErr(d.error || "Er ging iets mis."); return; }
+    meldConversie("lead"); // Google Ads lead-conversie
     setSent(true);
   }
 

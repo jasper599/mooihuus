@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { meldConversie } from "@/lib/ads-conversies";
 
 const HULP_OPTIES = [
   "Verzekering",
@@ -58,6 +59,7 @@ export function ContactForm({
         setBusy(false);
         return;
       }
+      meldConversie("lead"); // Google Ads lead-conversie
       setDone(true);
     } catch {
       setErr("Er ging iets mis. Probeer het opnieuw.");

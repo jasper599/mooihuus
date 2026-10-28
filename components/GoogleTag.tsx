@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const GA_ID = "AW-18370852382";
+const GA_ID = "AW-807554484";
 
 export function GoogleTag() {
   useEffect(() => {
