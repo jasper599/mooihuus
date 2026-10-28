@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getSocialPosts, getListing, getListings } from "@/lib/db";
 import { ListingCard } from "@/components/ListingCard";
-import { Listing } from "@/lib/types";
+import { Listing, SocialPost } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -10,20 +10,47 @@ export const metadata = {
   description: "De woningen die we net op onze Instagram deelden. Klik door naar de woning die je zocht.",
 };
 
+// Een post staat ECHT op het Instagram-grid als 'ie geplaatst is, of ingepland
+// met een posttijd die al verstreken is (die is via autoPublish uitgegaan).
+// 'wachtrij' (wel in de rij, nog niet uit) en 'mislukt' horen hier NIET bij —
+// anders zou /insta woningen tonen die niet op Instagram staan (de oude drift).
+function opHetGrid(s: SocialPost, nu: number): boolean {
+  if (s.kanaal !== "instagram") return false;
+  if (s.status === "geplaatst") return true;
+  if (s.status === "ingepland") {
+    const t = s.ingeplandVoor ? Date.parse(s.ingeplandVoor) : NaN;
+    return Number.isFinite(t) ? t <= nu : false;
+  }
+  return false;
+}
+
+// Moment waarop de post op het grid kwam — voor "nieuwste bovenaan", net als IG.
+function postTijd(s: SocialPost): string {
+  return s.geplaatstOp || s.ingeplandVoor || s.aangemaakt;
+}
+
 export default function InstaPage() {
+  const nu = Date.now();
+
   // Woningen in de volgorde van onze Instagram-posts (nieuwste bovenaan), ontdubbeld.
+  // Bron van waarheid: alleen posts die daadwerkelijk op het grid staan.
   const gezien = new Set<string>();
   const woningen: Listing[] = [];
-  for (const s of getSocialPosts().slice().sort((a, b) => String(b.aangemaakt).localeCompare(String(a.aangemaakt)))) {
+  const opGrid = getSocialPosts()
+    .filter((s) => opHetGrid(s, nu))
+    .sort((a, b) => postTijd(b).localeCompare(postTijd(a)));
+  for (const s of opGrid) {
     if (gezien.has(s.listingId)) continue;
     const l = getListing(s.listingId);
     if (l && l.status === "live") {
       woningen.push(l);
       gezien.add(s.listingId);
     }
-    if (woningen.length >= 18) break;
+    if (woningen.length >= 12) break;
   }
-  // Te weinig posts? Vul aan met recente, live woningen (uitgelicht eerst).
+
+  // Nog (bijna) niets op het grid? Vul aan met recente, live woningen (uitgelicht
+  // eerst) zodat de link-in-bio-pagina nooit leeg is voor een bezoeker.
   if (woningen.length < 6) {
     const extra = getListings()
       .filter((l) => l.status === "live" && !gezien.has(l.id))
