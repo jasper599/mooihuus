@@ -1,4 +1,4 @@
-import { getUsers, getUser, getListingsByOwner, getListingStats, getLaatsteMaandrapportMaand, setLaatsteMaandrapportMaand } from "./db";
+import { getUsers, getUser, getListingsByOwner, getListingStatsMaand, getLaatsteMaandrapportMaand, setLaatsteMaandrapportMaand } from "./db";
 import { renderMaandrapport, sendEmail } from "./email";
 
 function maandLabel(d = new Date()): string {
@@ -6,6 +6,10 @@ function maandLabel(d = new Date()): string {
 }
 function maandKey(d = new Date()): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+// De gerapporteerde maand is de vorige kalendermaand (rapport gaat begin nieuwe maand uit).
+function vorigeMaand(d = new Date()): Date {
+  return new Date(d.getFullYear(), d.getMonth() - 1, 1);
 }
 
 // Stuurt één makelaar zijn maandrapport (weergaven + leads per woning).
@@ -15,8 +19,11 @@ export async function stuurMaandrapport(ownerId: string): Promise<{ ok: boolean;
   const woningen = getListingsByOwner(ownerId).filter((l) => l.status === "live" || l.status === "verkocht");
   if (woningen.length === 0) return { ok: false, reden: "Geen woningen om over te rapporteren." };
 
+  const rapportMaand = vorigeMaand();
+  const mk = maandKey(rapportMaand);
+
   const rows = woningen.map((l) => {
-    const s = getListingStats(l.id);
+    const s = getListingStatsMaand(l.id, mk);
     return { titel: l.titel, weergaven: s.weergaven, leads: s.leads };
   });
   const totWeergaven = rows.reduce((a, r) => a + r.weergaven, 0);
@@ -24,7 +31,7 @@ export async function stuurMaandrapport(ownerId: string): Promise<{ ok: boolean;
 
   const mail = renderMaandrapport({
     kantoor: owner.bedrijfsnaam || owner.naam,
-    maand: maandLabel(),
+    maand: maandLabel(rapportMaand),
     rows,
     totWeergaven,
     totLeads,

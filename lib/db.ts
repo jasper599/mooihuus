@@ -931,6 +931,25 @@ export function getListingStats(listingId: string): { weergaven: number; leads: 
   const leads = db.leads.filter((l) => l.listingId === listingId).length;
   return { weergaven, leads };
 }
+
+// Lead.datum staat NL-lokaal ("dd-mm-jjjj ..."); omzetten naar "jjjj-mm".
+function leadMaandKey(datum: string): string {
+  const m = (datum || "").match(/^(\d{2})-(\d{2})-(\d{4})/);
+  return m ? `${m[3]}-${m[2]}` : "";
+}
+
+// Statistiek per advertentie voor één kalendermaand ("jjjj-mm").
+export function getListingStatsMaand(listingId: string, maandKey: string): { weergaven: number; leads: number } {
+  const db = load();
+  const suffix = `/aanbod/${listingId}`;
+  const weergaven = db.pageviews.filter(
+    (p) => p.path.split("?")[0].endsWith(suffix) && (p.datum || "").slice(0, 7) === maandKey
+  ).length;
+  const leads = db.leads.filter(
+    (l) => l.listingId === listingId && leadMaandKey(l.datum) === maandKey
+  ).length;
+  return { weergaven, leads };
+}
  
 // ---------- Postcode → coördinaten (cache van geocoderesultaten) ----------
 export function normaliseerPostcode(pc: string): string {
