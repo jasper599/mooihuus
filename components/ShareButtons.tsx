@@ -7,7 +7,7 @@ export function ShareButtons({ title }: { title: string }) {
   const t = useT();
   const [copied, setCopied] = useState(false);
   const url = () => (typeof window !== "undefined" ? window.location.href : "");
-  const tekst = () => `${title} — Mooihuus.nl`;
+  const tekst = () => `${title} · ${typeof window !== "undefined" && /woonhuus/.test(window.location.hostname) ? "Woonhuus.nl" : "Mooihuus.nl"}`;
 
   const open = (u: string) => window.open(u, "_blank", "noopener,noreferrer");
 

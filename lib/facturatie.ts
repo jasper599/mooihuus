@@ -278,7 +278,7 @@ export async function verwerkMakelaarFacturatie(): Promise<{ actief: boolean; ge
 // Prijs: het makelaarstarief per woning per jaar.
 export async function maakWoningBetaling(
   ownerId: string,
-  listing: { id: string; titel: string; pakket?: any; source?: string }
+  listing: { id: string; titel: string; pakket?: any; source?: string; categorie?: string }
 ): Promise<{ ok: boolean; betaalUrl?: string; bedrag?: number; paymentId?: string; factuurnummer?: string }> {
   const owner = getUser(ownerId);
   if (!owner) return { ok: false };
@@ -291,14 +291,14 @@ export async function maakWoningBetaling(
     status: "open",
     methode: "iDEAL",
     soort: "advertentie",
-    omschrijving: `Jaaradvertentie Mooihuus — ${listing.titel}`,
+    omschrijving: `Jaaradvertentie ${listing.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus"}: ${listing.titel}`,
   });
   let betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
   if (mollieEnabled()) {
     try {
       const { mollieId, checkoutUrl } = await createMolliePayment({
         bedrag,
-        beschrijving: `Mooihuus advertentie — ${listing.titel}`,
+        beschrijving: `${listing.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus"} advertentie: ${listing.titel}`,
         redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
         webhookUrl: `${baseUrl()}/api/webhook/mollie`,
       });

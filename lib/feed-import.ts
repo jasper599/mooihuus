@@ -40,7 +40,7 @@ async function stuurWelkomInloggegevens(profiel: User): Promise<void> {
 }
 
 // 2) Bedankmail voor de aanmelding + betaallink — altijd, ongeacht of er al een profiel was.
-async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[], bijlagen?: { filename: string; content: string; contentType?: string }[]): Promise<void> {
+async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string; categorie?: Listing["categorie"] }[], bijlagen?: { filename: string; content: string; contentType?: string }[]): Promise<void> {
   try {
     const naam = profiel.bedrijfsnaam || profiel.naam;
     const mail = renderMakelaarBedankt(naam, regels, kolibriTariefNu());
@@ -48,7 +48,7 @@ async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; be
     const kopie = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
     const replyTo = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
     await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
-    await sendEmail({ aan: [kopie, COMPANY.email], onderwerp: "Kopie \u2014 aanmelding " + naam + " (" + regels.length + " woning(en))", soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
+    await sendEmail({ aan: [kopie, COMPANY.email], onderwerp: "Kopie: aanmelding " + naam + " (" + regels.length + " woning(en))", soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
   } catch {
     /* mail mislukt - sync niet laten falen */
   }
@@ -85,12 +85,12 @@ async function verwerkNieuweKantorenWelkom(): Promise<void> {
     const nieuwe = woningen.filter((l) => l.status === "offline" && !l.vervallen && !heeftBetaling(l.id));
     if (nieuwe.length === 0) continue;
 
-    const regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[] = [];
+    const regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string; categorie?: Listing["categorie"] }[] = [];
     const bijlagen: { filename: string; content: string; contentType?: string }[] = [];
     for (const l of nieuwe) {
       const b = await maakWoningBetaling(u.id, l);
       if (b.ok && b.betaalUrl) {
-        regels.push({ titel: l.titel, betaalUrl: b.betaalUrl, bedrag: b.bedrag || 0, factuurnummer: b.factuurnummer });
+        regels.push({ titel: l.titel, betaalUrl: b.betaalUrl, bedrag: b.bedrag || 0, factuurnummer: b.factuurnummer, categorie: l.categorie });
         try {
           const totaal = b.bedrag || 0;
           const subtotaal = Math.round((totaal / 1.21) * 100) / 100;
@@ -98,7 +98,7 @@ async function verwerkNieuweKantorenWelkom(): Promise<void> {
           const pdf = await genereerFactuurPdfBase64({
             kantoor: u.bedrijfsnaam || u.naam,
             factuurnummer: b.factuurnummer || "",
-            objecten: [{ titel: l.titel, prijs: subtotaal }],
+            objecten: [{ titel: `${l.titel} (${l.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus.nl"})`, prijs: subtotaal }],
             prijsPerObject: subtotaal,
             subtotaal,
             btw,
