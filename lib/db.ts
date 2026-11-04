@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, Idee, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost, Kortingscode } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, Idee, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost, Kortingscode, Categorie } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 import type { BlogPost } from "./blog";
  
@@ -393,9 +393,11 @@ export function getListings(opts?: { status?: string }): Listing[] {
   const all = load().listings;
   return opts?.status ? all.filter((l) => l.status === opts.status) : all;
 }
-export function getLiveListings(): Listing[] {
+// Live aanbod van één etalage. Standaard recreatie (Mooihuus.nl); "woonhuis"
+// voor Woonhuus.nl; "alle" voor interne tellingen.
+export function getLiveListings(categorie: Categorie | "alle" = "recreatie"): Listing[] {
   return load()
-    .listings.filter((l) => l.status === "live")
+    .listings.filter((l) => l.status === "live" && (categorie === "alle" || (l.categorie === "woonhuis" ? "woonhuis" : "recreatie") === categorie))
     .sort((a, b) => {
       const au = a.uitgelicht ? 1 : 0;
       const bu = b.uitgelicht ? 1 : 0;

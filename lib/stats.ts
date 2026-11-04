@@ -66,7 +66,7 @@ export function berekenStats(): MooihuusStats {
   startMaand.setDate(1);
   startMaand.setHours(0, 0, 0, 0);
 
-  const live = getLiveListings();
+  const live = getLiveListings("alle");
   const alle = getListings();
   const leads = getLeads();
   const users = getUsers();

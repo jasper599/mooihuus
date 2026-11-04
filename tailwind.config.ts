@@ -7,18 +7,20 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Kleuren via CSS-variabelen, zodat Woonhuus.nl met dezelfde componenten
+      // een eigen (blauwe) huisstijl krijgt. Waarden: app/globals.css.
       colors: {
-        bosgroen: "#2C6B45",
-        "bosgroen-dk": "#1F4E32",
-        salie: "#7CAE86",
-        "salie-lt": "#C9E0CE",
-        oranje: "#E8823B",
-        "oranje-dk": "#C9691F",
-        zand: "#F6F1E7",
-        creme: "#FBF8F1",
-        inkt: "#22302A",
-        grijs: "#6B7A70",
-        lijn: "#E4DCCB",
+        bosgroen: "rgb(var(--c-bosgroen) / <alpha-value>)",
+        "bosgroen-dk": "rgb(var(--c-bosgroen-dk) / <alpha-value>)",
+        salie: "rgb(var(--c-salie) / <alpha-value>)",
+        "salie-lt": "rgb(var(--c-salie-lt) / <alpha-value>)",
+        oranje: "rgb(var(--c-oranje) / <alpha-value>)",
+        "oranje-dk": "rgb(var(--c-oranje-dk) / <alpha-value>)",
+        zand: "rgb(var(--c-zand) / <alpha-value>)",
+        creme: "rgb(var(--c-creme) / <alpha-value>)",
+        inkt: "rgb(var(--c-inkt) / <alpha-value>)",
+        grijs: "rgb(var(--c-grijs) / <alpha-value>)",
+        lijn: "rgb(var(--c-lijn) / <alpha-value>)",
       },
       fontFamily: {
         display: ["Poppins", "system-ui", "sans-serif"],

@@ -4,11 +4,36 @@
 
 :root {
   color-scheme: light;
+  /* Mooihuus.nl */
+  --c-bosgroen: 44 107 69;      /* #2C6B45 */
+  --c-bosgroen-dk: 31 78 50;    /* #1F4E32 */
+  --c-salie: 124 174 134;       /* #7CAE86 */
+  --c-salie-lt: 201 224 206;    /* #C9E0CE */
+  --c-oranje: 232 130 59;       /* #E8823B */
+  --c-oranje-dk: 201 105 31;    /* #C9691F */
+  --c-zand: 246 241 231;        /* #F6F1E7 */
+  --c-creme: 251 248 241;       /* #FBF8F1 */
+  --c-inkt: 34 48 42;           /* #22302A */
+  --c-grijs: 107 122 112;       /* #6B7A70 */
+  --c-lijn: 228 220 203;        /* #E4DCCB */
+}
+
+/* Woonhuus.nl: dezelfde opbouw, eigen blauwe huisstijl */
+[data-site="woonhuus"] {
+  --c-bosgroen: 43 82 131;      /* #2B5283 */
+  --c-bosgroen-dk: 30 58 95;    /* #1E3A5F */
+  --c-salie: 127 163 201;       /* #7FA3C9 */
+  --c-salie-lt: 213 224 236;    /* #D5E0EC */
+  --c-zand: 244 246 248;        /* #F4F6F8 */
+  --c-creme: 249 250 251;       /* #F9FAFB */
+  --c-inkt: 27 36 48;           /* #1B2430 */
+  --c-grijs: 82 96 112;         /* #526070 */
+  --c-lijn: 221 227 234;        /* #DDE3EA */
 }
 
 body {
-  background: #f6f1e7;
-  color: #22302a;
+  background: rgb(var(--c-zand));
+  color: rgb(var(--c-inkt));
 }
 
 @layer components {
@@ -27,12 +52,12 @@ body {
 }
 
 .legal { max-width: 46rem; }
-.legal h2 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #1F4E32; font-size: 1.15rem; margin: 1.6rem 0 .5rem; }
-.legal h3 { font-family: 'Poppins', sans-serif; font-weight: 600; color: #22302a; font-size: 1rem; margin: 1.1rem 0 .35rem; }
+.legal h2 { font-family: 'Poppins', sans-serif; font-weight: 700; color: rgb(var(--c-bosgroen-dk)); font-size: 1.15rem; margin: 1.6rem 0 .5rem; }
+.legal h3 { font-family: 'Poppins', sans-serif; font-weight: 600; color: rgb(var(--c-inkt)); font-size: 1rem; margin: 1.1rem 0 .35rem; }
 .legal p { margin-bottom: .8rem; }
 .legal ul { list-style: disc; margin: 0 0 .9rem 1.25rem; }
 .legal li { margin-bottom: .35rem; }
-.legal a { color: #2C6B45; }
+.legal a { color: rgb(var(--c-bosgroen)); }
 
 @media print {
   header, footer, .no-print { display: none !important; }
