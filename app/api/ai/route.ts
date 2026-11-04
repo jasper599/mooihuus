@@ -24,8 +24,11 @@ function sjabloon(f: any): { titel: string; omschrijving: string; prijsindicatie
   const pers = f.personen ?? 4;
   const park = f.park ?? "";
   const prijs = Number(f.prijs ?? 0);
-  const titel = `Sfeervolle ${type} in ${prov} — jouw tweede thuis`;
-  const omschrijving =
+  const woonhuis = f.categorie === "woonhuis";
+  const titel = woonhuis ? `Fijne ${type} in ${prov}` : `Sfeervolle ${type} in ${prov} — jouw tweede thuis`;
+  const omschrijving = woonhuis
+    ? `Op zoek naar een fijne plek om te wonen? Deze ${type} in ${prov} biedt ruimte en comfort. Neem gerust contact op voor meer informatie of een bezichtiging.`
+    :
     `Kom thuis in deze ${type}${park ? ` op ${park}` : ""} in ${prov}. ` +
     `Ruimte voor ${pers} personen, midden in het groen en heerlijk rustig gelegen. ` +
     `Zet de deuren open, ruik de buitenlucht en kom tot rust — dit is de plek waar vakantie ` +
@@ -52,14 +55,16 @@ export async function POST(req: Request) {
     `Aanbod: ${doelWoord}`,
     f.provincie ? `Provincie: ${f.provincie}` : "",
     f.park ? `Park/plaats: ${f.park}` : "",
-    f.personen ? `Max. personen: ${f.personen}` : "",
+    f.personen && f.categorie !== "woonhuis" ? `Max. personen: ${f.personen}` : "",
     f.m2 ? `Woonoppervlak: ${f.m2} m²` : "",
     f.grond ? `Grond: ${f.grond}` : "",
     uitjes.length ? `In de buurt: ${uitjes.join(", ")}` : "",
   ].filter(Boolean).join("\n");
 
   const system =
-    `Je schrijft advertentieteksten voor Mooihuus.nl, hét platform voor recreatiewoningen in Nederland. ` +
+    (f.categorie === "woonhuis"
+      ? `Je schrijft advertentieteksten voor Woonhuus.nl, het platform voor gewone koop- en huurwoningen in Nederland. Het gaat om een woning om permanent in te wonen, niet om een vakantiewoning. ` 
+      : `Je schrijft advertentieteksten voor Mooihuus.nl, hét platform voor recreatiewoningen in Nederland. `) +
     `Toon: warm, nuchter, uitnodigend, je/jij. Schrijf in het Nederlands.\n\n` +
     `Maak op basis van de kenmerken:\n` +
     `- Een pakkende TITEL (max ~70 tekens) die het type en de plek noemt. Geen clichés als "jouw tweede thuis".\n` +
