@@ -18,9 +18,7 @@ export function middleware(req: NextRequest) {
     // Woonhuus is (voorlopig) alleen Nederlandstalig.
     const seg0 = pathname.split("/")[1];
     if (seg0 === "en" || seg0 === "de") {
-      const url = req.nextUrl.clone();
-      url.pathname = pathname.slice(seg0.length + 1) || "/";
-      return NextResponse.redirect(url, 308);
+      return NextResponse.redirect(`${WOONHUUS_URL}${pathname.slice(seg0.length + 1) || "/"}${search}`, 308);
     }
     if (!WOONHUUS_EIGEN_PADEN.some((re) => re.test(pathname))) {
       return NextResponse.redirect(`${MOOIHUUS_URL}${pathname}${search}`, 307);
