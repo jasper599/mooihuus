@@ -6,7 +6,7 @@ import { WOONHUUS_URL } from "@/lib/site";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Op zoek naar een gewoon woonhuis? Kijk op Woonhuus.nl",
-  description: "Mooihuus is het platform voor recreatiewoningen. Gewone koopwoningen vind je in ons buurhuus: Woonhuus.nl.",
+  description: "Mooihuus is het platform voor recreatiewoningen. Gewone koopwoningen vind je op ons zusterplatform Woonhuus.nl.",
   alternates: { canonical: "/woonhuis-zoeken" },
 };
 
@@ -21,7 +21,7 @@ export default function WoonhuisZoeken() {
           <h1 className="font-display font-extrabold text-3xl md:text-4xl leading-tight text-bosgroen-dk">Op zoek naar een gewoon woonhuis?</h1>
           <p className="text-grijs mt-3">
             Mooihuus is helemaal gericht op recreatiewoningen: chalets, bungalows en vakantiehuizen. Voor eengezinswoningen,
-            appartementen en starterswoningen die te koop staan, hebben we een buurhuus: <strong>Woonhuus.nl</strong>.
+            appartementen en starterswoningen die te koop staan, hebben we een zusterplatform: <strong>Woonhuus.nl</strong>.
           </p>
           <div className="mt-6 flex gap-3 flex-wrap">
             <a href={WOONHUUS_URL} className="btn">Naar Woonhuus.nl →</a>

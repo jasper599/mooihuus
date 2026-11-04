@@ -185,7 +185,7 @@ function WoonhuusLayout({ children }: { children: React.ReactNode }) {
             <footer className="bg-white border-t border-lijn mt-10">
               <div className="max-w-6xl mx-auto px-4 py-8 text-sm text-grijs">
                 <Wordmark className="text-lg" site="woonhuus" />
-                <p className="mt-2 max-w-xl">Koopwoningen in heel Nederland, aangeboden door makelaars en particulieren. Woonhuus.nl is het buurhuus van Mooihuus.</p>
+                <p className="mt-2 max-w-xl">Koopwoningen in heel Nederland, aangeboden door makelaars en particulieren. Woonhuus.nl is het zusterplatform van Mooihuus.</p>
                 <nav className="mt-4 flex gap-4 flex-wrap font-semibold text-bosgroen-dk" aria-label="Footer">
                   <Link href="/te-koop" className="hover:underline">Te koop per provincie</Link>
                   <Link href="/over-woonhuus" className="hover:underline">Over Woonhuus</Link>

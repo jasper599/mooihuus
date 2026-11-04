@@ -3,7 +3,7 @@ import { MOOIHUUS_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Over Woonhuus",
-  description: "Woonhuus.nl is het platform voor gewone koopwoningen, het buurhuus van Mooihuus.nl voor recreatiewoningen.",
+  description: "Woonhuus.nl is het platform voor gewone koopwoningen, het zusterplatform van Mooihuus.nl voor recreatiewoningen.",
   alternates: { canonical: "/over-woonhuus" },
 };
 
@@ -12,7 +12,7 @@ export default function OverWoonhuus() {
     <div className="legal">
       <h1 className="font-display font-extrabold text-3xl text-bosgroen-dk">Over Woonhuus</h1>
       <p className="text-grijs mt-2">Woonhuus.nl is het platform voor gewone koopwoningen: eengezinswoningen, appartementen, starterswoningen en meer. Woningen worden aangeboden door makelaars en particulieren.</p>
-      <h2>Het buurhuus van Mooihuus</h2>
+      <h2>Het zusterplatform van Mooihuus</h2>
       <p>Woonhuus.nl hoort bij Mooihuus.nl, het platform voor recreatiewoningen. Recreatiewoningen, chalets en vakantiehuizen staan op Mooihuus.nl; gewone woningen om permanent in te wonen staan op Woonhuus.nl. Zo staat elke woning waar de juiste kopers zoeken.</p>
       <h2>Wat Woonhuus wel en niet doet</h2>
       <ul>

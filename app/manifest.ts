@@ -8,7 +8,7 @@ export default function manifest(): MetadataRoute.Manifest {
     return {
       name: "Woonhuus: koopwoningen",
       short_name: "Woonhuus",
-      description: "Koopwoningen in heel Nederland, van makelaars en particulieren. Het buurhuus van Mooihuus.",
+      description: "Koopwoningen in heel Nederland, van makelaars en particulieren. Het zusterplatform van Mooihuus.",
       start_url: "/",
       scope: "/",
       display: "standalone",

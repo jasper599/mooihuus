@@ -7,7 +7,7 @@ import { MOOIHUUS_URL } from "@/lib/site";
 
 // Woonhuus.nl: eigen, korte FAQ voor gewone woningen.
 const WOONHUUS_FAQ: QA[] = [
-  { v: "Wat is Woonhuus.nl?", a: "Het platform voor gewone koopwoningen in Nederland, zoals eengezinswoningen, appartementen en starterswoningen, aangeboden door makelaars en particulieren. Woonhuus.nl is het buurhuus van Mooihuus.nl, het platform voor recreatiewoningen." },
+  { v: "Wat is Woonhuus.nl?", a: "Het platform voor gewone koopwoningen in Nederland, zoals eengezinswoningen, appartementen en starterswoningen, aangeboden door makelaars en particulieren. Woonhuus.nl is het zusterplatform van Mooihuus.nl, het platform voor recreatiewoningen." },
   { v: "Is Woonhuus een makelaar?", a: "Nee. Woonhuus biedt alleen de advertentie aan en is geen partij bij de koop. Je reactie gaat rechtstreeks naar de makelaar of particulier die de woning aanbiedt." },
   { v: "Staan er ook huurwoningen op Woonhuus?", a: "Nee. Woonhuus toont alleen koopwoningen." },
   { v: "Kost zoeken iets?", a: "Nee. Zoeken, bewaren en vergelijken is gratis, en je hebt er geen account voor nodig." },
@@ -61,7 +61,7 @@ const CONTENT: Record<Locale, Content> = {
       { titel: "Algemeen", items: [
         { v: "Wat is Mooihuus?", a: "Het onafhankelijke platform waar je je recreatiewoning zelf in de etalage zet — te koop of te huur. Zelf de regie, met hulp binnen handbereik." },
         { v: "Is Mooihuus een makelaar?", a: "Nee. Mooihuus is een advertentieplatform en geen partij bij de koop of huur. Je houdt zelf de regie." },
-        { v: "Wat is Woonhuus.nl?", a: "Ons buurhuus voor gewone koopwoningen, zoals eengezinswoningen en appartementen. Recreatiewoningen staan op Mooihuus.nl, gewone woningen op Woonhuus.nl. Bij een recreatiewoning begeleiden we je volledig; op Woonhuus bieden we alleen de advertentie aan. Je account, inloggen en betalen lopen voor beide via Mooihuus.nl." },
+        { v: "Wat is Woonhuus.nl?", a: "Ons zusterplatform voor gewone koopwoningen, zoals eengezinswoningen en appartementen. Recreatiewoningen staan op Mooihuus.nl, gewone woningen op Woonhuus.nl. Bij een recreatiewoning begeleiden we je volledig; op Woonhuus bieden we alleen de advertentie aan. Je account, inloggen en betalen lopen voor beide via Mooihuus.nl." },
         { v: "Wat kost adverteren?", a: "Eenmalig per advertentie: Basis € 25, Plus € 49 of Premium € 79. Geen commissie over de verkoop. Vanaf 5 objecten krijg je 15% korting, vanaf 10 objecten 25%." },
       ]},
       { titel: "Account & meerdere objecten", items: [
