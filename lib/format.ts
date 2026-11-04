@@ -1,10 +1,11 @@
 const gradients = [
-  "linear-gradient(135deg,#9CC7A5,#5F9A72)",
+  // Groene tinten via CSS-variabelen: op Woonhuus.nl worden ze blauw.
+  "linear-gradient(135deg,rgb(var(--g-licht)),rgb(var(--g-donker)))",
   "linear-gradient(135deg,#E8B77E,#D89A55)",
-  "linear-gradient(135deg,#A9CBB4,#7CAE86)",
-  "linear-gradient(135deg,#8FB6A0,#5F9A72)",
+  "linear-gradient(135deg,rgb(var(--g-licht) / 0.85),rgb(var(--c-salie)))",
+  "linear-gradient(135deg,rgb(var(--g-licht) / 0.9),rgb(var(--g-donker)))",
   "linear-gradient(135deg,#EBC08A,#D89A55)",
-  "linear-gradient(135deg,#B7D3BE,#7CAE86)",
+  "linear-gradient(135deg,rgb(var(--c-salie-lt)),rgb(var(--c-salie)))",
 ];
 
 export function gradient(i: number): string {

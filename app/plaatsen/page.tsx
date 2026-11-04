@@ -37,6 +37,8 @@ export default function Plaatsen() {
       type: c === "woonhuis" ? "Eengezinswoning" : "Chalet",
       park: c === "woonhuis" ? "" : cur.park || "Park De Veluwe",
       personen: c === "woonhuis" ? "" : cur.personen || "4",
+      m2: c === "woonhuis" ? "110" : "65",
+      prijs: c === "woonhuis" ? "350000" : "89000",
     }));
   }
   const [busy, setBusy] = useState(false);

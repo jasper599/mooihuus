@@ -16,6 +16,8 @@
   --c-inkt: 34 48 42;           /* #22302A */
   --c-grijs: 107 122 112;       /* #6B7A70 */
   --c-lijn: 228 220 203;        /* #E4DCCB */
+  --g-licht: 156 199 165;       /* #9CC7A5, kaartachtergrond zonder foto */
+  --g-donker: 95 154 114;       /* #5F9A72 */
 }
 
 /* Woonhuus.nl: dezelfde opbouw, eigen blauwe huisstijl */
@@ -29,6 +31,8 @@
   --c-inkt: 27 36 48;           /* #1B2430 */
   --c-grijs: 82 96 112;         /* #526070 */
   --c-lijn: 221 227 234;        /* #DDE3EA */
+  --g-licht: 165 190 218;       /* #A5BEDA */
+  --g-donker: 72 110 158;       /* #486E9E */
 }
 
 body {
