@@ -452,6 +452,11 @@ export function upsertFeedListing(source: string, externalId: string, data: Part
   const db = load();
   const bestaand = db.listings.find((l) => l.source === source && l.externalId === externalId);
   if (bestaand) {
+    // Handmatig gekozen categorie (CRM) gaat boven wat de feed zegt.
+    if (bestaand.categorieHandmatig && data.categorie) {
+      const { categorie: _feedCategorie, ...rest } = data;
+      data = rest;
+    }
     Object.assign(bestaand, data, { source, externalId });
     if (opslaan) save();
     return bestaand;

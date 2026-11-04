@@ -1,4 +1,4 @@
-import { Listing, User } from "./types";
+import { Listing, User, Categorie } from "./types";
 import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails, releaseVervallenFeedListings } from "./db";
 import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt } from "./email";
 import { kolibriTariefNu, maakWoningBetaling } from "./facturatie";
@@ -180,7 +180,38 @@ function kolibriStatus(status: string): Listing["status"] {
   return "live"; // AVAILABLE, SOLD_UNDER_CONDITIONS, RENTED_UNDER_CONDITIONS
 }
 
-// Type/PropertyTypes → ons woningtype-label.
+// Recreatie of gewone woning? De makelaar zet in Kolibri het recreatie-vinkje
+// (Type.ForRecreation, hetzelfde als voor Funda Recreatie). Ligt het pand op een
+// park, dan rekenen we het ook tot recreatie. Al het andere is een woonhuis.
+function kolibriCategorie(p: any): Categorie {
+  if (isTrue(p?.Type?.ForRecreation)) return "recreatie";
+  if (isTrue(p?.Surroundings?.IsInPark)) return "recreatie";
+  if (String(p?.Location?.Residence ?? "").trim()) return "recreatie";
+  return "woonhuis";
+}
+
+// Type/PropertyTypes → woningtype-label voor een gewone woning (Woonhuus.nl).
+function kolibriWoonType(p: any): string {
+  const raw = p?.Type?.PropertyTypes?.PropertyType ?? p?.Type?.PropertyTypes ?? p?.Type?.PropertyType;
+  const types = arr(raw).map((x: any) => String(typeof x === "object" ? x["#text"] ?? "" : x).toUpperCase());
+  const has = (re: RegExp) => types.some((t) => re.test(t));
+  if (has(/PENTHOUSE/)) return "Penthouse";
+  if (has(/MAISONETTE/)) return "Maisonnette";
+  if (has(/STUDIO/)) return "Studio";
+  if (has(/APARTMENT|FLAT/)) return "Appartement";
+  if (has(/HOUSEBOAT/)) return "Woonboot";
+  if (has(/FARM/)) return "Woonboerderij";
+  if (has(/BUNGALOW/)) return "Bungalow";
+  if (has(/VILLA|MANSION|COUNTRY_HOUSE/)) return "Villa";
+  if (has(/TWO_ONE_ROOF|SEMI_DETACHED|DOUBLE/)) return "Twee-onder-een-kapwoning";
+  if (has(/DETACHED/)) return "Vrijstaande woning";
+  if (has(/ROW_HOUSE_END|CORNER/)) return "Hoekwoning";
+  if (has(/ROW_HOUSE|TERRACED/)) return "Tussenwoning";
+  if (has(/SINGLE_FAMILY/)) return "Eengezinswoning";
+  return "Woning";
+}
+
+// Type/PropertyTypes → ons woningtype-label (recreatie).
 function kolibriType(p: any): string {
   const raw = p?.Type?.PropertyTypes?.PropertyType ?? p?.Type?.PropertyTypes ?? p?.Type?.PropertyType;
   const types = arr(raw).map((x: any) => String(typeof x === "object" ? x["#text"] ?? "" : x).toUpperCase());
@@ -233,8 +264,16 @@ function mapKolibriPand(p: any): Partial<Listing> | null {
   const park = String(p?.Location?.Residence ?? "").trim();
 
   const { prijs, suffix } = kolibriPrijs(p, doel, verbergPrijs);
-  const type = kolibriType(p);
-  const titel = ml(p?.Descriptions?.Title) || `${type}${plaats ? " in " + plaats : ""}`;
+  const categorie = kolibriCategorie(p);
+  const type = categorie === "woonhuis" ? kolibriWoonType(p) : kolibriType(p);
+  const straat = ml(adres.Streetname);
+  const huisnr = [adres.HouseNumber, adres.HouseNumberPostfix].filter((x: any) => x !== undefined && x !== null && String(x).trim()).join("-");
+  const straatAdres = !verbergAdres && straat ? `${straat}${huisnr ? " " + huisnr : ""}` : "";
+  // Woonhuis: adres als titel (zoals gangbaar), anders "Type in Plaats".
+  const standaardTitel = categorie === "woonhuis" && straatAdres
+    ? `${straatAdres}${plaats ? ", " + plaats : ""}`
+    : `${type}${plaats ? " in " + plaats : ""}`;
+  const titel = ml(p?.Descriptions?.Title) || standaardTitel;
   const omschrijving = stripHtml(ml(p?.Descriptions?.AdText)).slice(0, 6000);
 
   // Foto's: alleen Attachments van het type PHOTO, op volgorde (Index), hoofdfoto eerst.
@@ -286,11 +325,13 @@ function mapKolibriPand(p: any): Partial<Listing> | null {
   const data: Partial<Listing> = {
     doel,
     pakket: "Premium" as any,
-    titel: titel || "Recreatiewoning",
+    titel: titel || (categorie === "woonhuis" ? "Woning" : "Recreatiewoning"),
     type,
+    categorie,
     provincie,
     park,
-    personen: Math.round(num(counts.CountOfBeds)) || 2,
+    // Max. personen is een vakantiebegrip; bij een woonhuis laten we het leeg (0).
+    personen: categorie === "woonhuis" ? 0 : Math.round(num(counts.CountOfBeds)) || 2,
     slaapkamers: Math.round(num(counts.CountOfBedrooms)) || undefined,
     m2: Math.round(num(p?.AreaTotals?.LivingArea) || num(p?.AreaTotals?.LivableArea)) || 0,
     prijs: prijs || (verbergPrijs ? 0 : 1),
@@ -437,6 +478,24 @@ function rwType(o: any): string {
   return "Recreatiewoning";
 }
 
+function rwWoonType(o: any): string {
+  const parts = [o?.algemeen?.woonhuistype, o?.algemeen?.woonhuissoort, o?.algemeen?.appartementsoort, o?.object?.type?.objecttype].map((x: any) => String(x || "").toUpperCase());
+  const has = (re: RegExp) => parts.some((t) => re.test(t));
+  if (has(/PENTHOUSE/)) return "Penthouse";
+  if (has(/MAISONNETTE|MAISONETTE/)) return "Maisonnette";
+  if (has(/APPARTEMENT|FLAT|PORTIEK|GALERIJ/)) return "Appartement";
+  if (has(/WOONBOOT/)) return "Woonboot";
+  if (has(/BOERDERIJ/)) return "Woonboerderij";
+  if (has(/BUNGALOW/)) return "Bungalow";
+  if (has(/VILLA|LANDHUIS/)) return "Villa";
+  if (has(/TWEE_ONDER_EEN_KAP|TWEE_ONDER_1_KAP/)) return "Twee-onder-een-kapwoning";
+  if (has(/HOEKWONING|EINDWONING/)) return "Hoekwoning";
+  if (has(/TUSSENWONING/)) return "Tussenwoning";
+  if (has(/VRIJSTAAND/)) return "Vrijstaande woning";
+  if (has(/EENGEZINS/)) return "Eengezinswoning";
+  return "Woning";
+}
+
 function rwPrijs(ov: any): { doel: "koop" | "huur"; prijs: number; suffix?: string } {
   const koop = num(ov?.koopprijs);
   const huur = num(ov?.huurprijs);
@@ -451,9 +510,10 @@ function rwPrijs(ov: any): { doel: "koop" | "huur"; prijs: number; suffix?: stri
 }
 
 // Mapt een Realworks Wonen-object naar ons Listing-model. Geeft null terug voor
-// alles wat we niet publiceren (geen recreatiewoning, vertrouwelijk, inactief).
+// alles wat we niet publiceren (vertrouwelijk, inactief). Recreatiewoningen gaan
+// naar Mooihuus.nl, gewone woningen naar Woonhuus.nl.
 function mapRealworksObject(o: any): Partial<Listing> | null {
-  if (!o?.algemeen?.bestemmingRecreatiewoning) return null; // alleen recreatiewoningen
+  const categorie: Categorie = o?.algemeen?.bestemmingRecreatiewoning ? "recreatie" : "woonhuis";
   if (o?.vertrouwelijk === true) return null;
   if (o?.actief === false) return null;
 
@@ -462,7 +522,7 @@ function mapRealworksObject(o: any): Partial<Listing> | null {
   const adres = o.adres || {};
   const plaats = String(adres.plaats || "").trim();
   const provincie = RW_PROVINCIE[String(adres.provincie || "").toUpperCase()] || plaats || "Nederland";
-  const type = rwType(o);
+  const type = categorie === "woonhuis" ? rwWoonType(o) : rwType(o);
   const { doel, prijs, suffix } = rwPrijs(ov);
 
   const hn = adres.huisnummer || {};
@@ -501,11 +561,12 @@ function mapRealworksObject(o: any): Partial<Listing> | null {
   const data: Partial<Listing> = {
     doel,
     pakket: "Premium" as any,
-    titel: titel || "Recreatiewoning",
+    titel: titel || (categorie === "woonhuis" ? "Woning" : "Recreatiewoning"),
     type,
+    categorie,
     provincie,
     park: "",
-    personen: (slaapkamers ? slaapkamers * 2 : 0) || 2,
+    personen: categorie === "woonhuis" ? 0 : (slaapkamers ? slaapkamers * 2 : 0) || 2,
     slaapkamers,
     m2: Math.round(num(alg.woonoppervlakte)) || 0,
     prijs: prijs || 1,
