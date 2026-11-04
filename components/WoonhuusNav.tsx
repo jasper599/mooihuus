@@ -12,7 +12,6 @@ export function WoonhuusNav({ mooihuusUrl }: { mooihuusUrl: string }) {
   const [open, setOpen] = useState(false);
   const links = [
     { href: "/", label: "Koopwoningen" },
-    { href: "/huren", label: "Huurwoningen" },
     { href: "/te-koop", label: "Per provincie" },
     { href: "/favorieten", label: "Favorieten" },
   ];

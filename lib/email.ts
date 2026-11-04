@@ -118,7 +118,7 @@ export function renderMakelaarWelkom(naam: string, email: string): { onderwerp: 
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Welkom bij Mooihuus, ${naam}! \u{1F44B}</h1>
     <p style="line-height:1.6;">Welkom op <strong>Mooihuus.nl</strong>, het platform voor recreatiewoningen. We hebben een account voor u aangemaakt zodat u uw aanbod en facturen kunt beheren.</p>
-    <p style="line-height:1.6;">Biedt u ook gewone woningen aan? Die zetten we in het zonnetje op ons zusterplatform <strong>Woonhuus.nl</strong>, waar kopers en huurders van gewone woningen zoeken. Uw recreatiewoningen blijven op Mooihuus.nl. Het gaat vanzelf: u beheert alles met dit ene account.</p>
+    <p style="line-height:1.6;">Biedt u ook gewone koopwoningen aan? Die zetten we in het zonnetje in ons buurhuus <strong>Woonhuus.nl</strong>, waar kopers van gewone woningen zoeken. Uw recreatiewoningen blijven op Mooihuus.nl. Het gaat vanzelf: u beheert alles met dit ene account. Let op: gewone huurwoningen bieden we niet aan, en voor gewone woningen bieden we alleen de advertentie aan.</p>
     <p style="line-height:1.6;"><strong>Inloggen:</strong> log in met dit e-mailadres (<strong>${email}</strong>) en stel uw wachtwoord in.</p>
     <p style="margin:22px 0;">${btn(`${COMPANY.website}/wachtwoord-vergeten`, "Stel uw wachtwoord in")}</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Hartelijke groet,<br>Team Mooihuus</p>`;
@@ -147,7 +147,7 @@ export function renderMakelaarBedankt(
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Uw factuur voor plaatsing op ${heeftWoonhuis && !heeftRecreatie ? "Woonhuus" : "Mooihuus"}</h1>
     <p style="line-height:1.6;">Beste ${naam}, bedankt voor het aanmelden van ${regels.length} ${obj} op <strong>${platformen}</strong>. Hieronder de factuur met betaallink. <strong>Elke woning gaat online zodra deze is betaald.</strong></p>
-    ${heeftWoonhuis ? `<p style="line-height:1.6;">Gewone woningen zetten we in het zonnetje op <strong>Woonhuus.nl</strong>, ons platform voor koop- en huurwoningen. Recreatiewoningen komen op Mooihuus.nl. Bij elke woning hieronder ziet u waar deze komt te staan.</p>` : ""}
+    ${heeftWoonhuis ? `<p style="line-height:1.6;">Gewone koopwoningen zetten we in het zonnetje in ons buurhuus <strong>Woonhuus.nl</strong>. Recreatiewoningen komen op Mooihuus.nl. Bij elke woning hieronder ziet u waar deze komt te staan.</p>` : ""}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
       <tr><td colspan="2" style="background:${BRAND.creme};padding:12px 16px;font-size:13px;color:${BRAND.grijs};">Advertentie — ${euro(tarief)} per woning per jaar</td></tr>
       ${items}

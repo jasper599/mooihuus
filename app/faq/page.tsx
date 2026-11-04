@@ -7,10 +7,12 @@ import { MOOIHUUS_URL } from "@/lib/site";
 
 // Woonhuus.nl: eigen, korte FAQ voor gewone woningen.
 const WOONHUUS_FAQ: QA[] = [
-  { v: "Wat is Woonhuus.nl?", a: "Het platform voor gewone koop- en huurwoningen in Nederland, zoals eengezinswoningen, appartementen en starterswoningen. Het aanbod komt rechtstreeks van makelaars. Woonhuus.nl hoort bij Mooihuus.nl, het platform voor recreatiewoningen." },
-  { v: "Is Woonhuus een makelaar?", a: "Nee. Woonhuus is een advertentieplatform en geen partij bij de koop of huur. Je reactie gaat rechtstreeks naar de makelaar van de woning." },
+  { v: "Wat is Woonhuus.nl?", a: "Het platform voor gewone koopwoningen in Nederland, zoals eengezinswoningen, appartementen en starterswoningen, aangeboden door makelaars en particulieren. Woonhuus.nl is het buurhuus van Mooihuus.nl, het platform voor recreatiewoningen." },
+  { v: "Is Woonhuus een makelaar?", a: "Nee. Woonhuus biedt alleen de advertentie aan en is geen partij bij de koop. Je reactie gaat rechtstreeks naar de makelaar of particulier die de woning aanbiedt." },
+  { v: "Staan er ook huurwoningen op Woonhuus?", a: "Nee. Woonhuus toont alleen koopwoningen." },
   { v: "Kost zoeken iets?", a: "Nee. Zoeken, bewaren en vergelijken is gratis, en je hebt er geen account voor nodig." },
-  { v: "Ik ben makelaar. Hoe komt mijn aanbod erop?", a: "Via de koppeling met Kolibri of Realworks. Uw gewone woningen verschijnen op Woonhuus.nl, uw recreatiewoningen op Mooihuus.nl. Inloggen en facturen beheren doet u via uw account op Mooihuus.nl." },
+  { v: "Ik ben makelaar. Hoe komt mijn aanbod erop?", a: "Via de koppeling met Kolibri of Realworks. Uw gewone koopwoningen verschijnen op Woonhuus.nl, uw recreatiewoningen op Mooihuus.nl. Inloggen en facturen beheren doet u via uw account op Mooihuus.nl." },
+  { v: "Ik ben particulier. Kan ik mijn huis plaatsen?", a: "Ja. Via 'Woning plaatsen' zet u uw koopwoning zelf online. Woonhuus biedt daarbij alleen de advertentie aan; begeleiding bij de verkoop hoort daar niet bij." },
   { v: "Wat kost adverteren?", a: "Makelaars betalen een vast bedrag per woning per jaar, zonder abonnement per maand. Het actuele tarief staat in de factuurmail na aanmelding." },
   { v: "Ik zoek een vakantiehuis of chalet.", a: "Recreatiewoningen, chalets en vakantiehuizen vind je op Mooihuus.nl." },
 ];
@@ -59,7 +61,7 @@ const CONTENT: Record<Locale, Content> = {
       { titel: "Algemeen", items: [
         { v: "Wat is Mooihuus?", a: "Het onafhankelijke platform waar je je recreatiewoning zelf in de etalage zet — te koop of te huur. Zelf de regie, met hulp binnen handbereik." },
         { v: "Is Mooihuus een makelaar?", a: "Nee. Mooihuus is een advertentieplatform en geen partij bij de koop of huur. Je houdt zelf de regie." },
-        { v: "Wat is Woonhuus.nl?", a: "Ons zusterplatform voor gewone koop- en huurwoningen, zoals eengezinswoningen en appartementen. Recreatiewoningen staan op Mooihuus.nl, gewone woningen op Woonhuus.nl. Je account, inloggen en betalen lopen voor beide via Mooihuus.nl." },
+        { v: "Wat is Woonhuus.nl?", a: "Ons buurhuus voor gewone koopwoningen, zoals eengezinswoningen en appartementen. Recreatiewoningen staan op Mooihuus.nl, gewone woningen op Woonhuus.nl. Bij een recreatiewoning begeleiden we je volledig; op Woonhuus bieden we alleen de advertentie aan. Je account, inloggen en betalen lopen voor beide via Mooihuus.nl." },
         { v: "Wat kost adverteren?", a: "Eenmalig per advertentie: Basis € 25, Plus € 49 of Premium € 79. Geen commissie over de verkoop. Vanaf 5 objecten krijg je 15% korting, vanaf 10 objecten 25%." },
       ]},
       { titel: "Account & meerdere objecten", items: [

@@ -6,9 +6,9 @@ export const dynamic = "force-dynamic";
 export default function manifest(): MetadataRoute.Manifest {
   if (huidigeSite() === "woonhuus") {
     return {
-      name: "Woonhuus: koop- en huurwoningen",
+      name: "Woonhuus: koopwoningen",
       short_name: "Woonhuus",
-      description: "Koop- en huurwoningen in heel Nederland, rechtstreeks van de makelaar. Een platform van Mooihuus.",
+      description: "Koopwoningen in heel Nederland, van makelaars en particulieren. Het buurhuus van Mooihuus.",
       start_url: "/",
       scope: "/",
       display: "standalone",

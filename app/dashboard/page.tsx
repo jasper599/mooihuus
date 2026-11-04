@@ -44,8 +44,8 @@ export default async function Dashboard() {
           <div className="flex-1 min-w-[220px]">
             <div className="font-display font-bold" style={{ color: "#1E3A5F" }}>Uw aanbod op twee platformen</div>
             <div className="text-sm text-grijs mt-0.5">
-              Recreatiewoningen staan op Mooihuus.nl. Gewone koop- en huurwoningen zetten we in het zonnetje op Woonhuus.nl,
-              waar kopers en huurders van gewone woningen zoeken. Dat gaat vanzelf; u beheert alles hier, met dit ene account.
+              Recreatiewoningen staan op Mooihuus.nl. Gewone koopwoningen zetten we in het zonnetje op Woonhuus.nl, ons buurhuus,
+              waar kopers van gewone woningen zoeken. Gewone huurwoningen bieden we niet aan. Dat gaat vanzelf; u beheert alles hier, met dit ene account.
               Bij elke woning hieronder ziet u waar deze staat.
             </div>
           </div>

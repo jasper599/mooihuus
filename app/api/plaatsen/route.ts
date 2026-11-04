@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     categorie,
     titel,
     type: String(b.type || "Chalet"),
-    doel: (b.doel === "huur" ? "huur" : "koop") as Doel,
+    doel: (b.doel === "huur" && categorie !== "woonhuis" ? "huur" : "koop") as Doel, // gewone woningen: alleen koop
     provincie: String(b.provincie || "Nederland"),
     park: String(b.park || ""),
     personen: categorie === "woonhuis" ? 0 : Number(b.personen || 2),

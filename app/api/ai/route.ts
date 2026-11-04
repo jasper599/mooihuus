@@ -63,7 +63,7 @@ export async function POST(req: Request) {
 
   const system =
     (f.categorie === "woonhuis"
-      ? `Je schrijft advertentieteksten voor Woonhuus.nl, het platform voor gewone koop- en huurwoningen in Nederland. Het gaat om een woning om permanent in te wonen, niet om een vakantiewoning. ` 
+      ? `Je schrijft advertentieteksten voor Woonhuus.nl, het platform voor gewone koopwoningen in Nederland. Het gaat om een woning om permanent in te wonen, niet om een vakantiewoning. ` 
       : `Je schrijft advertentieteksten voor Mooihuus.nl, hét platform voor recreatiewoningen in Nederland. `) +
     `Toon: warm, nuchter, uitnodigend, je/jij. Schrijf in het Nederlands.\n\n` +
     `Maak op basis van de kenmerken:\n` +

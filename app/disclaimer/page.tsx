@@ -12,6 +12,15 @@ export default function Disclaimer() {
         inhoud, maar kunnen niet garanderen dat alles altijd juist, volledig en actueel is.
       </p>
 
+      <h2>Recreatiewoningen en gewone woningen</h2>
+      <p>
+        Mooihuus.nl toont recreatiewoningen; Woonhuus.nl toont gewone koopwoningen. Een recreatiewoning is
+        bedoeld om recreatief van te genieten en niet voor permanente bewoning, tenzij de gemeente dat
+        uitdrukkelijk toestaat. Vermeldingen over bewoning, bestemming of verhuur in advertenties zijn
+        afkomstig van de aanbieder; controleer dit altijd zelf bij de gemeente. Op Woonhuus.nl bieden wij
+        uitsluitend de advertentie aan en begeleiden wij de verkoop niet.
+      </p>
+
       <h2>Advertenties van gebruikers</h2>
       <p>
         Advertenties worden geplaatst door gebruikers (particulieren en makelaars). {COMPANY.bv} is

@@ -16,7 +16,7 @@ export default function Voorwaarden() {
       </p>
       <p>
         Het platform bestaat uit twee websites: <strong>Mooihuus.nl</strong> voor recreatiewoningen en{" "}
-        <strong>Woonhuus.nl</strong> voor gewone koop- en huurwoningen. Woonhuus.nl is een onderdeel van
+        <strong>Woonhuus.nl</strong> voor gewone koopwoningen. Woonhuus.nl is een onderdeel van
         Mooihuus en wordt door dezelfde vennootschap geëxploiteerd. Accounts, inloggen, betalingen en
         facturatie lopen voor beide websites via Mooihuus.nl. Waar in deze voorwaarden “Mooihuus” of “het
         platform” staat, wordt ook Woonhuus.nl bedoeld.
@@ -38,6 +38,54 @@ export default function Voorwaarden() {
         gebruikers onderling of tussen een gebruiker en een partner tot stand komt. Wij zijn evenmin
         een boekingsplatform. Overeenkomsten, boekingen, betalingen en de uitvoering daarvan zijn de
         verantwoordelijkheid van de betrokken partijen zelf.
+      </p>
+
+      <h2>2a. Recreatiewoningen en gewone woningen</h2>
+      <p>
+        Het platform maakt onderscheid tussen twee soorten woningen. Welke soort een woning is, bepaalt
+        op welke website zij verschijnt en welke dienstverlening daarbij hoort.
+      </p>
+      <ul>
+        <li>
+          <strong>Recreatiewoningen</strong> (zoals chalets, bungalows, tiny houses en vakantiehuizen) worden
+          getoond op Mooihuus.nl. Een recreatiewoning is bedoeld om recreatief van te genieten en niet voor
+          permanente bewoning. Of en in hoeverre (tijdelijke) bewoning is toegestaan, wordt bepaald door het
+          bestemmingsplan en de regels van de betreffende gemeente en het park; de aanbieder vermeldt dit naar
+          waarheid en de koper of huurder controleert dit zelf.
+        </li>
+        <li>
+          <strong>Gewone woningen</strong> (woningen bestemd voor permanente bewoning, zoals eengezinswoningen,
+          appartementen en starterswoningen) worden getoond op Woonhuus.nl, uitsluitend <strong>te koop</strong>.
+          Gewone woningen te huur bieden wij niet aan; zulke advertenties worden niet geplaatst of verwijderd.
+        </li>
+      </ul>
+      <p>
+        <strong>Verschil in dienstverlening.</strong> Bij recreatiewoningen kan Mooihuus de aanbieder breder
+        ondersteunen, bijvoorbeeld met hulp bij teksten, waardeindicaties, contracten en doorverwijzing naar
+        vakmensen (de “Huusmeesters”), zoals per dienst in het platform beschreven. Bij gewone woningen op
+        Woonhuus.nl bieden wij <strong>uitsluitend de advertentie</strong> aan: wij begeleiden de verkoop niet,
+        geven geen advies over prijs, financiering of juridische zaken en zijn geen partij bij
+        onderhandelingen of de koopovereenkomst.
+      </p>
+      <p>
+        <strong>Indeling.</strong> Wij delen een woning in op basis van de gegevens die de aanbieder of de makelaar
+        aanlevert, bijvoorbeeld het recreatiekenmerk in het makelaarssysteem (zoals Kolibri of Realworks) of de
+        keuze die een particulier bij het plaatsen maakt. Wij mogen een woning naar de passende website
+        verplaatsen, een indeling corrigeren of een advertentie weigeren die niet past bij de website waarop
+        zij zou verschijnen. Een verplaatsing heeft geen gevolgen voor de looptijd of de prijs van de advertentie.
+      </p>
+      <p>
+        <strong>Makelaars en particulieren.</strong> Op beide websites kunnen zowel makelaars als particulieren
+        adverteren. Makelaars leveren hun aanbod doorgaans automatisch aan via een koppeling met hun
+        makelaarssysteem; de makelaar blijft verantwoordelijk voor de juistheid en actualiteit van dat aanbod en
+        voor de keuze welke woningen via die koppeling naar het platform worden gestuurd.
+      </p>
+      <p>
+        <strong>Kosten en facturatie voor makelaars.</strong> Voor woningen die via een makelaarskoppeling
+        binnenkomen geldt een vast bedrag per woning per jaar, ongeacht of de woning op Mooihuus.nl of op
+        Woonhuus.nl wordt getoond. Een woning gaat online nadat de factuur is betaald. Wordt een factuur niet
+        binnen de gestelde termijn betaald, dan vervalt de betaallink, ontvangt de makelaar een creditnota en
+        blijft de woning offline. Op de factuur staat bij elke woning op welke website zij verschijnt.
       </p>
 
       <h2>3. Account</h2>

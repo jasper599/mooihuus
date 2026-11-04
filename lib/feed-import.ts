@@ -265,6 +265,9 @@ function mapKolibriPand(p: any): Partial<Listing> | null {
 
   const { prijs, suffix } = kolibriPrijs(p, doel, verbergPrijs);
   const categorie = kolibriCategorie(p);
+  // Woonhuus.nl toont alleen koopwoningen: gewone huurwoningen nemen we niet op
+  // (dus ook geen factuur). Recreatieve huur blijft gewoon op Mooihuus.
+  if (categorie === "woonhuis" && doel === "huur") return null;
   const type = categorie === "woonhuis" ? kolibriWoonType(p) : kolibriType(p);
   const straat = ml(adres.Streetname);
   const huisnr = [adres.HouseNumber, adres.HouseNumberPostfix].filter((x: any) => x !== undefined && x !== null && String(x).trim()).join("-");
@@ -524,6 +527,7 @@ function mapRealworksObject(o: any): Partial<Listing> | null {
   const provincie = RW_PROVINCIE[String(adres.provincie || "").toUpperCase()] || plaats || "Nederland";
   const type = categorie === "woonhuis" ? rwWoonType(o) : rwType(o);
   const { doel, prijs, suffix } = rwPrijs(ov);
+  if (categorie === "woonhuis" && doel === "huur") return null; // geen gewone huurwoningen
 
   const hn = adres.huisnummer || {};
   const huisnr = [hn.hoofdnummer, hn.toevoeging].filter(Boolean).join(" ").trim();

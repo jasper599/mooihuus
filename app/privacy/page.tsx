@@ -36,7 +36,6 @@ export default function Privacy() {
         <li><strong>Verhuurpartners</strong> — klik je door naar het huuraanbod van een verhuurpartner, dan verlaat je Mooihuus en geldt op de site van die partner hun eigen privacybeleid. Wij delen daarbij zelf geen persoonsgegevens met de partner.</li>
         <li><strong>Hostingpartij</strong> — voor het draaien van het platform (bij voorkeur binnen de EU).</li>
       </ul>
-      <p>Wij verkopen je gegevens niet aan derden.</p>
 
       <h2>4. Bewaartermijnen</h2>
       <p>

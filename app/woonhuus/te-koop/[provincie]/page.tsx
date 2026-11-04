@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: { provincie: string
   if (!prov) return { title: "Niet gevonden" };
   const n = getLiveListings("woonhuis").filter((l) => l.doel === "koop" && l.provincie === prov).length;
   const title = `Huis te koop in ${prov}: ${n} ${n === 1 ? "woning" : "woningen"}`;
-  const description = `Bekijk ${n} koopwoningen in ${prov} op Woonhuus.nl, rechtstreeks van de makelaar.`;
+  const description = `Bekijk ${n} koopwoningen in ${prov} op Woonhuus.nl, van makelaars en particulieren.`;
   return {
     title,
     description,

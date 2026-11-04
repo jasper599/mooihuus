@@ -38,6 +38,7 @@ export default function Plaatsen() {
       park: c === "woonhuis" ? "" : cur.park || "Park De Veluwe",
       personen: c === "woonhuis" ? "" : cur.personen || "4",
       m2: c === "woonhuis" ? "110" : "65",
+      doel: c === "woonhuis" ? "koop" : cur.doel,
       prijs: c === "woonhuis" ? "350000" : "89000",
     }));
   }
@@ -247,7 +248,7 @@ export default function Plaatsen() {
           <Field label="Aanbieden als">
             <select className="field" value={f.doel} onChange={(e) => setF({ ...f, doel: e.target.value as Doel })}>
               <option value="koop">Te koop</option>
-              <option value="huur">Te huur</option>
+              {!woonhuis && <option value="huur">Te huur</option>}
             </select>
           </Field>
           <Field label="Type woning">

@@ -62,6 +62,8 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
   // Staat de woning op de andere etalage (woonhuis op Mooihuus of andersom),
   // dan permanent doorsturen naar het juiste domein.
   const woonhuis = categorieVan(listing) === "woonhuis";
+  // Gewone huurwoningen bieden we niet aan.
+  if (woonhuis && listing.doel === "huur") return notFound();
   if (siteVoorCategorie(categorieVan(listing)) !== huidigeSite()) permanentRedirect(woningUrl(listing));
   const locale = getLocale();
   const owner = getUser(listing.ownerId);

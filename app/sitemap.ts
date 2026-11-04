@@ -14,7 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Woonhuus.nl heeft een eigen sitemap met alleen gewone woningen.
   if (huidigeSite() === "woonhuus") {
     const w = WOONHUUS_URL;
-    const vast = ["", "/huren", "/te-koop", "/over-woonhuus", "/contact", "/faq", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"].map((p) => ({
+    const vast = ["", "/te-koop", "/over-woonhuus", "/contact", "/faq", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"].map((p) => ({
       url: `${w}${p}`, lastModified: nu, changeFrequency: (p === "" ? "daily" : "monthly") as "daily" | "monthly", priority: p === "" ? 1 : 0.6,
     }));
     const prov = PROVINCIES.map((p) => ({ url: `${w}/te-koop/${provincieSlug(p)}`, lastModified: nu, changeFrequency: "daily" as const, priority: 0.7 }));

@@ -20,6 +20,8 @@ export function middleware(req: NextRequest) {
     if (seg0 === "en" || seg0 === "de") {
       return NextResponse.redirect(`${WOONHUUS_URL}${pathname.slice(seg0.length + 1) || "/"}${search}`, 308);
     }
+    // Woonhuus toont alleen koopwoningen; de oude huurpagina wijst naar de home.
+    if (pathname === "/huren") return NextResponse.redirect(`${WOONHUUS_URL}/`, 308);
     if (!WOONHUUS_EIGEN_PADEN.some((re) => re.test(pathname))) {
       return NextResponse.redirect(`${MOOIHUUS_URL}${pathname}${search}`, 307);
     }
@@ -29,7 +31,6 @@ export function middleware(req: NextRequest) {
     headers.set("x-site", "woonhuus");
     const intern =
       pathname === "/" ? "/woonhuus" :
-      pathname === "/huren" ? "/woonhuus/huren" :
       pathname.startsWith("/te-koop") ? `/woonhuus${pathname}` :
       pathname === "/over-woonhuus" ? "/woonhuus/over" : null;
     if (intern) {

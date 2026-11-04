@@ -24,8 +24,8 @@ export const viewport = {
 export async function generateMetadata(): Promise<Metadata> {
   if (huidigeSite() === "woonhuus") {
     const path = getPathname();
-    const title = "Woonhuus.nl: koop- en huurwoningen rechtstreeks van de makelaar";
-    const description = "Eengezinswoningen, appartementen en starterswoningen in heel Nederland, rechtstreeks van de makelaar. Een platform van Mooihuus.";
+    const title = "Woonhuus.nl: koopwoningen van makelaars en particulieren";
+    const description = "Eengezinswoningen, appartementen en starterswoningen te koop in heel Nederland, aangeboden door makelaars en particulieren. Een platform van Mooihuus.";
     return {
       metadataBase: new URL(WOONHUUS_URL),
       title: { default: title, template: "%s · Woonhuus" },
@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
       alternates: { canonical: path },
       openGraph: { title, description, url: WOONHUUS_URL, siteName: "Woonhuus", locale: "nl_NL", type: "website" },
       twitter: { card: "summary_large_image", title, description },
-      keywords: ["huis te koop", "woning te koop", "huurwoning", "appartement", "eengezinswoning", "starterswoning"],
+      keywords: ["huis te koop", "woning te koop", "koopwoning", "appartement te koop", "eengezinswoning", "starterswoning"],
     };
   }
   const locale = getLocale();
@@ -185,10 +185,9 @@ function WoonhuusLayout({ children }: { children: React.ReactNode }) {
             <footer className="bg-white border-t border-lijn mt-10">
               <div className="max-w-6xl mx-auto px-4 py-8 text-sm text-grijs">
                 <Wordmark className="text-lg" site="woonhuus" />
-                <p className="mt-2 max-w-xl">Koop- en huurwoningen in heel Nederland, rechtstreeks van de makelaar. Woonhuus.nl is een platform van Mooihuus.</p>
+                <p className="mt-2 max-w-xl">Koopwoningen in heel Nederland, aangeboden door makelaars en particulieren. Woonhuus.nl is het buurhuus van Mooihuus.</p>
                 <nav className="mt-4 flex gap-4 flex-wrap font-semibold text-bosgroen-dk" aria-label="Footer">
                   <Link href="/te-koop" className="hover:underline">Te koop per provincie</Link>
-                  <Link href="/huren" className="hover:underline">Huurwoningen</Link>
                   <Link href="/over-woonhuus" className="hover:underline">Over Woonhuus</Link>
                   <Link href="/contact" className="hover:underline">Contact</Link>
                   <Link href="/faq" className="hover:underline">Veelgestelde vragen</Link>
