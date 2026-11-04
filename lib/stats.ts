@@ -23,6 +23,7 @@ export interface MooihuusStats {
     koop: number;
     huur: number;
     uitgelicht: number;
+    woonhuus: number; // live op Woonhuus.nl (gewone woningen)
     perBron: { bron: string; aantal: number }[];
   };
   leads: { totaal: number; week: number; maand: number };
@@ -106,6 +107,7 @@ export function berekenStats(): MooihuusStats {
       koop: live.filter((l) => l.doel === "koop").length,
       huur: live.filter((l) => l.doel === "huur").length,
       uitgelicht: live.filter((l) => l.uitgelicht).length,
+      woonhuus: live.filter((l) => l.categorie === "woonhuis").length,
       perBron,
     },
     leads: {

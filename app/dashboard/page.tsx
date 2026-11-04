@@ -6,6 +6,7 @@ import { getListingsByOwner, getLeadsForOwner, getPaymentsByUser, getPayments, g
 import { gradient } from "@/lib/format";
 import { euro } from "@/lib/money";
 import { ListingActions } from "@/components/ListingActions";
+import { woningUrl } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,19 @@ export default async function Dashboard() {
         <Stat n={euro(payments.filter((p) => p.status === "paid").reduce((s, p) => s + p.bedrag, 0))} l="Uitgegeven" />
       </div>
 
+      {(user?.type === "zakelijk" || listings.some((l) => l.categorie === "woonhuis")) && (
+        <div className="mb-6 rounded-2xl border p-4 flex gap-3 items-start flex-wrap" style={{ borderColor: "#D5E0EC", background: "#F4F6F8" }}>
+          <div className="flex-1 min-w-[220px]">
+            <div className="font-display font-bold" style={{ color: "#1E3A5F" }}>Uw aanbod op twee platformen</div>
+            <div className="text-sm text-grijs mt-0.5">
+              Recreatiewoningen staan op Mooihuus.nl. Gewone koop- en huurwoningen zetten we in het zonnetje op Woonhuus.nl,
+              waar kopers en huurders van gewone woningen zoeken. Dat gaat vanzelf; u beheert alles hier, met dit ene account.
+              Bij elke woning hieronder ziet u waar deze staat.
+            </div>
+          </div>
+        </div>
+      )}
+
       <Link href="/dashboard/styling" className="mb-6 rounded-2xl bg-creme border border-salie p-4 flex gap-3 items-center flex-wrap hover:shadow-md transition-shadow">
         <div className="text-2xl">🎨</div>
         <div className="flex-1 min-w-[200px]">
@@ -68,6 +82,11 @@ export default async function Dashboard() {
                 <div className="flex-1">
                   <div className="font-display font-bold">{l.titel}</div>
                   <div className="text-sm text-grijs">{euro(l.prijs)} · {l.doel === "huur" ? "Te huur" : "Te koop"} · Pakket {l.pakket}</div>
+                  <div className="text-xs mt-0.5">
+                    {l.categorie === "woonhuis"
+                      ? <span className="inline-block rounded-full px-2 py-0.5 font-semibold" style={{ background: "#D5E0EC", color: "#1E3A5F" }}>Staat op Woonhuus.nl</span>
+                      : <span className="inline-block rounded-full px-2 py-0.5 font-semibold bg-salie-lt text-bosgroen-dk">Staat op Mooihuus.nl</span>}
+                  </div>
                   <div className="mt-1">
                     {l.status === "live" && <span className="pill">Live</span>}
                     {l.status === "verkocht" && <span className="inline-block bg-oranje text-white font-semibold text-xs px-3 py-1 rounded-full">Verkocht</span>}
@@ -82,7 +101,7 @@ export default async function Dashboard() {
                 </div>
                 {l.status === "live" && (
                   <div className="flex flex-col gap-1 shrink-0">
-                    <Link href={`/aanbod/${l.id}`} className="btn btn-green text-sm">Bekijk</Link>
+                    <a href={woningUrl(l)} className="btn btn-green text-sm">Bekijk</a>
                     <Link href={`/promoten/${l.id}`} className="btn text-sm">🚀 Opvallen</Link>
                   </div>
                 )}

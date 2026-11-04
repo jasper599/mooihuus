@@ -153,6 +153,8 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
             <Stat n={String(users.length)} l="Profielen" />
             <Stat n={String(listings.length)} l="Advertenties" />
             <Stat n={String(listings.filter((l) => l.status === "live").length)} l="Waarvan live" />
+            <Stat n={String(listings.filter((l) => l.status === "live" && l.categorie !== "woonhuis").length)} l="Live op Mooihuus" />
+            <Stat n={String(listings.filter((l) => l.status === "live" && l.categorie === "woonhuis").length)} l="Live op Woonhuus" />
             <Stat n={euro(omzet)} l="Omzet (betaald)" />
             <Stat n={String(leads.length)} l="Leads" />
             <Stat n={String(payments.filter((p) => p.status === "paid").length)} l="Betalingen" />
