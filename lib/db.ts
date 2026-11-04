@@ -87,7 +87,14 @@ function removeDemoData(db: DB): boolean {
   return changed;
 }
  
-let cache: DB | null = null;
+// Gedeelde staat per Node-proces. Next.js bundelt instrumentation (de scheduler,
+// o.a. de Kolibri-import) en de route-handlers apart, waardoor dit bestand twee
+// keer geladen wordt. Met een gewone module-variabele had elke bundel zijn eigen
+// cache: wat de scheduler schreef (bijv. Kolibri-facturen MH-2026-0011/0012)
+// zag het CRM nooit, en de volgende save() van de andere kant overschreef het.
+// Via globalThis delen alle bundels in hetzelfde proces één cache.
+type DbStore = { cache: DB | null; pgPrimary: boolean; pgSyncFn: (() => void) | null };
+const store: DbStore = ((globalThis as any).__mooihuusDbStore ??= { cache: null, pgPrimary: false, pgSyncFn: null });
  
 // Zorgt dat het Luyten-account en het Luyten-aanbod aanwezig zijn.
 // Idempotent (op id), dus veilig op zowel een verse als bestaande database.
@@ -139,50 +146,48 @@ function ensureLmData(db: DB): boolean {
 }
  
 function load(): DB {
-  if (cache) return cache;
+  if (store.cache) return store.cache;
   ensureDir();
   if (fs.existsSync(DB_FILE)) {
     try {
-      cache = JSON.parse(fs.readFileSync(DB_FILE, "utf8")) as DB;
+      store.cache = JSON.parse(fs.readFileSync(DB_FILE, "utf8")) as DB;
     } catch {
-      cache = null; // val terug op seed
+      store.cache = null; // val terug op seed
     }
   }
-  const fresh = !cache;
-  if (!cache) cache = seed();
+  const fresh = !store.cache;
+  if (!store.cache) store.cache = seed();
   // Migratie: zorg dat nieuwere velden bestaan in oudere db.json bestanden.
   let migrated = false;
-  if (!Array.isArray(cache.reviews)) { cache.reviews = []; migrated = true; }
-  if (!Array.isArray(cache.ideeen)) { cache.ideeen = []; migrated = true; }
-  if (!Array.isArray(cache.partnerkliks)) { cache.partnerkliks = []; migrated = true; }
-  if (!Array.isArray(cache.pageviews)) { cache.pageviews = []; migrated = true; }
-  if (!Array.isArray(cache.postcodegeo)) { cache.postcodegeo = []; migrated = true; }
+  if (!Array.isArray(store.cache.reviews)) { store.cache.reviews = []; migrated = true; }
+  if (!Array.isArray(store.cache.ideeen)) { store.cache.ideeen = []; migrated = true; }
+  if (!Array.isArray(store.cache.partnerkliks)) { store.cache.partnerkliks = []; migrated = true; }
+  if (!Array.isArray(store.cache.pageviews)) { store.cache.pageviews = []; migrated = true; }
+  if (!Array.isArray(store.cache.postcodegeo)) { store.cache.postcodegeo = []; migrated = true; }
   // Backfill: bestaande woningen een bron geven (lm-* = luyten, rest = eigen).
-  for (const l of cache.listings) {
+  for (const l of store.cache.listings) {
     if (!l.source) { l.source = l.id.startsWith("lm-") ? "luyten" : "eigen"; migrated = true; }
   }
-  if (!Array.isArray(cache.nieuwsbrief)) { cache.nieuwsbrief = []; migrated = true; }
-  if (!Array.isArray(cache.nieuwsbriefPending)) { cache.nieuwsbriefPending = []; migrated = true; }
-  if (!Array.isArray(cache.socialPosts)) { cache.socialPosts = []; migrated = true; }
-  if (!Array.isArray(cache.blogPosts)) { cache.blogPosts = []; migrated = true; }
-  if (!Array.isArray(cache.kortingscodes)) { cache.kortingscodes = []; migrated = true; }
-  const removed = removeDemoData(cache);
-  const added = ensureLmData(cache);
+  if (!Array.isArray(store.cache.nieuwsbrief)) { store.cache.nieuwsbrief = []; migrated = true; }
+  if (!Array.isArray(store.cache.nieuwsbriefPending)) { store.cache.nieuwsbriefPending = []; migrated = true; }
+  if (!Array.isArray(store.cache.socialPosts)) { store.cache.socialPosts = []; migrated = true; }
+  if (!Array.isArray(store.cache.blogPosts)) { store.cache.blogPosts = []; migrated = true; }
+  if (!Array.isArray(store.cache.kortingscodes)) { store.cache.kortingscodes = []; migrated = true; }
+  const removed = removeDemoData(store.cache);
+  const added = ensureLmData(store.cache);
   if (fresh || removed || added || migrated) save();
-  return cache;
+  return store.cache;
 }
  
 // Fase 2: als de app op Postgres draait (PG_PRIMARY), schrijft elke save() de
 // wijziging óók door naar Postgres. db.json blijft als vangnet gewoon meeschrijven,
 // zodat terugvallen altijd mogelijk is zonder dataverlies.
-let pgPrimary = false;
-let pgSyncFn: (() => void) | null = null;
 export function configurePgPrimary(syncFn: () => void): void {
-  pgPrimary = true;
-  pgSyncFn = syncFn;
+  store.pgPrimary = true;
+  store.pgSyncFn = syncFn;
 }
 export function isPgPrimary(): boolean {
-  return pgPrimary;
+  return store.pgPrimary;
 }
 // Vult de in-memory cache rechtstreeks uit Postgres (gebruikt bij Fase-2-boot,
 // vóór de eerste request). Defensief: zorgt dat alle verwachte arrays bestaan.
@@ -195,7 +200,7 @@ export function setCacheFromPg(data: DB): void {
   ];
   for (const k of arrays) if (!Array.isArray(d[k])) d[k] = [];
   if (typeof d.seq !== "number") d.seq = 100;
-  cache = data;
+  store.cache = data;
 }
 
 // Directe write-through naar Postgres vanuit ELKE save(), onafhankelijk van de
@@ -226,12 +231,12 @@ function save() {
   // midden in het schrijven db.json niet beschadigen. Compact (geen indent) is
   // bij duizenden woningen flink sneller en kleiner.
   const tmp = `${DB_FILE}.tmp`;
-  fs.writeFileSync(tmp, JSON.stringify(cache), "utf8");
+  fs.writeFileSync(tmp, JSON.stringify(store.cache), "utf8");
   fs.renameSync(tmp, DB_FILE);
   scheduleWriteThrough();
   // Schrijf de wijziging door naar Postgres (alleen in Fase 2). Nooit fataal.
-  if (pgPrimary && pgSyncFn) {
-    try { pgSyncFn(); } catch { /* db.json is al weggeschreven; PG volgt bij de volgende sync */ }
+  if (store.pgPrimary && store.pgSyncFn) {
+    try { store.pgSyncFn(); } catch { /* db.json is al weggeschreven; PG volgt bij de volgende sync */ }
   }
 }
 
@@ -589,7 +594,17 @@ export function getPaymentsByUser(userId: string): Payment[] {
 export function addPayment(data: Omit<Payment, "id" | "aangemaakt" | "factuurnummer">): Payment {
   const db = load();
   const jaar = new Date().getFullYear();
-  const nummer = String(db.payments.length + 1).padStart(4, "0");
+  // Volgnummer = hoogste bestaande nummer van dit jaar + 1 (niet het aantal
+  // betalingen), zodat een verwijderde of ontbrekende betaling nooit een
+  // dubbel factuurnummer oplevert.
+  const prefix = `MH-${jaar}-`;
+  const hoogste = db.payments.reduce((max, p) => {
+    const f = p.factuurnummer || "";
+    if (!f.startsWith(prefix)) return max;
+    const n = parseInt(f.slice(prefix.length), 10);
+    return Number.isFinite(n) && n > max ? n : max;
+  }, 0);
+  const nummer = String(hoogste + 1).padStart(4, "0");
   const payment: Payment = {
     ...data,
     id: nextId("pay-"),
