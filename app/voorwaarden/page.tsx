@@ -105,6 +105,22 @@ export default function Voorwaarden() {
         <li>Je plaatst je advertentie in het <strong>Nederlands</strong>. Mooihuus mag aangeleverde titel- en omschrijvingsteksten automatisch naar het Nederlands normaliseren, en toont daarnaast automatisch (machinaal) gegenereerde vertalingen, waaronder Duits en Engels. De Nederlandse versie is leidend; vertalingen zijn indicatief en hieraan kunnen geen rechten worden ontleend.</li>
       </ul>
 
+      <h2>4a. Volgorde van de woningen en betaalde zichtbaarheid</h2>
+      <p>
+        Standaard tonen wij eerst uitgelichte woningen en daarna de overige woningen, nieuwste eerst.
+        Uitlichting is een betaalde dienst (zoals het pakket Premium of een losse optie om op te vallen) of
+        geldt voor aanbod van onze partners, en is zichtbaar met het label “Uitgelicht”. Bezoekers kunnen de
+        volgorde zelf wijzigen en filteren. Andere factoren dan deze gebruiken wij niet voor de volgorde.
+      </p>
+
+      <h2>4b. Melden, verwijderen en bezwaar</h2>
+      <ul>
+        <li>Iedereen kan inhoud die onjuist, misleidend of onrechtmatig lijkt bij ons melden via {COMPANY.email} of het contactformulier. Wij bevestigen de melding, beoordelen die zorgvuldig en laten de melder weten wat wij ermee doen.</li>
+        <li>Wij mogen advertenties weigeren, aanpassen, offline halen of verwijderen als zij in strijd zijn met deze voorwaarden of de wet, of niet passen bij de website waarop zij verschijnen. Wij laten de aanbieder dan weten waarom.</li>
+        <li>Ben je het niet eens met een besluit over jouw advertentie of melding, dan kun je binnen zes maanden bezwaar maken via {COMPANY.email}. Wij beoordelen je bezwaar opnieuw en laten je de uitkomst weten.</li>
+        <li>{COMPANY.email} is ons contactpunt voor gebruikers en autoriteiten.</li>
+      </ul>
+
       <h2>5. Prijzen en betaling</h2>
       <ul>
         <li>Adverteren gebeurt tegen een <strong>eenmalig</strong> bedrag per advertentie (pakketten Basis, Plus, Premium), plus eventuele losse opties. Actuele prijzen staan in de dienst.</li>

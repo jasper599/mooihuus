@@ -115,6 +115,13 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
           {aanbieder && (
             <div className="text-sm text-grijs mt-1">
               {t(locale, "listing.aangebodenDoor")} <span className="font-semibold text-bosgroen-dk">{aanbieder}</span>
+              {locale === "nl" && <span> (makelaar of bedrijf)</span>}
+            </div>
+          )}
+          {!listing.externalUrl && !zakelijk && locale === "nl" && (
+            <div className="text-sm text-grijs mt-1">
+              Aangeboden door een <span className="font-semibold text-bosgroen-dk">particulier</span>.{" "}
+              <a href="/disclaimer" className="underline">Let op: bij koop van een particulier gelden de regels voor consumentenbescherming niet.</a>
             </div>
           )}
           {feedBron && (

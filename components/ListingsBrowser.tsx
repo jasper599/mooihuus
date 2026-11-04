@@ -169,7 +169,10 @@ export function ListingsBrowser({
       </div>
 
       <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="text-sm text-grijs">{sorted.length} {t(locale, "home.resultaten")}</div>
+        <div className="text-sm text-grijs">
+          {sorted.length} {t(locale, "home.resultaten")}
+          {locale === "nl" && <> · <a href="/disclaimer#rangschikking" className="underline hover:text-bosgroen">Hoe bepalen we de volgorde?</a></>}
+        </div>
         <div className="inline-flex rounded-full border border-lijn overflow-hidden text-sm font-display font-semibold">
           <button
             type="button"
