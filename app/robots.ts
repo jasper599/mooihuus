@@ -1,7 +1,14 @@
 import type { MetadataRoute } from "next";
 import { COMPANY } from "@/lib/company";
+import { huidigeSite } from "@/lib/site-server";
+import { WOONHUUS_URL } from "@/lib/site";
+
+export const dynamic = "force-dynamic";
 
 export default function robots(): MetadataRoute.Robots {
+  if (huidigeSite() === "woonhuus") {
+    return { rules: { userAgent: "*", allow: "/" }, sitemap: `${WOONHUUS_URL}/sitemap.xml`, host: WOONHUUS_URL };
+  }
   return {
     rules: {
       userAgent: "*",
