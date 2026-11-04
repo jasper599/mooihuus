@@ -70,7 +70,7 @@ export interface Listing {
   openhuisDatum?: string; // yyyy-mm-dd van een open huis
   openhuisVan?: string; // "13:00"
   openhuisTot?: string; // "16:00"
-  // Uitgebreide kenmerken (Funda-stijl), optioneel
+  // Uitgebreide kenmerken, optioneel
   bouwjaar?: number;
   slaapkamers?: number;
   perceel?: number; // perceeloppervlakte in m²

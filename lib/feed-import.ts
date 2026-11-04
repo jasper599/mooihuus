@@ -181,7 +181,7 @@ function kolibriStatus(status: string): Listing["status"] {
 }
 
 // Recreatie of gewone woning? De makelaar zet in Kolibri het recreatie-vinkje
-// (Type.ForRecreation, hetzelfde als voor Funda Recreatie). Ligt het pand op een
+// (Type.ForRecreation, het recreatie-vinkje van de makelaar). Ligt het pand op een
 // park, dan rekenen we het ook tot recreatie. Al het andere is een woonhuis.
 function kolibriCategorie(p: any): Categorie {
   if (isTrue(p?.Type?.ForRecreation)) return "recreatie";
