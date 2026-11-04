@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getLiveListings } from "@/lib/db";
+import { ListingsBrowser } from "@/components/ListingsBrowser";
+import { getLocale } from "@/lib/i18n-server";
 import { WOONHUUS_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
@@ -13,22 +14,27 @@ export const metadata: Metadata = {
 // Verwijspagina op Mooihuus.nl: wie een gewone woning zoekt, hoort op Woonhuus.nl.
 export default function WoonhuisZoeken() {
   const aantal = getLiveListings("woonhuis").length;
+  const locale = getLocale();
+  // Daaronder gewoon het eigen recreatieaanbod van Mooihuus, met filters.
+  const recreatie = getLiveListings()
+    .filter((l) => l.doel === "koop")
+    .map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined, omschrijving: "" }));
   return (
-    <div className="max-w-4xl mx-auto">
-      <section className="rounded-2xl overflow-hidden border border-lijn bg-white grid md:grid-cols-2">
-        <div className="p-7 md:p-10">
+    <div>
+      <section className="rounded-2xl overflow-hidden border border-lijn bg-white grid md:grid-cols-[1.4fr_1fr]">
+        <div className="p-6 md:p-8">
           <div className="font-display font-semibold text-bosgroen text-sm mb-2">Van Mooihuus naar Woonhuus</div>
-          <h1 className="font-display font-extrabold text-3xl md:text-4xl leading-tight text-bosgroen-dk">Op zoek naar een gewoon woonhuis?</h1>
+          <h1 className="font-display font-extrabold text-2xl md:text-3xl leading-tight text-bosgroen-dk">Op zoek naar een gewoon woonhuis?</h1>
           <p className="text-grijs mt-3">
             Mooihuus is helemaal gericht op recreatiewoningen: chalets, bungalows en vakantiehuizen. Voor eengezinswoningen,
             appartementen en starterswoningen die te koop staan, hebben we een zusterplatform: <strong>Woonhuus.nl</strong>.
           </p>
-          <div className="mt-6 flex gap-3 flex-wrap">
+          <div className="mt-5 flex gap-3 flex-wrap">
             <a href={WOONHUUS_URL} className="btn">Naar Woonhuus.nl →</a>
-            <Link href="/" className="btn btn-green">Bekijk recreatiewoningen</Link>
+            <a href="#aanbod" className="btn btn-green">Bekijk recreatiewoningen</a>
           </div>
         </div>
-        <div className="p-7 md:p-10 flex flex-col justify-center gap-3" style={{ background: "#1E3A5F", color: "#fff" }}>
+        <div className="p-6 md:p-8 flex flex-col justify-center gap-2" style={{ background: "#1E3A5F", color: "#fff" }}>
           <div className="font-display font-extrabold text-2xl">
             <span style={{ color: "#D5E0EC" }}>Woon</span>huus<span style={{ color: "#E8823B" }}>.nl</span>
           </div>
@@ -37,7 +43,7 @@ export default function WoonhuisZoeken() {
         </div>
       </section>
 
-      <section className="mt-8 grid gap-4 md:grid-cols-3">
+      <section className="mt-4 grid gap-4 md:grid-cols-3">
         {[
           { t: "Zelfde vertrouwde basis", d: "Woonhuus.nl is van hetzelfde team als Mooihuus.nl. Je favorieten en zoekgemak werken hetzelfde." },
           { t: "Van makelaar of particulier", d: "Makelaars leveren hun aanbod automatisch aan, particulieren plaatsen hun woning zelf. Je reactie gaat direct naar de aanbieder." },
@@ -50,15 +56,9 @@ export default function WoonhuisZoeken() {
         ))}
       </section>
 
-      <Link href="/" className="mt-8 block rounded-2xl bg-bosgroen text-white p-6 md:p-8 hover:shadow-md transition-shadow">
-        <div className="flex gap-4 items-center flex-wrap">
-          <div className="flex-1 min-w-[240px]">
-            <div className="font-display font-extrabold text-2xl">Toch op zoek naar een plek om tot rust te komen?</div>
-            <div className="text-salie-lt mt-1">Chalets, bungalows en vakantiehuizen om recreatief van te genieten, met begeleiding van Mooihuus van advertentie tot contract.</div>
-          </div>
-          <span className="btn bg-white text-bosgroen-dk hover:bg-white/90 text-base px-6 py-3">Bekijk het aanbod recreatiewoningen →</span>
-        </div>
-      </Link>
+      <h2 className="font-display font-extrabold text-2xl text-bosgroen-dk mt-10">Toch op zoek naar een plek om tot rust te komen?</h2>
+      <p className="text-grijs mt-1">Bekijk het aanbod recreatiewoningen op Mooihuus, met begeleiding van advertentie tot contract.</p>
+      <ListingsBrowser listings={recreatie} locale={locale} modus="koop" />
     </div>
   );
 }
