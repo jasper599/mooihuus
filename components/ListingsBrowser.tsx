@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { Listing } from "@/lib/types";
 import { Locale, t } from "@/lib/i18n";
 import { ListingCard } from "./ListingCard";
+import { MOOIHUUS_URL } from "@/lib/site";
 
 const Kaart = dynamic(() => import("./Kaart").then((m) => m.Kaart), {
   ssr: false,
@@ -188,7 +189,18 @@ export function ListingsBrowser({
       </div>
 
       {sorted.length === 0 ? (
-        <div className="card text-grijs">{t(locale, "home.geen")}</div>
+        <div className="card text-grijs">
+          {t(locale, "home.geen")}
+          {locale === "nl" && (
+            <div className="mt-2 text-sm">
+              {woonhuis ? (
+                <>Zoek je een recreatiewoning of vakantiehuis? <a href={MOOIHUUS_URL} className="text-bosgroen font-semibold hover:underline">Misschien staat het op Mooihuus.nl →</a></>
+              ) : (
+                <>Zoek je een gewoon woonhuis? <a href="/woonhuis-zoeken" className="text-bosgroen font-semibold hover:underline">Misschien staat het op Woonhuus.nl →</a></>
+              )}
+            </div>
+          )}
+        </div>
       ) : view === "kaart" ? (
         <Kaart listings={kaartLijst} locale={locale} />
       ) : (

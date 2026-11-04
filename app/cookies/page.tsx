@@ -1,13 +1,13 @@
 import { LegalShell } from "@/components/LegalShell";
 import { COMPANY } from "@/lib/company";
 
-export const metadata = { title: "Cookiebeleid — Mooihuus" };
+export const metadata = { title: "Cookiebeleid" };
 
 export default function Cookies() {
   return (
     <LegalShell title="Cookiebeleid">
       <p>
-        Mooihuus.nl ({COMPANY.bv}) gebruikt cookies en vergelijkbare technieken. Hieronder leggen we
+        Mooihuus.nl en Woonhuus.nl ({COMPANY.bv}) gebruiken cookies en vergelijkbare technieken. Hieronder leggen we
         uit welke en waarvoor.
       </p>
 

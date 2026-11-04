@@ -1,7 +1,7 @@
 import { LegalShell } from "@/components/LegalShell";
 import { COMPANY } from "@/lib/company";
 
-export const metadata = { title: "Disclaimer — Mooihuus" };
+export const metadata = { title: "Disclaimer" };
 
 export default function Disclaimer() {
   return (

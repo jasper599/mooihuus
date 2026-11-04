@@ -133,6 +133,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Link href={localeHref(locale, "/privacy")} className="hover:underline">{t(locale, "footer.privacy")}</Link>
                   <Link href={localeHref(locale, "/cookies")} className="hover:underline">{t(locale, "footer.cookies")}</Link>
                   <Link href={localeHref(locale, "/disclaimer")} className="hover:underline">{t(locale, "footer.disclaimer")}</Link>
+                  <Link href={localeHref(locale, "/woonhuis-zoeken")} className="hover:underline">Gewone woning zoeken? Woonhuus.nl</Link>
                 </nav>
                 <p className="mt-4 text-xs text-grijs">
                   {t(locale, "footer.dienstVan")} <strong>Huus B.V.</strong> · {COMPANY.adres}, {COMPANY.postcode} · KvK {COMPANY.kvk} · btw {COMPANY.btw} · © {new Date().getFullYear()} Huus B.V.

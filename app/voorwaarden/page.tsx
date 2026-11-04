@@ -2,7 +2,7 @@ import Link from "next/link";
 import { LegalShell } from "@/components/LegalShell";
 import { COMPANY } from "@/lib/company";
 
-export const metadata = { title: "Algemene voorwaarden — Mooihuus" };
+export const metadata = { title: "Algemene voorwaarden" };
 
 export default function Voorwaarden() {
   return (
@@ -14,12 +14,21 @@ export default function Voorwaarden() {
         onder nummer {COMPANY.kvk}. Contact: {COMPANY.email}. Deze voorwaarden zijn van toepassing op
         het gebruik van het platform en op alle diensten die Mooihuus aanbiedt.
       </p>
+      <p>
+        Het platform bestaat uit twee websites: <strong>Mooihuus.nl</strong> voor recreatiewoningen en{" "}
+        <strong>Woonhuus.nl</strong> voor gewone koop- en huurwoningen. Woonhuus.nl is een onderdeel van
+        Mooihuus en wordt door dezelfde vennootschap geëxploiteerd. Accounts, inloggen, betalingen en
+        facturatie lopen voor beide websites via Mooihuus.nl. Waar in deze voorwaarden “Mooihuus” of “het
+        platform” staat, wordt ook Woonhuus.nl bedoeld.
+      </p>
 
       <h2>2. Wat Mooihuus is (en niet is)</h2>
       <p>
         Mooihuus is een online <strong>advertentie- en informatieplatform</strong> rondom de
         recreatiewoning. Particulieren en makelaars kunnen er hun recreatiewoning te koop of te huur
-        aanbieden. Daarnaast brengt Mooihuus gebruikers in contact met partners en vakmensen voor
+        aanbieden. Gewone woningen (bestemd voor permanente bewoning) worden getoond op Woonhuus.nl. Of een
+        woning op Mooihuus.nl of op Woonhuus.nl verschijnt, bepalen wij op basis van de gegevens van de
+        aanbieder of de makelaar; wij mogen een woning naar de passende website verplaatsen. Daarnaast brengt Mooihuus gebruikers in contact met partners en vakmensen voor
         diensten rondom de recreatiewoning (de “Huusmeesters”) en toont het platform huuraanbod van
         externe verhuurpartners.
       </p>

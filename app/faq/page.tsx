@@ -2,6 +2,48 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getLocale } from "@/lib/i18n-server";
 import { Locale, localeHref } from "@/lib/i18n";
+import { huidigeSite } from "@/lib/site-server";
+import { MOOIHUUS_URL } from "@/lib/site";
+
+// Woonhuus.nl: eigen, korte FAQ voor gewone woningen.
+const WOONHUUS_FAQ: QA[] = [
+  { v: "Wat is Woonhuus.nl?", a: "Het platform voor gewone koop- en huurwoningen in Nederland, zoals eengezinswoningen, appartementen en starterswoningen. Het aanbod komt rechtstreeks van makelaars. Woonhuus.nl hoort bij Mooihuus.nl, het platform voor recreatiewoningen." },
+  { v: "Is Woonhuus een makelaar?", a: "Nee. Woonhuus is een advertentieplatform en geen partij bij de koop of huur. Je reactie gaat rechtstreeks naar de makelaar van de woning." },
+  { v: "Kost zoeken iets?", a: "Nee. Zoeken, bewaren en vergelijken is gratis, en je hebt er geen account voor nodig." },
+  { v: "Ik ben makelaar. Hoe komt mijn aanbod erop?", a: "Via de koppeling met Kolibri of Realworks. Uw gewone woningen verschijnen op Woonhuus.nl, uw recreatiewoningen op Mooihuus.nl. Inloggen en facturen beheren doet u via uw account op Mooihuus.nl." },
+  { v: "Wat kost adverteren?", a: "Makelaars betalen een vast bedrag per woning per jaar, zonder abonnement per maand. Het actuele tarief staat in de factuurmail na aanmelding." },
+  { v: "Ik zoek een vakantiehuis of chalet.", a: "Recreatiewoningen, chalets en vakantiehuizen vind je op Mooihuus.nl." },
+];
+
+function WoonhuusFaq() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: WOONHUUS_FAQ.map((qa) => ({ "@type": "Question", name: qa.v, acceptedAnswer: { "@type": "Answer", text: qa.a } })),
+  };
+  return (
+    <div className="max-w-3xl">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <h1 className="font-display font-extrabold text-3xl text-bosgroen-dk">Veelgestelde vragen</h1>
+      <p className="text-grijs mb-6">Kort antwoord op wat mensen ons het vaakst vragen.</p>
+      <div className="space-y-2">
+        {WOONHUUS_FAQ.map((qa) => (
+          <details key={qa.v} className="card group">
+            <summary className="font-display font-semibold text-bosgroen-dk cursor-pointer list-none flex justify-between items-center">
+              {qa.v}
+              <span className="text-oranje-dk group-open:rotate-45 transition-transform text-xl leading-none">+</span>
+            </summary>
+            <div className="text-[0.95rem] text-inkt mt-2">{qa.a}</div>
+          </details>
+        ))}
+      </div>
+      <a href={MOOIHUUS_URL} className="card bg-creme mt-6 flex items-center justify-between flex-wrap gap-3 hover:shadow-md transition-shadow">
+        <span className="font-display font-semibold text-bosgroen-dk">Op zoek naar een recreatiewoning?</span>
+        <span className="font-semibold text-bosgroen">Naar Mooihuus.nl →</span>
+      </a>
+    </div>
+  );
+}
 
 type QA = { v: string; a: string };
 type Groep = { titel: string; items: QA[] };
@@ -17,6 +59,7 @@ const CONTENT: Record<Locale, Content> = {
       { titel: "Algemeen", items: [
         { v: "Wat is Mooihuus?", a: "Het onafhankelijke platform waar je je recreatiewoning zelf in de etalage zet — te koop of te huur. Zelf de regie, met hulp binnen handbereik." },
         { v: "Is Mooihuus een makelaar?", a: "Nee. Mooihuus is een advertentieplatform en geen partij bij de koop of huur. Je houdt zelf de regie." },
+        { v: "Wat is Woonhuus.nl?", a: "Ons zusterplatform voor gewone koop- en huurwoningen, zoals eengezinswoningen en appartementen. Recreatiewoningen staan op Mooihuus.nl, gewone woningen op Woonhuus.nl. Je account, inloggen en betalen lopen voor beide via Mooihuus.nl." },
         { v: "Wat kost adverteren?", a: "Eenmalig per advertentie: Basis € 25, Plus € 49 of Premium € 79. Geen commissie over de verkoop. Vanaf 5 objecten krijg je 15% korting, vanaf 10 objecten 25%." },
       ]},
       { titel: "Account & meerdere objecten", items: [
@@ -82,6 +125,7 @@ export const metadata: Metadata = {
 };
 
 export default function Faq() {
+  if (huidigeSite() === "woonhuus") return <WoonhuusFaq />;
   const locale = getLocale();
   const c = CONTENT[locale];
   const alle = c.groepen.flatMap((g) => g.items);
