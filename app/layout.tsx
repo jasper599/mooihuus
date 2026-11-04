@@ -31,6 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
       title: { default: title, template: "%s · Woonhuus" },
       description,
       applicationName: "Woonhuus",
+      manifest: "/manifest.webmanifest",
+      icons: { icon: "/woonhuus-icon.png", apple: "/woonhuus-apple-icon.png" },
       alternates: { canonical: path },
       openGraph: { title, description, url: WOONHUUS_URL, siteName: "Woonhuus", locale: "nl_NL", type: "website" },
       twitter: { card: "summary_large_image", title, description },
@@ -47,6 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     applicationName: "Mooihuus",
     manifest: "/manifest.webmanifest",
+    icons: { icon: "/icon.png", apple: "/apple-icon.png" },
     appleWebApp: { capable: true, title: "Mooihuus", statusBarStyle: "default" },
     alternates: {
       canonical: localeHref(locale, path),
