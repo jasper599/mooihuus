@@ -3,27 +3,36 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { Wordmark } from "./Wordmark";
 
 // Navigatie van Woonhuus.nl. Inloggen, plaatsen en het dashboard blijven op
-// Mooihuus.nl (één account voor beide etalages), dus die links gaan daarheen.
-export function WoonhuusNav({ mooihuusUrl }: { mooihuusUrl: string }) {
+// Mooihuus.nl (één account voor beide etalages), dus die links gaan daarheen,
+// met ?via=woonhuus zodat die pagina's in Woonhuus-stijl verschijnen.
+// Met `basis` (de Woonhuus-URL) wordt dezelfde navigatie op de accountpagina's
+// van Mooihuus.nl gebruikt; de etalagelinks gaan dan terug naar Woonhuus.nl.
+export function WoonhuusNav({ mooihuusUrl, basis = "" }: { mooihuusUrl: string; basis?: string }) {
   const path = usePathname() || "/";
   const [open, setOpen] = useState(false);
+  const { data: session } = useSession();
+  const opAccount = !!basis; // we staan op een accountpagina van Mooihuus.nl
+  const acc = (p: string) => (opAccount ? p : `${mooihuusUrl}${p}${p.includes("?") ? "&" : "?"}via=woonhuus`);
   const links = [
-    { href: "/te-koop", label: "Koopwoningen" },
-    { href: "/te-koop#provincies", label: "Per provincie" },
-    { href: "/favorieten", label: "Favorieten" },
+    { href: `${basis}/te-koop`, label: "Koopwoningen" },
+    { href: `${basis}/te-koop#provincies`, label: "Per provincie" },
+    { href: `${basis}/favorieten`, label: "Favorieten" },
   ];
-  const actief = (href: string) => (href === "/" ? path === "/" || path === "/woonhuus" : path.startsWith(href) || path.startsWith("/woonhuus" + href));
+  const actief = (href: string) => !opAccount && (href === "/" ? path === "/" || path === "/woonhuus" : path.startsWith(href) || path.startsWith("/woonhuus" + href));
   const extern = [
-    { href: `${mooihuusUrl}/plaatsen?categorie=woonhuis`, label: "Woning plaatsen" },
-    { href: mooihuusUrl, label: "Recreatiewoningen ↗" },
+    { href: acc("/plaatsen?categorie=woonhuis"), label: "Woning plaatsen" },
+    ...(session ? [{ href: acc("/dashboard"), label: "Mijn dashboard" }] : []),
+    { href: `${mooihuusUrl}/?via=mooihuus`, label: "Recreatiewoningen ↗" },
   ];
+  const uitloggen = () => signOut({ callbackUrl: `${basis || ""}/` || "/" });
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-lijn">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-2">
-        <Link href="/" className="mr-auto" onClick={() => setOpen(false)} aria-label="Woonhuus.nl, naar de homepage">
+        <Link href={`${basis}/`} className="mr-auto" onClick={() => setOpen(false)} aria-label="Woonhuus.nl, naar de homepage">
           <Wordmark className="text-xl" site="woonhuus" />
         </Link>
         <nav className="hidden md:flex items-center gap-1" aria-label="Hoofdmenu">
@@ -44,7 +53,11 @@ export function WoonhuusNav({ mooihuusUrl }: { mooihuusUrl: string }) {
               {l.label}
             </a>
           ))}
-          <a href={`${mooihuusUrl}/inloggen`} className="btn btn-green text-[0.82rem] ml-1">Inloggen</a>
+          {session ? (
+            <button onClick={uitloggen} className="btn btn-green text-[0.82rem] ml-1">Uitloggen</button>
+          ) : (
+            <a href={acc("/inloggen")} className="btn btn-green text-[0.82rem] ml-1">Inloggen</a>
+          )}
         </nav>
         <button
           className="md:hidden rounded-lg px-3 py-2 text-bosgroen-dk font-display font-semibold"
@@ -65,7 +78,11 @@ export function WoonhuusNav({ mooihuusUrl }: { mooihuusUrl: string }) {
           {extern.map((l) => (
             <a key={l.href} href={l.href} className="font-display font-semibold rounded-lg px-3 py-2.5 text-bosgroen-dk hover:bg-zand">{l.label}</a>
           ))}
-          <a href={`${mooihuusUrl}/inloggen`} className="btn btn-green mt-2">Inloggen</a>
+          {session ? (
+            <button onClick={uitloggen} className="btn btn-green mt-2">Uitloggen</button>
+          ) : (
+            <a href={acc("/inloggen")} className="btn btn-green mt-2">Inloggen</a>
+          )}
         </nav>
       )}
     </header>

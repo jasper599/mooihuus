@@ -52,3 +52,20 @@ export const WOONHUUS_EIGEN_PADEN = [
   /^\/cookies$/,
   /^\/disclaimer$/,
 ];
+
+// Accountpagina's op Mooihuus.nl die in Woonhuus-stijl verschijnen voor wie
+// vanaf Woonhuus.nl komt (cookie mh-etalage=woonhuus). Eén account, één CRM,
+// maar de bezoeker blijft in de look and feel van Woonhuus.
+export const ETALAGE_COOKIE = "mh-etalage";
+export const ACCOUNT_PADEN = [
+  /^\/plaatsen(\/.*)?$/,
+  /^\/inloggen(\/.*)?$/,
+  /^\/registreren(\/.*)?$/,
+  /^\/wachtwoord-vergeten(\/.*)?$/,
+  /^\/wachtwoord-reset(\/.*)?$/,
+  /^\/dashboard(\/.*)?$/,
+  /^\/account(\/.*)?$/,
+  /^\/betaling(\/.*)?$/,
+  /^\/factuur(\/.*)?$/,
+  /^\/promoten(\/.*)?$/,
+];

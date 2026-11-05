@@ -4,11 +4,13 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { usePlatformNaam } from "@/components/SkinContext";
 
 type Type = "particulier" | "zakelijk";
 
 export default function Inloggen() {
   const router = useRouter();
+  const naam = usePlatformNaam();
   const [type, setType] = useState<Type>("particulier");
   const [form, setForm] = useState({ email: "", wachtwoord: "" });
   const [error, setError] = useState("");
@@ -35,7 +37,7 @@ export default function Inloggen() {
   return (
     <div className="max-w-md mx-auto">
       <h1 className="font-display font-extrabold text-3xl text-bosgroen-dk">Inloggen</h1>
-      <p className="text-grijs mb-4">Welkom terug bij Mooihuus.</p>
+      <p className="text-grijs mb-4">Welkom terug bij {naam}.</p>
 
       {/* Particulier of bedrijf */}
       <div className="grid grid-cols-2 gap-2 mb-4">

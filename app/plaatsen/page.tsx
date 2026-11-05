@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { suggestUitjes } from "@/lib/uitjes";
+import { useSkin } from "@/components/SkinContext";
 
 type Doel = "koop" | "huur";
 const pakketten = [
@@ -25,8 +26,9 @@ export default function Plaatsen() {
   // Vakantiewoning (Mooihuus.nl) of gewone woning (Woonhuus.nl)? Vanaf
   // Woonhuus.nl komt de bezoeker binnen met ?categorie=woonhuis.
   const [categorie, setCategorie] = useState<"recreatie" | "woonhuis">("recreatie");
+  const skin = useSkin();
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("categorie") === "woonhuis") kiesCategorie("woonhuis");
+    if (skin === "woonhuus" || new URLSearchParams(window.location.search).get("categorie") === "woonhuis") kiesCategorie("woonhuis");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const woonhuis = categorie === "woonhuis";
@@ -174,8 +176,8 @@ export default function Plaatsen() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="font-display font-extrabold text-3xl text-bosgroen-dk">Plaats je huus</h1>
-      <p className="text-grijs mb-5">In een paar stappen online — de AI helpt je op weg.</p>
+      <h1 className="font-display font-extrabold text-3xl text-bosgroen-dk">{skin === "woonhuus" ? "Plaats je woning op Woonhuus" : "Plaats je huus"}</h1>
+      <p className="text-grijs mb-5">{skin === "woonhuus" ? "In een paar stappen online, de AI helpt je op weg." : "In een paar stappen online — de AI helpt je op weg."}</p>
 
       <div className="flex gap-2 mb-5 flex-wrap">
         {steps.map((s, i) => (
@@ -293,7 +295,7 @@ export default function Plaatsen() {
         <div className="card">
           <p className="font-semibold">Titel en omschrijving</p>
           <p className="text-sm text-grijs mt-1">
-            Vul ze zelf in, of laat de AI een voorzet schrijven in de Mooihuus-stijl — je kunt daarna alles aanpassen.
+            Vul ze zelf in, of laat de AI een voorzet schrijven in de {skin === "woonhuus" ? "Woonhuus" : "Mooihuus"}-stijl — je kunt daarna alles aanpassen.
           </p>
           <button className="btn btn-green mt-3" onClick={genereer} disabled={busy}>
             {busy ? "Bezig…" : ai ? "✨ Opnieuw genereren" : "✨ Genereer tekst (optioneel)"}

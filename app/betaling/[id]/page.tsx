@@ -5,6 +5,8 @@ import { euroCents } from "@/lib/money";
 import { mollieEnabled, getMollieStatus } from "@/lib/mollie";
 import { markPaymentPaid } from "@/lib/payments";
 import { CheckoutButton } from "./CheckoutButton";
+import { huidigeSkin } from "@/lib/site-server";
+import { WOONHUUS_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -24,14 +26,15 @@ export default async function BetalingPage({ params }: { params: { id: string } 
   const listing = getListing(payment.listingId);
   const isOpvaller = payment.soort === "opvaller";
   const isFactuur = payment.soort === "makelaar-factuur" || payment.soort === "verlenging";
-  const waarvoor = payment.omschrijving || "Advertentie op Mooihuus";
+  const woon = listing?.categorie === "woonhuis" || huidigeSkin() === "woonhuus";
+  const waarvoor = payment.omschrijving || (woon ? "Advertentie op Woonhuus" : "Advertentie op Mooihuus");
 
   if (payment.status === "paid") {
     return (
       <div className="max-w-md mx-auto text-center">
         <div className="text-5xl mb-3">{isOpvaller ? "🚀" : "✅"}</div>
         <h1 className="font-display font-extrabold text-2xl text-bosgroen-dk">
-          {isFactuur ? "Betaald — bedankt!" : isOpvaller ? "Betaald — je opvaller staat aan!" : "Betaald — je huus staat online!"}
+          {isFactuur ? "Betaald — bedankt!" : isOpvaller ? "Betaald — je opvaller staat aan!" : (woon ? "Betaald, je woning staat online!" : "Betaald — je huus staat online!")}
         </h1>
         <p className="text-grijs mt-2">
           {isFactuur ? (
@@ -47,7 +50,7 @@ export default async function BetalingPage({ params }: { params: { id: string } 
           )}
         </p>
         <div className="mt-5 flex gap-3 justify-center">
-          <Link href={isFactuur ? "/" : "/dashboard"} className="btn">{isFactuur ? "Naar Mooihuus" : "Naar mijn dashboard"}</Link>
+          <Link href={isFactuur ? (woon ? WOONHUUS_URL : "/") : "/dashboard"} className="btn">{isFactuur ? (woon ? "Naar Woonhuus" : "Naar Mooihuus") : "Naar mijn dashboard"}</Link>
           {listing && !isFactuur && <Link href={`/aanbod/${listing.id}`} className="btn btn-ghost">Bekijk advertentie</Link>}
         </div>
       </div>

@@ -15,13 +15,22 @@ import { I18nProvider } from "@/components/I18nProvider";
 import { getLocale, getPathname } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { COMPANY } from "@/lib/company";
-import { huidigeSite } from "@/lib/site-server";
+import { huidigeSite, huidigeSkin } from "@/lib/site-server";
+import { SkinProvider } from "@/components/SkinContext";
 import { MOOIHUUS_URL, WOONHUUS_URL } from "@/lib/site";
 import { WoonhuusNav } from "@/components/WoonhuusNav";
 export const viewport = {
   themeColor: "#2C6B45",
 };
 export async function generateMetadata(): Promise<Metadata> {
+  if (huidigeSite() === "mooihuus" && huidigeSkin() === "woonhuus") {
+    return {
+      title: { default: "Mijn Woonhuus", template: "%s · Woonhuus" },
+      applicationName: "Woonhuus",
+      icons: { icon: "/woonhuus-icon.png", apple: "/woonhuus-apple-icon.png" },
+      robots: { index: false, follow: false },
+    };
+  }
   if (huidigeSite() === "woonhuus") {
     const path = getPathname();
     const title = "Woonhuus.nl: koopwoningen van makelaars en particulieren";
@@ -76,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const locale = getLocale();
   const site = huidigeSite();
   if (site === "woonhuus") return <WoonhuusLayout>{children}</WoonhuusLayout>;
+  if (huidigeSkin() === "woonhuus") return <WoonhuusLayout account>{children}</WoonhuusLayout>;
   const orgLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -107,6 +117,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans">
         <Providers>
           <I18nProvider locale={locale}>
+           <SkinProvider skin="mooihuus">
             <Nav />
             <main className="max-w-6xl mx-auto px-4 py-6 min-h-[70vh]">{children}</main>
             <footer className="bg-creme border-t border-lijn mt-10">
@@ -147,6 +158,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <GoogleTag />
             <ServiceWorker />
             <InstallPrompt />
+           </SkinProvider>
           </I18nProvider>
         </Providers>
       </body>
@@ -156,7 +168,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 // Woonhuus.nl: zelfde fundament (fonts, cookiebanner, statistieken), eigen
 // navigatie, huisstijl (data-site) en footer met verwijzing naar Mooihuus.
-function WoonhuusLayout({ children }: { children: React.ReactNode }) {
+function WoonhuusLayout({ children, account = false }: { children: React.ReactNode; account?: boolean }) {
+  // account: accountpagina op Mooihuus.nl in Woonhuus-stijl; links gaan dan
+  // terug naar Woonhuus.nl.
+  const b = account ? WOONHUUS_URL : "";
   const orgLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -181,24 +196,33 @@ function WoonhuusLayout({ children }: { children: React.ReactNode }) {
       <body className="font-sans">
         <Providers>
           <I18nProvider locale="nl">
-            <WoonhuusNav mooihuusUrl={MOOIHUUS_URL} />
+           <SkinProvider skin="woonhuus">
+            <WoonhuusNav mooihuusUrl={MOOIHUUS_URL} basis={b} />
+            {account && (
+              <div className="border-b border-lijn" style={{ background: "#EEF3F8" }}>
+                <div className="max-w-6xl mx-auto px-4 py-2 text-xs text-grijs flex flex-wrap gap-x-2">
+                  <span className="font-semibold" style={{ color: "#1E3A5F" }}>Je Woonhuus-account</span>
+                  <span>Woonhuus.nl en Mooihuus.nl delen één account. Daarom staat mooihuus.nl in de adresbalk; je woningen, facturen en berichten vind je hier.</span>
+                </div>
+              </div>
+            )}
             <main className="max-w-6xl mx-auto px-4 py-6 min-h-[70vh]">{children}</main>
             <footer className="bg-white border-t border-lijn mt-10">
               <div className="max-w-6xl mx-auto px-4 py-8 text-sm text-grijs">
                 <Wordmark className="text-lg" site="woonhuus" />
                 <p className="mt-2 max-w-xl">Koopwoningen in heel Nederland, aangeboden door makelaars en particulieren. Woonhuus.nl is het zusterplatform van Mooihuus.</p>
                 <nav className="mt-4 flex gap-4 flex-wrap font-semibold text-bosgroen-dk" aria-label="Footer">
-                  <Link href="/te-koop" className="hover:underline">Te koop per provincie</Link>
-                  <Link href="/over-woonhuus" className="hover:underline">Over Woonhuus</Link>
-                  <Link href="/over-mooihuus" className="hover:underline">Ons zusterplatform Mooihuus</Link>
-                  <Link href="/contact" className="hover:underline">Contact</Link>
-                  <Link href="/faq" className="hover:underline">Veelgestelde vragen</Link>
-                  <Link href="/voorwaarden" className="hover:underline">Voorwaarden</Link>
-                  <Link href="/privacy" className="hover:underline">Privacy</Link>
-                  <Link href="/cookies" className="hover:underline">Cookies</Link>
-                  <Link href="/disclaimer" className="hover:underline">Disclaimer</Link>
+                  <Link href={`${b}/te-koop`} className="hover:underline">Te koop per provincie</Link>
+                  <Link href={`${b}/over-woonhuus`} className="hover:underline">Over Woonhuus</Link>
+                  <Link href={`${b}/over-mooihuus`} className="hover:underline">Ons zusterplatform Mooihuus</Link>
+                  <Link href={`${b}/contact`} className="hover:underline">Contact</Link>
+                  <Link href={`${b}/faq`} className="hover:underline">Veelgestelde vragen</Link>
+                  <Link href={`${b}/voorwaarden`} className="hover:underline">Voorwaarden</Link>
+                  <Link href={`${b}/privacy`} className="hover:underline">Privacy</Link>
+                  <Link href={`${b}/cookies`} className="hover:underline">Cookies</Link>
+                  <Link href={`${b}/disclaimer`} className="hover:underline">Disclaimer</Link>
                 </nav>
-                <a href={MOOIHUUS_URL} className="mt-5 flex items-center gap-3 rounded-xl border border-lijn bg-zand p-4 hover:shadow-sm transition-shadow">
+                <a href={`${MOOIHUUS_URL}/?via=mooihuus`} className="mt-5 flex items-center gap-3 rounded-xl border border-lijn bg-zand p-4 hover:shadow-sm transition-shadow">
                   <span className="font-display font-bold text-bosgroen-dk">Op zoek naar een recreatiewoning of vakantiehuis?</span>
                   <span className="ml-auto font-semibold text-bosgroen">Naar Mooihuus.nl →</span>
                 </a>
@@ -210,6 +234,7 @@ function WoonhuusLayout({ children }: { children: React.ReactNode }) {
             <CookieBanner />
             <Analytics />
             <GoogleTag />
+           </SkinProvider>
           </I18nProvider>
         </Providers>
       </body>

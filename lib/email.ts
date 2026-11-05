@@ -195,9 +195,9 @@ export function renderBetalingsbewijs(p: Payment, listing: Listing, naam: string
       <tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};color:${BRAND.grijs};font-size:13px;">Betaald op</td>
           <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;color:${BRAND.grijs};font-size:13px;">${p.betaaldOp ? new Date(p.betaaldOp).toLocaleString("nl-NL") : "-"}</td></tr>
     </table>
-    <p style="margin:22px 0;">${btn(woningUrl(listing), "Bekijk je woning")} &nbsp; ${btn(`${COMPANY.website}/dashboard`, "Naar mijn dashboard")}</p>
+    <p style="margin:22px 0;">${btn(woningUrl(listing), "Bekijk je woning")} &nbsp; ${btn(`${COMPANY.website}/dashboard${siteVan(listing) === "woonhuus" ? "?via=woonhuus" : ""}`, "Naar mijn dashboard")}</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bewaar deze mail als bewijs van betaling. Klopt er iets niet? Mail info@mooihuus.nl.</p>`;
-  return { onderwerp: `Betalingsbewijs ${p.factuurnummer}: je huus staat online`, html: layout("Betalingsbewijs", inner, siteVan(listing)) };
+  return { onderwerp: `Betalingsbewijs ${p.factuurnummer}: je ${siteVan(listing) === "woonhuus" ? "woning" : "huus"} staat online`, html: layout("Betalingsbewijs", inner, siteVan(listing)) };
 }
 
 export function renderOpvallerBewijs(p: Payment, listing: Listing, naam: string): { onderwerp: string; html: string } {

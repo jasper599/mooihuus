@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from "react";
 import Link from "next/link";
+import { usePlatformNaam } from "@/components/SkinContext";
 import { useSearchParams } from "next/navigation";
 
 export default function Page() {
@@ -13,6 +14,7 @@ export default function Page() {
 }
 
 function WachtwoordReset() {
+  const naam = usePlatformNaam();
   const params = useSearchParams();
   const token = params.get("token") || "";
   const [nieuw, setNieuw] = useState("");
@@ -41,7 +43,7 @@ function WachtwoordReset() {
   return (
     <div className="max-w-md mx-auto">
       <h1 className="font-display font-extrabold text-3xl text-bosgroen-dk">Nieuw wachtwoord</h1>
-      <p className="text-grijs mb-5">Kies een nieuw wachtwoord voor je Mooihuus-account.</p>
+      <p className="text-grijs mb-5">Kies een nieuw wachtwoord voor je {naam}-account.</p>
       {!token ? (
         <div className="card text-sm text-grijs">Geen geldige resetlink. Vraag een nieuwe aan via <Link href="/wachtwoord-vergeten" className="text-bosgroen font-semibold">wachtwoord vergeten</Link>.</div>
       ) : done ? (

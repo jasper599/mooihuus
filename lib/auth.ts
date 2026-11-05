@@ -2,6 +2,7 @@ import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { getUserByEmail } from "./db";
+import { WOONHUUS_URL } from "./site";
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
@@ -25,6 +26,15 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    // Na uitloggen vanuit de Woonhuus-stijl mag terug naar Woonhuus.nl.
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      try {
+        const o = new URL(url).origin;
+        if (o === baseUrl || o === new URL(WOONHUUS_URL).origin) return url;
+      } catch {}
+      return baseUrl;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = (user as any).id;
