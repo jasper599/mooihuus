@@ -40,7 +40,6 @@ export default function WoonhuisZoeken() {
           <div className="absolute top-4 left-4 bg-white/95 rounded-xl px-3 py-1.5 font-display font-extrabold text-xl">
             <span style={{ color: "#2B5283" }}>Woon</span><span style={{ color: "#1B2430" }}>huus</span><span style={{ color: "#E8823B" }}>.nl</span>
           </div>
-          <span className="btn absolute bottom-4 right-4 text-base px-6 py-3 shadow-lg pointer-events-none">Ga naar Woonhuus.nl →</span>
         </a>
       </section>
 
