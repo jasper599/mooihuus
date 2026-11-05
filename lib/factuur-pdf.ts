@@ -112,25 +112,25 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
     sub("Btw 21%", euro(d.btw as number), y); y -= 12;
     page.drawLine({ start: { x: lblX, y }, end: { x: W - M - 10, y }, thickness: 0.6, color: C.lijn }); y -= 14;
   }
-  page.drawRectangle({ x: M, y: y - 8, width: W - 2 * M, height: 30, color: C.bosgroenDk });
+  page.drawRectangle({ x: M, y: y - 8, width: W - 2 * M, height: 30, color: C.oranje });
   const totLabel = credit ? "Totaal gecrediteerd (incl. btw)" : betaald ? "Totaal betaald (incl. btw)" : (heeftBtw ? "Totaal te voldoen (incl. btw)" : ("Totaal te voldoen (" + regels.length + " " + (regels.length === 1 ? "object" : "objecten") + ")"));
   text(totLabel, M + 10, y, 12, bold, C.wit);
   textR(euro(d.totaal), W - M - 10, y, 14, bold, C.wit);
   y -= 36;
 
   if (credit) {
-    text("Creditnota", M, y, 11, bold, C.bosgroenDk); y -= 16;
+    text("Creditnota", M, y, 11, bold, C.oranjeDk); y -= 16;
     for (const r of [
       "Deze creditnota verrekent factuur " + (d.origineelFactuurnummer || "") + ", die niet binnen de",
       "betaaltermijn is voldaan. Er hoeft niets betaald te worden; de oorspronkelijke",
       "factuur komt hiermee te vervallen.",
     ]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
   } else if (betaald) {
-    text("Betaald", M, y, 11, bold, C.bosgroen); y -= 16;
+    text("Betaald", M, y, 11, bold, C.oranjeDk); y -= 16;
     text("Deze factuur is voldaan op " + datumNL(d.betaaldOp || Date.now()) + " via iDEAL.", M, y, 10, reg, C.inkt); y -= 14;
     text("Bewaar deze factuur als betaalbewijs.", M, y, 10, reg, C.inkt); y -= 14;
   } else {
-    text("Betalen", M, y, 11, bold, C.bosgroenDk); y -= 16;
+    text("Betalen", M, y, 11, bold, C.oranjeDk); y -= 16;
     for (const r of ["Betaal deze factuur veilig via iDEAL met de betaallink. Zodra de betaling", "binnen is, gaat de woning automatisch online op Mooihuus.nl of Woonhuus.nl."]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
     y -= 2;
     text("Betaallink:", M, y, 9.5, bold, C.grijs);
@@ -145,7 +145,7 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
   const web = (COMPANY.website || "").replace(/^https?:\/\//, "");
   text(COMPANY.bv + " (Mooihuus.nl en Woonhuus.nl) · " + COMPANY.adres + ", " + COMPANY.postcode, M, fy + 6, 8.5, reg, C.grijs);
   text("KvK " + COMPANY.kvk + " · btw " + COMPANY.btw + " · " + COMPANY.email + " · " + web, M, fy - 6, 8.5, reg, C.grijs);
-  textR("Zelf de regie, nooit alleen.", W - M, fy - 6, 8.5, bold, C.salie);
+  textR("Zelf de regie, nooit alleen.", W - M, fy - 6, 8.5, bold, C.oranjeDk);
 
   return await doc.save();
 }
