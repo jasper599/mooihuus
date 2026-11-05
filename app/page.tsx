@@ -2,10 +2,8 @@ import Link from "next/link";
 import { getLiveListings } from "@/lib/db";
 import { ListingsBrowser } from "@/components/ListingsBrowser";
 import { ListingCard } from "@/components/ListingCard";
-import { HeroZoek } from "@/components/HeroZoek";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref, Locale } from "@/lib/i18n";
-import { WONINGTYPES, typeSlug, isType } from "@/lib/woningtypes";
 import { WOONHUUS_URL } from "@/lib/site";
 import { markeerHuidigeBlogAlsBasis } from "@/lib/nieuwsbrief";
 import { markeerHuidigeMaandAlsBasis, stuurMaandrapportenIndienNieuweMaand } from "@/lib/maandrapport";
@@ -76,13 +74,6 @@ const TXT: Record<Locale, Record<string, string>> = {
   },
 };
 
-// Vier categorieën bovenaan (bestaande type-pagina's).
-const CATEGORIEEN = [
-  { naam: "Chalet", sub: { nl: "Op een vakantiepark", en: "On a holiday park", de: "Auf einem Ferienpark" } },
-  { naam: "Vrijstaand vakantiehuis", sub: { nl: "Ruimte en privacy", en: "Space and privacy", de: "Raum und Privatsphäre" } },
-  { naam: "Bungalow", sub: { nl: "Gelijkvloers en onderhoudsarm", en: "Single storey, low maintenance", de: "Ebenerdig und pflegeleicht" } },
-  { naam: "Tiny house", sub: { nl: "Klein en duurzaam", en: "Small and sustainable", de: "Klein und nachhaltig" } },
-];
 
 export default function Home({ searchParams }: { searchParams?: { q?: string } }) {
   // Nieuwsbrief: eerste keer een basislijn zetten (geen oude artikelen sturen).
@@ -117,10 +108,6 @@ export default function Home({ searchParams }: { searchParams?: { q?: string } }
           <p className="m-0 text-sm font-semibold tracking-[0.08em] uppercase text-bosgroen">{T.tag}</p>
           <h1 className="m-0 font-display font-extrabold text-4xl md:text-5xl leading-[1.08] text-bosgroen-dk">{T.titel}</h1>
           <p className="m-0 text-lg leading-relaxed text-grijs">{T.sub}</p>
-          <HeroZoek
-            site="mooihuus"
-            labels={{ waar: T.waar, placeholder: T.ph, ikWil: T.ikWil, kopen: T.kopen, huren: T.huren, zoeken: T.zoeken, prefix: locale === "nl" ? "" : `/${locale}` }}
-          />
         </div>
         <div className="flex-[1_1_380px] h-[340px] rounded-3xl overflow-hidden bg-salie-lt relative">
           {held && (
@@ -146,28 +133,9 @@ export default function Home({ searchParams }: { searchParams?: { q?: string } }
         </div>
       </section>
 
-      {/* Vier categorieën */}
-      <section className="mt-8 grid gap-4 grid-cols-2 lg:grid-cols-4">
-        {CATEGORIEEN.map((c) => {
-          const wt = WONINGTYPES.find((w) => w.naam === c.naam)!;
-          const n = koop.filter((l) => isType(l.type, c.naam)).length;
-          return (
-            <Link
-              key={c.naam}
-              href={localeHref(locale, `/type/${typeSlug(c.naam)}`)}
-              className="bg-white border border-lijn rounded-2xl p-5 flex flex-col gap-1.5 hover:shadow-md transition-shadow"
-            >
-              <span className="font-display font-bold text-lg text-bosgroen-dk">{wt.mv}</span>
-              <span className="text-sm text-grijs">{c.sub[locale] || c.sub.nl}</span>
-              <span className="text-xs font-semibold text-bosgroen mt-1">{n} {T.woningen}</span>
-            </Link>
-          );
-        })}
-      </section>
-
       {/* Nieuw op Mooihuus */}
       {nieuw.length > 0 && (
-        <section className="mt-10">
+        <section className="mt-12">
           <div className="flex flex-wrap items-baseline gap-3 mb-4">
             <h2 className="m-0 font-display font-extrabold text-2xl md:text-3xl text-bosgroen-dk">{T.nieuw}</h2>
             <a href="#aanbod" className="ml-auto font-semibold text-bosgroen hover:underline">{T.alle} →</a>
