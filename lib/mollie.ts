@@ -15,6 +15,7 @@ export function mollieEnabled(): boolean {
 export async function createMolliePayment(args: {
   bedrag: number;
   beschrijving: string;
+  factuurnummer?: string; // vooraan in de omschrijving, zodat e-Boekhouden de betaling aan de factuur koppelt
   redirectUrl: string;
   webhookUrl: string;
 }): Promise<{ mollieId: string; checkoutUrl: string }> {
@@ -23,7 +24,7 @@ export async function createMolliePayment(args: {
   const client = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY as string });
   const payment = await client.payments.create({
     amount: { currency: "EUR", value: args.bedrag.toFixed(2) },
-    description: args.beschrijving,
+    description: (args.factuurnummer ? `${args.factuurnummer} · ${args.beschrijving}` : args.beschrijving).slice(0, 255),
     redirectUrl: args.redirectUrl,
     webhookUrl: args.webhookUrl,
     method: "ideal",

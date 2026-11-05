@@ -426,6 +426,19 @@ async function draaiGuusOchtendmail(nu: Date): Promise<void> {
   }
 }
 
+// Boekhouding: nieuwe facturen en creditnota's elk halfuur naar e-Boekhouden,
+// als de koppeling actief is én automatisch boeken aan staat (EBOEKHOUDEN_AUTO=1).
+let bezigBoekhouding = false;
+async function draaiBoekhouding(): Promise<void> {
+  if (bezigBoekhouding || !eboekhoudenEnabled() || process.env.EBOEKHOUDEN_AUTO !== "1") return;
+  bezigBoekhouding = true;
+  try {
+    await syncBetalingen({ dry: false });
+  } finally {
+    bezigBoekhouding = false;
+  }
+}
+
 let bezig = false;
 async function draaiDagelijks(): Promise<void> {
   if (bezig || alGedraaidVandaag()) return;
@@ -434,11 +447,6 @@ async function draaiDagelijks(): Promise<void> {
     await maakBackup().catch(() => {});
     await verwerkVerlopendeAdvertenties().catch(() => {});
     try { draaiUitgelicht(); } catch { /* niet fataal */ }
-    // Boekhouding: betaalde facturen 1×/dag naar e-Boekhouden, alleen als de
-    // koppeling actief is én automatisch boeken aan staat (EBOEKHOUDEN_AUTO=1).
-    if (eboekhoudenEnabled() && process.env.EBOEKHOUDEN_AUTO === "1") {
-      await syncBetalingen({ dry: false }).catch(() => {});
-    }
     markeer(); // pas markeren als alles klaar is (crasht het eerder, dan retry volgende tick)
   } finally {
     bezig = false;
@@ -455,6 +463,7 @@ function tick(): void {
   void vulAgenda(new Date()).catch(() => {});
   void draaiSocial().catch(() => {});
   void draaiGuusOchtendmail(new Date()).catch(() => {});
+  void draaiBoekhouding().catch(() => {});
 }
 
 let gestart = false;

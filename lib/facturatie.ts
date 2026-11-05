@@ -124,6 +124,7 @@ export async function maakMakelaarFactuur(ownerId: string, stil = false): Promis
   if (mollieEnabled()) {
     try {
       const { mollieId, checkoutUrl } = await createMolliePayment({
+        factuurnummer: payment.factuurnummer,
         bedrag,
         beschrijving: `Mooihuus advertenties — ${kantoor} (${objecten.length} objecten)`,
         redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
@@ -198,6 +199,7 @@ export async function maakLosseFactuur(args: {
   if (mollieEnabled()) {
     try {
       const { mollieId, checkoutUrl } = await createMolliePayment({
+        factuurnummer: payment.factuurnummer,
         bedrag,
         beschrijving: `Mooihuus — ${omschrijving} (${kantoor})`,
         redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
@@ -297,6 +299,7 @@ export async function maakWoningBetaling(
   if (mollieEnabled()) {
     try {
       const { mollieId, checkoutUrl } = await createMolliePayment({
+        factuurnummer: payment.factuurnummer,
         bedrag,
         beschrijving: `${listing.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus"} advertentie: ${listing.titel}`,
         redirectUrl: `${baseUrl()}/betaling/${payment.id}`,

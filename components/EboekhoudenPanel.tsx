@@ -42,7 +42,7 @@ export function EboekhoudenPanel({ actief, auto, nogTeBoeken }: { actief: boolea
           <div className="font-display font-bold text-bosgroen-dk">Boekhouding (e-Boekhouden)</div>
           <div className="text-sm text-grijs mt-0.5">
             {actief ? (
-              <>Koppeling actief. {auto ? "Betaalde facturen worden elke dag automatisch geboekt." : "Automatisch boeken staat nog uit."} Nog te boeken: <strong>{nogTeBoeken}</strong>.</>
+              <>Koppeling actief. {auto ? "Facturen en creditnota's gaan elk halfuur automatisch naar e-Boekhouden; betalingen lettert de Mollie-koppeling daar af." : "Automatisch boeken staat nog uit."} Nog te boeken: <strong>{nogTeBoeken}</strong>.</>
             ) : (
               <>Nog niet gekoppeld. Zet de API-token van Huus B.V. in Railway als <code>EBOEKHOUDEN_MOOIHUUS_TOKEN</code>. Nog te boeken: <strong>{nogTeBoeken}</strong>.</>
             )}

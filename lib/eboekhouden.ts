@@ -12,7 +12,8 @@
 // standaard als dry-run (toont alleen wat er geboekt zou worden).
 // ---------------------------------------------------------------------------
 
-import { getPayments, getUser, updatePayment } from "./db";
+import { getPayments, getUser, updatePayment, getListing } from "./db";
+import type { Payment } from "./types";
 
 const BASE = "https://api.e-boekhouden.nl/v1";
 
@@ -216,15 +217,36 @@ export interface SyncResultaat {
   fouten: Array<{ paymentId: string; fout: string }>;
 }
 
+// Welke betalingen horen als factuur in de boekhouding?
+// - Facturen die we zelf naar een klant sturen (makelaarsfacturen via Kolibri/
+//   Realworks, verlengingen): direct bij aanmaken, betaald of niet. De Mollie-
+//   koppeling in e-Boekhouden lettert de betaling af op het factuurnummer.
+// - Betalingen van particulieren en opvallers: pas als ze betaald zijn (een
+//   afgebroken iDEAL-betaling is geen factuur).
+// - Creditnota's: altijd, als tegenboeking van de onbetaalde factuur.
+function isVerstuurdeFactuur(p: Payment): boolean {
+  if (p.soort === "makelaar-factuur" || p.soort === "verlenging") return true;
+  if (p.soort === "opvaller" || p.soort === "creditnota") return false;
+  const l = getListing(p.listingId);
+  return !!l && (l.source === "kolibri" || l.source === "realworks");
+}
+function teBoeken(p: Payment, _alle: Payment[]): boolean {
+  if (p.soort === "creditnota") return true;
+  if (isVerstuurdeFactuur(p)) return true;
+  return p.status === "paid" && p.bedrag > 0;
+}
+
 // Boekt (of toont, bij dry-run) de betaalde facturen die nog niet in
 // e-Boekhouden staan. Standaard dry-run; boekt alleen echt als dry=false
 // EN EBOEKHOUDEN_MOOIHUUS_TOKEN is gezet.
 export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }): Promise<SyncResultaat> {
   const dry = opts?.dry !== false;
   const actief = eboekhoudenEnabled();
-  // Creditnota's horen bij een factuur die nooit betaald (en dus nooit geboekt)
-  // is; die slaan we over, anders komt er negatieve omzet zonder factuur.
-  const betalingen = getPayments().filter((p) => p.status === "paid" && p.soort !== "creditnota" && p.bedrag > 0 && !p.geboektInEboekhouden);
+  const alle = getPayments();
+  const betalingen = alle
+    .filter((p) => !p.geboektInEboekhouden && !!p.factuurnummer && p.bedrag !== 0 && teBoeken(p, alle))
+    // Oudste eerst, zodat een factuur altijd vóór zijn creditnota geboekt wordt.
+    .sort((a, b) => (a.aangemaakt || "").localeCompare(b.aangemaakt || ""));
   const kandidaten = opts?.limiet ? betalingen.slice(0, opts.limiet) : betalingen;
 
   const voorstellen: SyncVoorstel[] = [];
@@ -254,7 +276,7 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
       bedragInclBtw: p.bedrag,
       aantal: p.aantalObjecten || 1,
       omschrijving: p.omschrijving || "Advertentie op Mooihuus",
-      datum: (p.betaaldOp || p.aangemaakt || "").slice(0, 10),
+      datum: (p.aangemaakt || p.betaaldOp || "").slice(0, 10),
     };
 
     if (dry || !actief) {

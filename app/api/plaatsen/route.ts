@@ -115,6 +115,7 @@ export async function POST(req: Request) {
   if (mollieEnabled()) {
     try {
       const { mollieId, checkoutUrl } = await createMolliePayment({
+        factuurnummer: payment.factuurnummer,
         bedrag: finaalBedrag,
         beschrijving: `Mooihuus ${pakket} — ${listing.titel}`,
         redirectUrl: `${baseUrl(req)}/betaling/${payment.id}`,

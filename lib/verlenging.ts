@@ -85,6 +85,7 @@ async function maakVerlengBetaling(ownerId: string, listings: Listing[]): Promis
   if (mollieEnabled()) {
     try {
       const { mollieId, checkoutUrl } = await createMolliePayment({
+        factuurnummer: payment.factuurnummer,
         bedrag,
         beschrijving: `Mooihuus verlenging — ${listings.length} woning(en)`,
         redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
