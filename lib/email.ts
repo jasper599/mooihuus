@@ -83,6 +83,15 @@ function layoutWoonhuus(title: string, inner: string): string {
 
 const siteVan = (l: { categorie?: string }): "mooihuus" | "woonhuus" => (l.categorie === "woonhuis" ? "woonhuus" : "mooihuus");
 const platformNaam = (l: { categorie?: string }) => (l.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus.nl");
+// Platform(en) voor een groep woningen: Mooihuus.nl, Woonhuus.nl of beide.
+function platformenVan(ls: { categorie?: string }[]): { tekst: string; site: "mooihuus" | "woonhuus" } {
+  const woon = ls.some((l) => l.categorie === "woonhuis");
+  const rec = ls.some((l) => l.categorie !== "woonhuis");
+  if (woon && rec) return { tekst: "Mooihuus.nl en Woonhuus.nl", site: "mooihuus" };
+  return woon ? { tekst: "Woonhuus.nl", site: "woonhuus" } : { tekst: "Mooihuus.nl", site: "mooihuus" };
+}
+// Korte uitleg over de twee platformen, onderaan mails aan adverteerders.
+const UITLEG_TWEE_PLATFORMEN = `<p style="line-height:1.6;color:#6B7280;font-size:13px;border-top:1px solid #E5E7EB;padding-top:12px;margin-top:18px;"><strong>Goed om te weten:</strong> recreatiewoningen staan op Mooihuus.nl, gewone koopwoningen op ons zusterplatform Woonhuus.nl. Elke woning komt vanzelf op het juiste platform en je beheert alles met hetzelfde account.</p>`;
 
 const btn = (href: string, label: string) =>
   `<a href="${href}" style="display:inline-block;background:${BRAND.oranje};color:#fff;text-decoration:none;font-weight:bold;padding:11px 20px;border-radius:10px;">${label}</a>`;
@@ -97,6 +106,7 @@ export function renderWelkom(naam: string, email?: string): { onderwerp: string;
     ${inlog}
     <p style="line-height:1.6;">Klaar om te beginnen? Plaats je eerste woning in een paar minuten.</p>
     <p style="margin:22px 0;">${btn(`${COMPANY.website}/plaatsen`, "Plaats je huus")}</p>
+    <p style="line-height:1.6;">Wil je een gewone woning verkopen, zoals een eengezinswoning of appartement? Die plaats je met hetzelfde account op ons zusterplatform <strong>Woonhuus.nl</strong>, waar kopers van gewone woningen zoeken. Daar bieden we alleen de advertentie aan; de begeleiding van advertentie tot contract hoort bij recreatiewoningen op Mooihuus.</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Fijn dat je er bent.<br>Team Mooihuus</p>`;
   return { onderwerp: "Welkom bij Mooihuus 🌲", html: layout("Welkom", inner) };
 }
@@ -392,22 +402,23 @@ function woningenBlok(titel: string, list: Listing[]): string {
 export function renderMaandrapport(d: {
   kantoor: string;
   maand: string;
-  rows: { titel: string; weergaven: number; leads: number }[];
+  rows: { titel: string; weergaven: number; leads: number; categorie?: string }[];
   totWeergaven: number;
   totLeads: number;
 }): { onderwerp: string; html: string } {
   const rows = d.rows
     .map(
       (r, i) => `<tr>
-      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;">${r.titel}</td>
+      <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;">${r.titel}<br><span style="color:${BRAND.grijs};font-size:12px;">${platformNaam(r)}</span></td>
       <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;text-align:right;">${r.weergaven}</td>
       <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;text-align:right;">${r.leads}</td>
     </tr>`
     )
     .join("");
+  const pf = platformenVan(d.rows);
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 4px;">Maandrapport — ${d.maand}</h1>
-    <div style="color:${BRAND.grijs};font-size:13px;margin-bottom:14px;">${d.kantoor} · jouw aanbod op Mooihuus</div>
+    <div style="color:${BRAND.grijs};font-size:13px;margin-bottom:14px;">${d.kantoor} · jouw aanbod op ${pf.tekst}</div>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
       <tr>
         <td style="padding:6px 0;color:${BRAND.grijs};font-size:12px;text-transform:uppercase;letter-spacing:.04em;">Woning</td>
@@ -422,8 +433,9 @@ export function renderMaandrapport(d: {
       </tr>
     </table>
     <p style="margin:22px 0;">${btn(`${COMPANY.website}/dashboard`, "Bekijk je dashboard")}</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Zo houd je grip op wat je aanbod doet. Vragen of meer objecten plaatsen? We helpen je graag.</p>`;
-  return { onderwerp: `Maandrapport ${d.maand} — je aanbod op Mooihuus`, html: layout("Maandrapport Mooihuus", inner) };
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Zo houd je grip op wat je aanbod doet. Vragen of meer objecten plaatsen? We helpen je graag.</p>
+    ${UITLEG_TWEE_PLATFORMEN}`;
+  return { onderwerp: `Maandrapport ${d.maand} — je aanbod op ${pf.tekst}`, html: layout("Maandrapport", inner, pf.site) };
 }
 
 export function renderSimpel(titel: string, innerHtml: string): { onderwerp: string; html: string } {
@@ -516,7 +528,7 @@ export function renderFactuurBetaald(p: Payment, kantoor: string): { onderwerp: 
 // Verlengmail — 30 dagen vóór afloop van het advertentiejaar.
 export function renderVerlengHerinnering(d: {
   naam: string;
-  woningen: { titel: string; verlooptOp: Date }[];
+  woningen: { titel: string; verlooptOp: Date; categorie?: string }[];
   bedrag: number;
   betaalUrl: string;
   vervalDatum: Date;
@@ -524,15 +536,16 @@ export function renderVerlengHerinnering(d: {
   const datum = d.vervalDatum.toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
   const rows = d.woningen
     .map(
-      (w) => `<tr><td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;">${w.titel}</td>
+      (w) => `<tr><td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;">${w.titel}<br><span style="color:${BRAND.grijs};font-size:12px;">${platformNaam(w)}</span></td>
       <td style="padding:8px 0;border-bottom:1px solid ${BRAND.lijn};font-size:13px;text-align:right;color:${BRAND.grijs};">verloopt ${w.verlooptOp.toLocaleDateString("nl-NL", { day: "numeric", month: "short", year: "numeric" })}</td></tr>`
     )
     .join("");
   const meer = d.woningen.length > 1;
+  const pf = platformenVan(d.woningen);
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 6px;">Je advertentie${meer ? "s" : ""} loop${meer ? "t" : "t"} bijna af</h1>
     <p style="line-height:1.6;">Beste ${d.naam},</p>
-    <p style="line-height:1.6;">Je advertentie${meer ? "s" : ""} op Mooihuus staat al bijna een jaar online en loopt af rond <strong>${datum}</strong>. Wil je dat je woning${meer ? "en" : ""} zichtbaar blijf${meer ? "t" : "t"} voor kopers? Verleng dan eenvoudig met één klik voor nog een heel jaar.</p>
+    <p style="line-height:1.6;">Je advertentie${meer ? "s" : ""} op ${pf.tekst} staat al bijna een jaar online en loopt af rond <strong>${datum}</strong>. Wil je dat je woning${meer ? "en" : ""} zichtbaar blijf${meer ? "t" : "t"} voor kopers? Verleng dan eenvoudig met één klik voor nog een heel jaar.</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:16px 0;">
       ${rows}
       <tr><td style="padding:12px 0 0;font-weight:bold;font-size:15px;">Verlengen (1 jaar)</td>
@@ -540,19 +553,21 @@ export function renderVerlengHerinnering(d: {
     </table>
     <p style="margin:20px 0 8px;">${btn(d.betaalUrl, "Verleng nu met iDEAL")}</p>
     <p style="line-height:1.5;color:${BRAND.grijs};font-size:12px;word-break:break-all;">Werkt de knop niet? Verleng via: ${d.betaalUrl}</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;margin-top:14px;">Het bedrag is gelijk aan wat je destijds betaalde. Verleng je niet, dan gaat je advertentie op de einddatum offline — je kunt daarna altijd opnieuw plaatsen.</p>`;
-  return { onderwerp: `Je advertentie op Mooihuus loopt bijna af — verleng vóór ${datum}`, html: layout("Verlengen", inner) };
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;margin-top:14px;">Het bedrag is gelijk aan wat je destijds betaalde. Verleng je niet, dan gaat je advertentie op de einddatum offline — je kunt daarna altijd opnieuw plaatsen.</p>
+    ${UITLEG_TWEE_PLATFORMEN}`;
+  return { onderwerp: `Je advertentie op ${pf.tekst} loopt bijna af — verleng vóór ${datum}`, html: layout("Verlengen", inner, pf.site) };
 }
 
 // Verlengmail — op de einddatum, advertentie is offline gegaan.
 export function renderVerlengVerlopen(d: {
   naam: string;
-  woningen: { titel: string }[];
+  woningen: { titel: string; categorie?: string }[];
   bedrag: number;
   betaalUrl: string;
 }): { onderwerp: string; html: string } {
   const meer = d.woningen.length > 1;
-  const lijst = d.woningen.map((w) => `<li style="margin-bottom:4px;">${w.titel}</li>`).join("");
+  const pf = platformenVan(d.woningen);
+  const lijst = d.woningen.map((w) => `<li style="margin-bottom:4px;">${w.titel} <span style="color:${BRAND.grijs};font-size:12px;">(${platformNaam(w)})</span></li>`).join("");
   const inner = `
     <span style="display:inline-block;background:${BRAND.oranjeDk};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Offline</span>
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Je advertentie${meer ? "s" : ""} staat nu offline</h1>
@@ -561,19 +576,22 @@ export function renderVerlengVerlopen(d: {
     <ul style="line-height:1.6;font-size:14px;padding-left:18px;">${lijst}</ul>
     <p style="line-height:1.6;">Wil je weer zichtbaar zijn voor kopers? Verleng dan met één klik voor nog een jaar — je advertentie${meer ? "s gaan" : " gaat"} dan direct weer live.</p>
     <p style="margin:20px 0 8px;">${btn(d.betaalUrl, `Weer online — verleng voor ${euroCents(d.bedrag)}`)}</p>
-    <p style="line-height:1.5;color:${BRAND.grijs};font-size:12px;word-break:break-all;">Werkt de knop niet? Verleng via: ${d.betaalUrl}</p>`;
-  return { onderwerp: `Je advertentie op Mooihuus is offline — verleng om weer live te gaan`, html: layout("Advertentie offline", inner) };
+    <p style="line-height:1.5;color:${BRAND.grijs};font-size:12px;word-break:break-all;">Werkt de knop niet? Verleng via: ${d.betaalUrl}</p>
+    ${UITLEG_TWEE_PLATFORMEN}`;
+  return { onderwerp: `Je advertentie op ${pf.tekst} is offline — verleng om weer live te gaan`, html: layout("Advertentie offline", inner, pf.site) };
 }
 
 // Bevestiging ná een geslaagde verlenging.
-export function renderVerlengBevestiging(p: Payment, naam: string, aantal: number): { onderwerp: string; html: string } {
+export function renderVerlengBevestiging(p: Payment, naam: string, aantal: number, woningen: { categorie?: string }[] = []): { onderwerp: string; html: string } {
+  const pf = platformenVan(woningen);
   const inner = `
     <span style="display:inline-block;background:${BRAND.bosgroen};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Verlengd ✓</span>
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Bedankt — je staat weer een jaar online</h1>
     <p style="line-height:1.6;">Beste ${naam},</p>
-    <p style="line-height:1.6;">Je verlenging van <strong>${aantal} woning${aantal > 1 ? "en" : ""}</strong> is gelukt. ${aantal > 1 ? "Ze zijn" : "Die is"} weer live op Mooihuus voor nog een heel jaar. Factuurnr. <strong>${p.factuurnummer}</strong>, totaal ${euroCents(p.bedrag)} (incl. btw).</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bewaar deze mail als betaalbewijs. Vragen? Mail info@mooihuus.nl.</p>`;
-  return { onderwerp: `Verlenging gelukt — factuur ${p.factuurnummer}`, html: layout("Verlenging gelukt", inner) };
+    <p style="line-height:1.6;">Je verlenging van <strong>${aantal} woning${aantal > 1 ? "en" : ""}</strong> is gelukt. ${aantal > 1 ? "Ze zijn" : "Die is"} weer live op ${pf.tekst} voor nog een heel jaar. Factuurnr. <strong>${p.factuurnummer}</strong>, totaal ${euroCents(p.bedrag)} (incl. btw).</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bewaar deze mail als betaalbewijs. Vragen? Mail info@mooihuus.nl.</p>
+    ${UITLEG_TWEE_PLATFORMEN}`;
+  return { onderwerp: `Verlenging gelukt — factuur ${p.factuurnummer}`, html: layout("Verlenging gelukt", inner, pf.site) };
 }
 
 export function renderNieuwsbrief(

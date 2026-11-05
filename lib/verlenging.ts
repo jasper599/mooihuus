@@ -140,7 +140,7 @@ export async function verwerkVerlopendeAdvertenties(nu = new Date()): Promise<Sa
     const eersteEind = verloopDatum(lijst[0]);
     const mail = renderVerlengHerinnering({
       naam: owner.bedrijfsnaam || owner.naam,
-      woningen: lijst.map((l) => ({ titel: l.titel, verlooptOp: verloopDatum(l)! })),
+      woningen: lijst.map((l) => ({ titel: l.titel, verlooptOp: verloopDatum(l)!, categorie: l.categorie })),
       bedrag: bet.bedrag,
       betaalUrl: bet.betaalUrl,
       vervalDatum: eersteEind || nu,
@@ -159,7 +159,7 @@ export async function verwerkVerlopendeAdvertenties(nu = new Date()): Promise<Sa
     if (!bet) continue;
     const mail = renderVerlengVerlopen({
       naam: owner.bedrijfsnaam || owner.naam,
-      woningen: lijst.map((l) => ({ titel: l.titel })),
+      woningen: lijst.map((l) => ({ titel: l.titel, categorie: l.categorie })),
       bedrag: bet.bedrag,
       betaalUrl: bet.betaalUrl,
     });

@@ -24,7 +24,7 @@ export async function stuurMaandrapport(ownerId: string): Promise<{ ok: boolean;
 
   const rows = woningen.map((l) => {
     const s = getListingStatsMaand(l.id, mk);
-    return { titel: l.titel, weergaven: s.weergaven, leads: s.leads };
+    return { titel: l.titel, weergaven: s.weergaven, leads: s.leads, categorie: l.categorie };
   });
   const totWeergaven = rows.reduce((a, r) => a + r.weergaven, 0);
   const totLeads = rows.reduce((a, r) => a + r.leads, 0);

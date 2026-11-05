@@ -49,7 +49,7 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
     const klant = getUser(payment.userId);
     if (klant) {
       const updated = getPayment(payment.id)!;
-      const mail = renderVerlengBevestiging(updated, klant.bedrijfsnaam || klant.naam, ids.length);
+      const mail = renderVerlengBevestiging(updated, klant.bedrijfsnaam || klant.naam, ids.length, ids.map((id) => getListing(id)).filter(Boolean) as { categorie?: string }[]);
       await sendEmail({ aan: klant.email, onderwerp: mail.onderwerp, soort: "factuur", html: mail.html });
       await sendEmail({ aan: COMPANY.email, onderwerp: `Kopie: ${mail.onderwerp}`, soort: "factuur", html: mail.html });
     }
