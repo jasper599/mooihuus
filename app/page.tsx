@@ -127,11 +127,22 @@ export default function Home({ searchParams }: { searchParams?: { q?: string } }
             <Link href={localeHref(locale, `/aanbod/${held.id}`)} className="block w-full h-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={held.fotos![0]} alt={held.titel || T.fotoAlt} className="w-full h-full object-cover" />
-              <span className="absolute bottom-3 left-3 right-3 bg-white/90 rounded-xl px-3 py-2 text-sm font-display font-semibold text-bosgroen-dk truncate">
-                {held.titel}
-              </span>
             </Link>
           )}
+          {/* Blauwe Woonhuus-banner onderin de foto */}
+          <a
+            href={localeHref(locale, "/woonhuis-zoeken")}
+            className="absolute bottom-3 left-3 right-3 rounded-xl px-4 py-2.5 flex items-center gap-3 text-white shadow-md hover:brightness-110 transition"
+            style={{ background: "#1E3A5F" }}
+          >
+            <span className="font-display font-extrabold text-base shrink-0">
+              <span style={{ color: "#D5E0EC" }}>Woon</span>huus<span style={{ color: "#E8823B" }}>.nl</span>
+            </span>
+            <span className="text-sm truncate" style={{ color: "#D5E0EC" }}>
+              {locale === "de" ? "Normale Wohnungen zum Kauf" : locale === "en" ? "Regular homes for sale" : "Op zoek naar een gewoon woonhuis?"}
+            </span>
+            <span className="ml-auto font-display font-semibold text-sm shrink-0">→</span>
+          </a>
         </div>
       </section>
 
