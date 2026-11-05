@@ -45,6 +45,7 @@ export function Nav() {
     { href: "/verhuur", label: hurenLabel },
     { href: "/plaatsen", label: t("nav.plaats") },
     { href: "/huusmeesters", label: t("nav.huusmeesters") },
+    { href: "/woonhuis-zoeken", label: "Woonhuus" },
     ...(session ? [{ href: "/dashboard", label: t("nav.dashboard") }] : []),
     ...(rol === "beheerder" ? [{ href: "/beheer", label: t("nav.beheer") }] : []),
   ];
@@ -61,7 +62,6 @@ export function Nav() {
     { href: "/reviews", label: t("footer.reviews") },
     { href: "/contact", label: t("nav.contact") },
     { href: "/faq", label: t("footer.faq") },
-    { href: "/woonhuis-zoeken", label: locale === "de" ? "Normale Wohnungen (Woonhuus.nl)" : locale === "en" ? "Regular homes (Woonhuus.nl)" : "Gewone woningen: Woonhuus.nl" },
   ];
  
   const isActive = (href: string) => (href === "/" ? rest === "/" : rest.startsWith(href));
