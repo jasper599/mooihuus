@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/verhuur" },
 };
 
-export default function VerhuurPage() {
+export default function VerhuurPage({ searchParams }: { searchParams?: { q?: string } }) {
   // De huurfeeds worden op de achtergrond ververst door de scheduler (elke ~6u),
   // niet op deze pagina — zo blijft de pagina licht en snel.
   const listings = getLiveListings()
@@ -37,7 +37,7 @@ export default function VerhuurPage() {
         <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-salie/25" />
       </section>
 
-      <ListingsBrowser listings={listings} locale={locale} modus="huur" />
+      <ListingsBrowser listings={listings} locale={locale} modus="huur" initialQ={searchParams?.q ? String(searchParams.q) : ""} />
 
       <HuurPartners locale={locale} />
     </div>
