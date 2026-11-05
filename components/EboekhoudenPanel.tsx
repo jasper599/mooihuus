@@ -8,6 +8,7 @@ type Resultaat = {
   actief: boolean;
   aantalKandidaten: number;
   geboekt: number;
+  rekening?: string;
   voorstellen: { paymentId: string; factuurnummer: string; klant: string; bedragInclBtw: number; datum: string; actie: string }[];
   fouten: { paymentId: string; fout: string }[];
   error?: string;
@@ -59,6 +60,7 @@ export function EboekhoudenPanel({ actief, auto, nogTeBoeken }: { actief: boolea
             <>
               <div className="mb-2">
                 {res.dry ? "Proefronde" : "Geboekt"}: {res.dry ? `${res.aantalKandidaten} facturen zouden geboekt worden` : `${res.geboekt} van ${res.aantalKandidaten} facturen geboekt`}
+                {res.rekening && <span> · omzetrekening <strong>{res.rekening}</strong></span>}
                 {res.fouten.length > 0 && <span className="text-red-700"> · {res.fouten.length} fout(en)</span>}
               </div>
               <div className="max-h-72 overflow-auto border border-lijn rounded-lg">

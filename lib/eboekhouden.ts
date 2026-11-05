@@ -100,6 +100,31 @@ export async function zoekOfMaakRelatie(args: {
   return gemaakt.id;
 }
 
+// ---- Omzetrekening: code (bijv. 8010) omzetten naar het interne ledger-id ---
+// De API verwacht bij een factuurregel het id van de grootboekrekening, niet
+// de rekeningcode. We zoeken de code op in het rekeningschema van Huus B.V.
+
+let _ledger: { code: string; id: any; omschrijving: string } | null = null;
+
+export async function omzetRekening(): Promise<{ code: string; id: any; omschrijving: string }> {
+  const code = omzetLedger();
+  if (_ledger && _ledger.code === code) return _ledger;
+  let items: any[] = [];
+  try {
+    const res = await ebFetch(`/ledger?code=${encodeURIComponent(code)}`);
+    items = (res && (res.items || res)) || [];
+  } catch { /* hieronder het hele schema doorzoeken */ }
+  let hit = Array.isArray(items) ? items.find((l: any) => String(l.code) === code) : undefined;
+  if (!hit) {
+    const res = await ebFetch(`/ledger?limit=2000`);
+    const alle = (res && (res.items || res)) || [];
+    hit = Array.isArray(alle) ? alle.find((l: any) => String(l.code) === code) : undefined;
+  }
+  if (!hit || hit.id === undefined || hit.id === null) throw new Error(`Grootboekrekening ${code} niet gevonden in e-Boekhouden`);
+  _ledger = { code, id: hit.id, omschrijving: hit.description ?? hit.omschrijving ?? "" };
+  return _ledger;
+}
+
 // ---- Verkoopfactuur aanmaken ----------------------------------------------
 
 export async function maakVerkoopfactuur(args: {
@@ -110,6 +135,7 @@ export async function maakVerkoopfactuur(args: {
   bedragInclBtw: number; // bruto bedrag dat de klant betaalde
   aantal?: number;
 }): Promise<any> {
+  const rekening = await omzetRekening();
   const item = {
     description: args.omschrijving,
     quantity: args.aantal && args.aantal > 0 ? args.aantal : 1,
@@ -118,7 +144,7 @@ export async function maakVerkoopfactuur(args: {
         ? Math.round((args.bedragInclBtw / args.aantal) * 100) / 100
         : args.bedragInclBtw,
     vatCode: btwCode(),
-    ledgerId: omzetLedger(),
+    ledgerId: rekening.id,
   };
   const body: any = {
     relationId: args.relationId,
@@ -185,6 +211,7 @@ export interface SyncResultaat {
   actief: boolean;
   aantalKandidaten: number;
   geboekt: number;
+  rekening?: string; // omzetrekening waarop geboekt wordt, bijv. "8010 Omzet advertenties"
   voorstellen: SyncVoorstel[];
   fouten: Array<{ paymentId: string; fout: string }>;
 }
@@ -203,6 +230,18 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
   const voorstellen: SyncVoorstel[] = [];
   const fouten: Array<{ paymentId: string; fout: string }> = [];
   let geboekt = 0;
+
+  // Controleer vooraf de omzetrekening (ook in de proefronde), zodat je ziet
+  // waarop geboekt wordt en we niet halverwege stranden.
+  let rekening: string | undefined;
+  if (actief) {
+    try {
+      const r = await omzetRekening();
+      rekening = `${r.code} ${r.omschrijving}`.trim();
+    } catch (e: any) {
+      return { ok: false, dry, actief, aantalKandidaten: kandidaten.length, geboekt: 0, rekening: undefined, voorstellen: [], fouten: [{ paymentId: "-", fout: String(e?.message || e) }] };
+    }
+  }
 
   for (const p of kandidaten) {
     const owner = getUser(p.userId) as any;
@@ -249,5 +288,5 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
     }
   }
 
-  return { ok: true, dry, actief, aantalKandidaten: kandidaten.length, geboekt, voorstellen, fouten };
+  return { ok: true, dry, actief, aantalKandidaten: kandidaten.length, geboekt, rekening, voorstellen, fouten };
 }
