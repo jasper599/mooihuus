@@ -13,7 +13,6 @@ export const metadata: Metadata = {
 
 // Verwijspagina op Mooihuus.nl: wie een gewone woning zoekt, hoort op Woonhuus.nl.
 export default function WoonhuisZoeken() {
-  const aantal = getLiveListings("woonhuis").length;
   const locale = getLocale();
   // Daaronder gewoon het eigen recreatieaanbod van Mooihuus, met filters.
   const recreatie = getLiveListings()
@@ -41,9 +40,7 @@ export default function WoonhuisZoeken() {
           <div className="absolute top-4 left-4 bg-white/95 rounded-xl px-3 py-1.5 font-display font-extrabold text-xl">
             <span style={{ color: "#2B5283" }}>Woon</span><span style={{ color: "#1B2430" }}>huus</span><span style={{ color: "#E8823B" }}>.nl</span>
           </div>
-          <span className="absolute bottom-3 left-3 right-3 bg-white/90 rounded-xl px-3 py-2 text-sm font-display font-semibold truncate" style={{ color: "#1E3A5F" }}>
-            Koopwoningen van makelaars en particulieren{aantal > 0 ? ` · ${aantal} ${aantal === 1 ? "woning" : "woningen"}` : ""}
-          </span>
+          <span className="btn absolute bottom-4 right-4 text-base px-6 py-3 shadow-lg pointer-events-none">Ga naar Woonhuus.nl →</span>
         </a>
       </section>
 
