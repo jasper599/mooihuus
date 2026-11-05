@@ -5,6 +5,8 @@ export type ListingStatus = "concept" | "wacht_op_betaling" | "live" | "verkocht
 export type PaymentStatus = "open" | "paid" | "failed";
 export type Rol = "eigenaar" | "beheerder";
 export type AccountType = "particulier" | "zakelijk";
+// Welk platform een woning toont: recreatie op Mooihuus.nl, gewone woningen op Woonhuus.nl.
+export type Categorie = "recreatie" | "woonhuis";
  
 export interface User {
   id: string;
@@ -35,6 +37,8 @@ export interface Listing {
   id: string;
   ownerId: string;
   source?: string; // "eigen" | "luyten" | "kolibri" | "realworks" — herkomst van de woning
+  categorie?: Categorie;        // leeg = recreatie (al het bestaande aanbod)
+  categorieHandmatig?: boolean; // in het CRM handmatig gezet: de feed overschrijft 'm dan niet
   makelaar?: string;   // kantoornaam bij feed-woningen (Kolibri/Realworks)
   realtorId?: string;  // RealtorID van het makelaarskantoor (feed)
   externalId?: string; // id bij de bron, voor feed-synchronisatie (upsert/verwijderen)
@@ -66,7 +70,7 @@ export interface Listing {
   openhuisDatum?: string; // yyyy-mm-dd van een open huis
   openhuisVan?: string; // "13:00"
   openhuisTot?: string; // "16:00"
-  // Uitgebreide kenmerken (Funda-stijl), optioneel
+  // Uitgebreide kenmerken, optioneel
   bouwjaar?: number;
   slaapkamers?: number;
   perceel?: number; // perceeloppervlakte in m²

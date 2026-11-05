@@ -5,6 +5,7 @@ import { getListing } from "@/lib/db";
 import { euro, prijsSuffix, gradient } from "@/lib/format";
 import { COMPANY } from "@/lib/company";
 import { PrintButton } from "@/components/PrintButton";
+import { categorieVan } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export default function Brochure({ params }: { params: { id: string } }) {
   const l = getListing(params.id);
   if (!l) return notFound();
 
+  const woonhuis = categorieVan(l) === "woonhuis";
   const rows: [string, string][] = [];
   rows.push(["Type", l.type]);
   if (l.bouwjaar) rows.push(["Bouwjaar", String(l.bouwjaar)]);
@@ -51,7 +53,7 @@ export default function Brochure({ params }: { params: { id: string } }) {
       <div className="bg-white border border-lijn rounded-2xl overflow-hidden">
         {/* Kop */}
         <div className="p-6 flex items-center justify-between" style={{ background: gradient(l.kleur) }}>
-          <div className="font-display font-extrabold text-2xl text-white">Mooi<span style={{ color: "#1F4E32" }}>huus</span><span style={{ color: "#E8823B" }}>.nl</span></div>
+          <div className="font-display font-extrabold text-2xl text-white">{woonhuis ? "Woon" : "Mooi"}<span style={{ color: woonhuis ? "#1E3A5F" : "#1F4E32" }}>huus</span><span style={{ color: "#E8823B" }}>.nl</span></div>
           <div className="bg-white/90 text-bosgroen-dk font-display font-semibold text-sm px-3 py-1 rounded-full">
             {l.status === "verkocht" ? "Verkocht" : l.doel === "huur" ? "Te huur" : "Te koop"}
           </div>
@@ -59,7 +61,7 @@ export default function Brochure({ params }: { params: { id: string } }) {
 
         <div className="p-6">
           <h1 className="font-display font-extrabold text-2xl text-bosgroen-dk">{l.titel}</h1>
-          <div className="text-grijs mt-1">{[l.type, l.park, l.provincie].filter(Boolean).join(" · ")}</div>
+          <div className="text-grijs mt-1">{[l.type, woonhuis ? l.postcode : l.park, l.provincie].filter(Boolean).join(" · ")}</div>
           <div className="font-display font-extrabold text-2xl text-oranje-dk mt-2">{prijs}</div>
 
           {/* Foto's */}

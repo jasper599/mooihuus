@@ -12,4 +12,4 @@ export const COMPANY = {
   website: "https://www.mooihuus.nl",
 };
 
-export const LAATST_BIJGEWERKT = "augustus 2026";
+export const LAATST_BIJGEWERKT = "november 2026";

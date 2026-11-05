@@ -1,13 +1,23 @@
 export function RoofMark({ className = "w-6 h-6" }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden="true">
-      <path d="M16 4 L29 15 L25 15 L25 28 L7 28 L7 15 L3 15 Z" fill="#2C6B45" />
+      <path d="M16 4 L29 15 L25 15 L25 28 L7 28 L7 15 L3 15 Z" fill="currentColor" className="text-bosgroen" />
       <rect x="13.5" y="19" width="5" height="9" fill="#E8823B" />
     </svg>
   );
 }
 
-export function Wordmark({ className = "text-xl" }: { className?: string }) {
+export function Wordmark({ className = "text-xl", site = "mooihuus" }: { className?: string; site?: "mooihuus" | "woonhuus" }) {
+  if (site === "woonhuus") {
+    return (
+      <span className={`font-display font-extrabold inline-flex items-center gap-1 ${className}`}>
+        <RoofMark className="w-[1.1em] h-[1.1em] mr-1" />
+        <span className="text-bosgroen">Woon</span>
+        <span className="text-inkt">huus</span>
+        <span className="text-oranje font-bold">.nl</span>
+      </span>
+    );
+  }
   return (
     <span className={`font-display font-extrabold inline-flex items-center gap-1 ${className}`}>
       <RoofMark className="w-[1.1em] h-[1.1em] mr-1" />

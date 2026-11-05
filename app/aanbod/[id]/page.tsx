@@ -1,6 +1,6 @@
  
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import { getListing, getUser } from "@/lib/db";
 import { gradient, euro, prijsSuffix, grondInfo, embedVideoUrl, openhuisInfo } from "@/lib/format";
@@ -15,6 +15,8 @@ import { BezichtigingForm } from "@/components/BezichtigingForm";
 import { MaandlastenCalculator } from "@/components/MaandlastenCalculator";
 import { VertaalOmschrijving } from "@/components/VertaalOmschrijving";
 import { FotoGalerij } from "@/components/FotoGalerij";
+import { huidigeSite } from "@/lib/site-server";
+import { categorieVan, siteVoorCategorie, woningUrl } from "@/lib/site";
  
 export const dynamic = "force-dynamic";
 
@@ -30,12 +32,17 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const l = getListing(params.id);
   if (!l) return { title: "Woning niet gevonden" };
   const soort = l.doel === "huur" ? "te huur" : "te koop";
-  const title = `${l.titel} — ${l.type} ${soort} in ${l.provincie}`;
-  const description = `${l.type} ${soort} in ${l.provincie} (${l.park}), voor ${l.personen} personen, ${l.m2} m². ${euro(l.prijs)}. ${l.omschrijving}`.slice(0, 300);
+  const title = `${l.titel}: ${l.type} ${soort} in ${l.provincie}`;
+  const woonhuis = categorieVan(l) === "woonhuis";
+  const description = (woonhuis
+    ? `${l.type} ${soort} in ${l.provincie}${l.m2 ? `, ${l.m2} m²` : ""}. ${euro(l.prijs)}. ${l.omschrijving}`
+    : `${l.type} ${soort} in ${l.provincie}${l.park ? ` (${l.park})` : ""}${l.personen ? `, voor ${l.personen} personen` : ""}${l.m2 ? `, ${l.m2} m²` : ""}. ${euro(l.prijs)}. ${l.omschrijving}`
+  ).slice(0, 300);
   return {
     title,
     description,
-    alternates: { canonical: `/aanbod/${l.id}` },
+    // Canoniek altijd op de juiste etalage (Mooihuus of Woonhuus).
+    alternates: { canonical: woningUrl(l) },
     // Externe (affiliate) huurwoningen: dunne, niet-eigen content — niet indexeren
     // (de doorlink wél volgen). Eigen woningen gewoon indexeerbaar.
     robots: l.externalUrl ? { index: false, follow: true } : undefined,
@@ -43,7 +50,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
       title,
       description,
       type: "website",
-      url: `${COMPANY.website}/aanbod/${l.id}`,
+      url: woningUrl(l),
       images: l.fotos && l.fotos.length ? [fotoAbsoluut(l.fotos[0])] : undefined,
     },
   };
@@ -52,6 +59,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
 export default function ListingDetail({ params }: { params: { id: string } }) {
   const listing = getListing(params.id);
   if (!listing) return notFound();
+  // Staat de woning op de andere etalage (woonhuis op Mooihuus of andersom),
+  // dan permanent doorsturen naar het juiste domein.
+  const woonhuis = categorieVan(listing) === "woonhuis";
+  // Gewone huurwoningen bieden we niet aan.
+  if (woonhuis && listing.doel === "huur") return notFound();
+  if (siteVoorCategorie(categorieVan(listing)) !== huidigeSite()) permanentRedirect(woningUrl(listing));
   const locale = getLocale();
   const owner = getUser(listing.ownerId);
   const zakelijk = owner?.type === "zakelijk";
@@ -73,7 +86,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
       price: listing.prijs,
       priceCurrency: "EUR",
       availability: "https://schema.org/InStock",
-      url: `${COMPANY.website}/aanbod/${listing.id}`,
+      url: woningUrl(listing),
     },
   };
  
@@ -98,10 +111,17 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
             )}
           </FotoGalerij>
           <h1 className="font-display font-extrabold text-2xl text-bosgroen-dk mt-4">{listing.titel}</h1>
-          <div className="text-grijs">{vertaalType(locale, listing.type)} · {listing.park} · {listing.provincie}</div>
+          <div className="text-grijs">{[vertaalType(locale, listing.type), woonhuis ? listing.postcode : listing.park, listing.provincie].filter(Boolean).join(" · ")}</div>
           {aanbieder && (
             <div className="text-sm text-grijs mt-1">
               {t(locale, "listing.aangebodenDoor")} <span className="font-semibold text-bosgroen-dk">{aanbieder}</span>
+              {locale === "nl" && <span> (makelaar of bedrijf)</span>}
+            </div>
+          )}
+          {!listing.externalUrl && !zakelijk && locale === "nl" && (
+            <div className="text-sm text-grijs mt-1">
+              Aangeboden door een <span className="font-semibold text-bosgroen-dk">particulier</span>.{" "}
+              <a href="/disclaimer" className="underline">Let op: bij koop van een particulier gelden de regels voor consumentenbescherming niet.</a>
             </div>
           )}
           {feedBron && (
@@ -189,7 +209,7 @@ export default function ListingDetail({ params }: { params: { id: string } }) {
               </div>
             );
           })()}
-          {(() => {
+          {!woonhuis && (() => {
             const uitjes = listing.uitjes && listing.uitjes.length > 0 ? listing.uitjes : suggestUitjes(listing.provincie);
             return (
               <div className="mt-6">

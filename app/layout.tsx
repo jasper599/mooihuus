@@ -15,10 +15,30 @@ import { I18nProvider } from "@/components/I18nProvider";
 import { getLocale, getPathname } from "@/lib/i18n-server";
 import { t, localeHref } from "@/lib/i18n";
 import { COMPANY } from "@/lib/company";
+import { huidigeSite } from "@/lib/site-server";
+import { MOOIHUUS_URL, WOONHUUS_URL } from "@/lib/site";
+import { WoonhuusNav } from "@/components/WoonhuusNav";
 export const viewport = {
   themeColor: "#2C6B45",
 };
 export async function generateMetadata(): Promise<Metadata> {
+  if (huidigeSite() === "woonhuus") {
+    const path = getPathname();
+    const title = "Woonhuus.nl: koopwoningen van makelaars en particulieren";
+    const description = "Eengezinswoningen, appartementen en starterswoningen te koop in heel Nederland, aangeboden door makelaars en particulieren. Een platform van Mooihuus.";
+    return {
+      metadataBase: new URL(WOONHUUS_URL),
+      title: { default: title, template: "%s · Woonhuus" },
+      description,
+      applicationName: "Woonhuus",
+      manifest: "/manifest.webmanifest",
+      icons: { icon: "/woonhuus-icon.png", apple: "/woonhuus-apple-icon.png" },
+      alternates: { canonical: path },
+      openGraph: { title, description, url: WOONHUUS_URL, siteName: "Woonhuus", locale: "nl_NL", type: "website" },
+      twitter: { card: "summary_large_image", title, description },
+      keywords: ["huis te koop", "woning te koop", "koopwoning", "appartement te koop", "eengezinswoning", "starterswoning"],
+    };
+  }
   const locale = getLocale();
   const path = getPathname();
   const title = t(locale, "meta.title");
@@ -29,6 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     applicationName: "Mooihuus",
     manifest: "/manifest.webmanifest",
+    icons: { icon: "/icon.png", apple: "/apple-icon.png" },
     appleWebApp: { capable: true, title: "Mooihuus", statusBarStyle: "default" },
     alternates: {
       canonical: localeHref(locale, path),
@@ -53,6 +74,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = getLocale();
+  const site = huidigeSite();
+  if (site === "woonhuus") return <WoonhuusLayout>{children}</WoonhuusLayout>;
   const orgLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -110,6 +133,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Link href={localeHref(locale, "/privacy")} className="hover:underline">{t(locale, "footer.privacy")}</Link>
                   <Link href={localeHref(locale, "/cookies")} className="hover:underline">{t(locale, "footer.cookies")}</Link>
                   <Link href={localeHref(locale, "/disclaimer")} className="hover:underline">{t(locale, "footer.disclaimer")}</Link>
+                  <Link href={localeHref(locale, "/woonhuis-zoeken")} className="hover:underline">Gewone woning zoeken? Woonhuus.nl</Link>
                 </nav>
                 <p className="mt-4 text-xs text-grijs">
                   {t(locale, "footer.dienstVan")} <strong>Huus B.V.</strong> · {COMPANY.adres}, {COMPANY.postcode} · KvK {COMPANY.kvk} · btw {COMPANY.btw} · © {new Date().getFullYear()} Huus B.V.
@@ -122,6 +146,68 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <GoogleTag />
             <ServiceWorker />
             <InstallPrompt />
+          </I18nProvider>
+        </Providers>
+      </body>
+    </html>
+  );
+}
+
+// Woonhuus.nl: zelfde fundament (fonts, cookiebanner, statistieken), eigen
+// navigatie, huisstijl (data-site) en footer met verwijzing naar Mooihuus.
+function WoonhuusLayout({ children }: { children: React.ReactNode }) {
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Woonhuus",
+    legalName: "Huus B.V.",
+    url: WOONHUUS_URL,
+    email: COMPANY.email,
+    parentOrganization: { "@type": "Organization", name: "Mooihuus", url: MOOIHUUS_URL },
+  };
+  return (
+    <html lang="nl" data-site="woonhuus">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+        <meta name="theme-color" content="#1E3A5F" />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
+      </head>
+      <body className="font-sans">
+        <Providers>
+          <I18nProvider locale="nl">
+            <WoonhuusNav mooihuusUrl={MOOIHUUS_URL} />
+            <main className="max-w-6xl mx-auto px-4 py-6 min-h-[70vh]">{children}</main>
+            <footer className="bg-white border-t border-lijn mt-10">
+              <div className="max-w-6xl mx-auto px-4 py-8 text-sm text-grijs">
+                <Wordmark className="text-lg" site="woonhuus" />
+                <p className="mt-2 max-w-xl">Koopwoningen in heel Nederland, aangeboden door makelaars en particulieren. Woonhuus.nl is het zusterplatform van Mooihuus.</p>
+                <nav className="mt-4 flex gap-4 flex-wrap font-semibold text-bosgroen-dk" aria-label="Footer">
+                  <Link href="/te-koop" className="hover:underline">Te koop per provincie</Link>
+                  <Link href="/over-woonhuus" className="hover:underline">Over Woonhuus</Link>
+                  <Link href="/contact" className="hover:underline">Contact</Link>
+                  <Link href="/faq" className="hover:underline">Veelgestelde vragen</Link>
+                  <Link href="/voorwaarden" className="hover:underline">Voorwaarden</Link>
+                  <Link href="/privacy" className="hover:underline">Privacy</Link>
+                  <Link href="/cookies" className="hover:underline">Cookies</Link>
+                  <Link href="/disclaimer" className="hover:underline">Disclaimer</Link>
+                </nav>
+                <a href={MOOIHUUS_URL} className="mt-5 flex items-center gap-3 rounded-xl border border-lijn bg-zand p-4 hover:shadow-sm transition-shadow">
+                  <span className="font-display font-bold text-bosgroen-dk">Op zoek naar een recreatiewoning of vakantiehuis?</span>
+                  <span className="ml-auto font-semibold text-bosgroen">Naar Mooihuus.nl →</span>
+                </a>
+                <p className="mt-4 text-xs text-grijs">
+                  Woonhuus.nl en Mooihuus.nl zijn diensten van <strong>Huus B.V.</strong> · {COMPANY.adres}, {COMPANY.postcode} · KvK {COMPANY.kvk} · btw {COMPANY.btw} · © {new Date().getFullYear()} Huus B.V.
+                </p>
+              </div>
+            </footer>
+            <CookieBanner />
+            <Analytics />
+            <GoogleTag />
           </I18nProvider>
         </Providers>
       </body>

@@ -45,14 +45,16 @@ export async function POST(req: Request) {
     );
   }
 
+  const categorie = b.categorie === "woonhuis" ? "woonhuis" : "recreatie";
   const listing = addListing({
     ownerId: userId,
+    categorie,
     titel,
     type: String(b.type || "Chalet"),
-    doel: (b.doel === "huur" ? "huur" : "koop") as Doel,
+    doel: (b.doel === "huur" && categorie !== "woonhuis" ? "huur" : "koop") as Doel, // gewone woningen: alleen koop
     provincie: String(b.provincie || "Nederland"),
     park: String(b.park || ""),
-    personen: Number(b.personen || 2),
+    personen: categorie === "woonhuis" ? 0 : Number(b.personen || 2),
     m2: Number(b.m2 || 50),
     prijs: Number(b.prijs || 0),
     prijsSuffix: b.prijsSuffix ? String(b.prijsSuffix).slice(0, 24) : undefined,
@@ -65,7 +67,7 @@ export async function POST(req: Request) {
     pakket,
     status: "wacht_op_betaling",
     postcode: b.postcode ? String(b.postcode) : undefined,
-    uitjes: Array.isArray(b.uitjes) ? b.uitjes.map(String).slice(0, 12) : undefined,
+    uitjes: categorie !== "woonhuis" && Array.isArray(b.uitjes) ? b.uitjes.map(String).slice(0, 12) : undefined,
     fotos: Array.isArray(b.fotos) ? b.fotos.map(String).slice(0, 24) : undefined,
   });
 

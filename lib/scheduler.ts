@@ -240,7 +240,7 @@ function huusCaptionSchoon(c: any): string {
 // geleden gepost; uitgelichte/nieuwe krijgen voorrang).
 function kiesWoning(): any {
   const posts = getSocialPosts();
-  const live = getListings().filter((l) => l.status === "live" && (l.fotos?.length || 0) > 0);
+  const live = getListings().filter((l) => l.status === "live" && l.categorie !== "woonhuis" && (l.fotos?.length || 0) > 0);
   if (live.length === 0) return undefined;
   const laatst = new Map<string, string>();
   for (const p of posts) {

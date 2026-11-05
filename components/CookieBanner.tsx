@@ -22,6 +22,11 @@ export function CookieBanner() {
     } catch {
       /* negeer */
     }
+    try {
+      window.dispatchEvent(new CustomEvent("mh-consent", { detail: keuze }));
+    } catch {
+      /* negeer */
+    }
     setShow(false);
   }
 

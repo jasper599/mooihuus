@@ -1,7 +1,7 @@
 import { LegalShell } from "@/components/LegalShell";
 import { COMPANY } from "@/lib/company";
 
-export const metadata = { title: "Privacyverklaring — Mooihuus" };
+export const metadata = { title: "Privacyverklaring" };
 
 export default function Privacy() {
   return (
@@ -9,7 +9,8 @@ export default function Privacy() {
       <p>
         {COMPANY.bv} (“Mooihuus”) verwerkt persoonsgegevens zorgvuldig en conform de Algemene
         Verordening Gegevensbescherming (AVG). In deze verklaring lees je welke gegevens we
-        verwerken en waarom.
+        verwerken en waarom. Deze verklaring geldt voor Mooihuus.nl en voor Woonhuus.nl, ons platform
+        voor gewone woningen; beide worden beheerd door {COMPANY.bv}.
       </p>
 
       <h2>1. Verwerkingsverantwoordelijke</h2>
@@ -35,7 +36,6 @@ export default function Privacy() {
         <li><strong>Verhuurpartners</strong> — klik je door naar het huuraanbod van een verhuurpartner, dan verlaat je Mooihuus en geldt op de site van die partner hun eigen privacybeleid. Wij delen daarbij zelf geen persoonsgegevens met de partner.</li>
         <li><strong>Hostingpartij</strong> — voor het draaien van het platform (bij voorkeur binnen de EU).</li>
       </ul>
-      <p>Wij verkopen je gegevens niet aan derden.</p>
 
       <h2>4. Bewaartermijnen</h2>
       <p>

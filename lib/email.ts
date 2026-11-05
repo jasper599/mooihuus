@@ -4,6 +4,7 @@ import { addEmail } from "./db";
 import { EmailRecord, Listing, Payment, Lead, Zoekopdracht } from "./types";
 import { euroCents, euro } from "./money";
 import { COMPANY } from "./company";
+import { woningUrl } from "./site";
 
 // ------------------------------------------------------------------
 // E-mail: rendert merk-HTML en "verstuurt".
@@ -25,7 +26,11 @@ const BRAND = {
   lijn: "#E4DCCB",
 };
 
-function layout(title: string, inner: string): string {
+// Woonhuus.nl-mails (over gewone woningen) krijgen de blauwe Woonhuus-kop.
+function layout(title: string, inner: string, site: "mooihuus" | "woonhuus" = "mooihuus"): string {
+  if (site === "woonhuus") {
+    return layoutWoonhuus(title, inner);
+  }
   return `<!DOCTYPE html>
 <html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title}</title></head>
@@ -49,6 +54,35 @@ function layout(title: string, inner: string): string {
 </td></tr></table>
 </body></html>`;
 }
+
+function layoutWoonhuus(title: string, inner: string): string {
+  const W = { blauw: "#1E3A5F", licht: "#D5E0EC", achter: "#F4F6F8", lijn: "#DDE3EA", grijs: "#526070" };
+  return `<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title></head>
+<body style="margin:0;background:${W.achter};font-family:Arial,Helvetica,sans-serif;color:#1B2430;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${W.achter};padding:24px 0;">
+<tr><td align="center">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+  <tr><td style="background:${W.blauw};padding:22px 28px;border-radius:16px 16px 0 0;">
+    <span style="font-size:22px;font-weight:800;color:#fff;letter-spacing:-.01em;">
+      <span style="color:${W.licht};">Woon</span><span style="color:#fff;">huus</span><span style="color:${BRAND.oranje};">.nl</span>
+    </span>
+  </td></tr>
+  <tr><td style="background:#fff;padding:30px 28px;border-left:1px solid ${W.lijn};border-right:1px solid ${W.lijn};">
+    ${inner}
+  </td></tr>
+  <tr><td style="background:#fff;padding:18px 28px;border:1px solid ${W.lijn};border-top:none;border-radius:0 0 16px 16px;font-size:12px;color:${W.grijs};">
+    Woonhuus.nl is een platform van Mooihuus.nl (Huus B.V.).<br>
+    Vragen? Mail <a href="mailto:info@mooihuus.nl" style="color:${W.blauw};">info@mooihuus.nl</a>.
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+}
+
+const siteVan = (l: { categorie?: string }): "mooihuus" | "woonhuus" => (l.categorie === "woonhuis" ? "woonhuus" : "mooihuus");
+const platformNaam = (l: { categorie?: string }) => (l.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus.nl");
 
 const btn = (href: string, label: string) =>
   `<a href="${href}" style="display:inline-block;background:${BRAND.oranje};color:#fff;text-decoration:none;font-weight:bold;padding:11px 20px;border-radius:10px;">${label}</a>`;
@@ -84,6 +118,7 @@ export function renderMakelaarWelkom(naam: string, email: string): { onderwerp: 
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Welkom bij Mooihuus, ${naam}! \u{1F44B}</h1>
     <p style="line-height:1.6;">Welkom op <strong>Mooihuus.nl</strong>, het platform voor recreatiewoningen. We hebben een account voor u aangemaakt zodat u uw aanbod en facturen kunt beheren.</p>
+    <p style="line-height:1.6;">Biedt u ook gewone koopwoningen aan? Die zetten we in het zonnetje op ons zusterplatform <strong>Woonhuus.nl</strong>, waar kopers van gewone woningen zoeken. Uw recreatiewoningen blijven op Mooihuus.nl. Het gaat vanzelf: u beheert alles met dit ene account. Let op: gewone huurwoningen bieden we niet aan, en voor gewone woningen bieden we alleen de advertentie aan.</p>
     <p style="line-height:1.6;"><strong>Inloggen:</strong> log in met dit e-mailadres (<strong>${email}</strong>) en stel uw wachtwoord in.</p>
     <p style="margin:22px 0;">${btn(`${COMPANY.website}/wachtwoord-vergeten`, "Stel uw wachtwoord in")}</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Hartelijke groet,<br>Team Mooihuus</p>`;
@@ -92,23 +127,27 @@ export function renderMakelaarWelkom(naam: string, email: string): { onderwerp: 
 
 export function renderMakelaarBedankt(
   naam: string,
-  regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string }[],
+  regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string; categorie?: Listing["categorie"] }[],
   tarief: number
 ): { onderwerp: string; html: string } {
+  const heeftWoonhuis = regels.some((r) => r.categorie === "woonhuis");
+  const heeftRecreatie = regels.some((r) => r.categorie !== "woonhuis");
+  const platformen = heeftWoonhuis && heeftRecreatie ? "Mooihuus.nl en Woonhuus.nl" : heeftWoonhuis ? "Woonhuus.nl" : "Mooihuus.nl";
   const obj = regels.length === 1 ? "woning" : "woningen";
   const totaal = Math.round(regels.reduce((sum, r) => sum + r.bedrag, 0) * 100) / 100;
   const items = regels
     .map(
       (r) => `
       <tr>
-        <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.5;">${r.titel}${r.factuurnummer ? `<br><span style="color:${BRAND.grijs};font-size:12px;">Factuur ${r.factuurnummer}</span>` : ""}<br><span style="color:${BRAND.grijs};font-size:13px;">${euro(r.bedrag)} per jaar</span></td>
+        <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.5;">${r.titel}<br><span style="color:${BRAND.grijs};font-size:12px;">Komt op ${platformNaam(r)}${r.factuurnummer ? ` · Factuur ${r.factuurnummer}` : ""}</span><br><span style="color:${BRAND.grijs};font-size:13px;">${euro(r.bedrag)} per jaar</span></td>
         <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;white-space:nowrap;">${btn(r.betaalUrl, "Betaal")}</td>
       </tr>`
     )
     .join("");
   const inner = `
-    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Uw factuur voor plaatsing op Mooihuus</h1>
-    <p style="line-height:1.6;">Beste ${naam}, bedankt voor het aanmelden van ${regels.length} ${obj} op <strong>Mooihuus.nl</strong>. Hieronder de factuur met betaallink. <strong>Elke woning gaat online zodra deze is betaald.</strong></p>
+    <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Uw factuur voor plaatsing op ${heeftWoonhuis && !heeftRecreatie ? "Woonhuus" : "Mooihuus"}</h1>
+    <p style="line-height:1.6;">Beste ${naam}, bedankt voor het aanmelden van ${regels.length} ${obj} op <strong>${platformen}</strong>. Hieronder de factuur met betaallink. <strong>Elke woning gaat online zodra deze is betaald.</strong></p>
+    ${heeftWoonhuis ? `<p style="line-height:1.6;">Gewone koopwoningen zetten we in het zonnetje op ons zusterplatform <strong>Woonhuus.nl</strong>. Recreatiewoningen komen op Mooihuus.nl. Bij elke woning hieronder ziet u waar deze komt te staan.</p>` : ""}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
       <tr><td colspan="2" style="background:${BRAND.creme};padding:12px 16px;font-size:13px;color:${BRAND.grijs};">Advertentie — ${euro(tarief)} per woning per jaar</td></tr>
       ${items}
@@ -118,9 +157,9 @@ export function renderMakelaarBedankt(
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bedragen zijn per woning per jaar. Na betaling staat de betreffende woning direct online en ontvangt u het betaalbewijs.</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Hartelijke groet,<br>Team Mooihuus</p>`;
   const ond = regels.length === 1
-    ? "Factuur & betaallink — uw woning op Mooihuus.nl"
-    : "Factuur & betaallink — uw woningen op Mooihuus.nl";
-  return { onderwerp: ond, html: layout("Uw factuur — Mooihuus", inner) };
+    ? `Factuur & betaallink: uw woning op ${platformen}`
+    : `Factuur & betaallink: uw woningen op ${platformen}`;
+  return { onderwerp: ond, html: layout("Uw factuur", inner, heeftWoonhuis && !heeftRecreatie ? "woonhuus" : "mooihuus") };
 }
 
 export function renderSocialTopperAlert(titel: string, caption: string, fotoUrl?: string): { onderwerp: string; html: string } {
@@ -139,7 +178,7 @@ export function renderSocialTopperAlert(titel: string, caption: string, fotoUrl?
 export function renderBetalingsbewijs(p: Payment, listing: Listing, naam: string): { onderwerp: string; html: string } {
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 6px;">Bedankt, ${naam} — je betaling is gelukt ✅</h1>
-    <p style="line-height:1.6;">Je advertentie <strong>“${listing.titel}”</strong> staat nu online. Hieronder je betalingsbewijs.</p>
+    <p style="line-height:1.6;">Je advertentie <strong>“${listing.titel}”</strong> staat nu online op <a href="${woningUrl(listing)}" style="color:${BRAND.bosgroen};">${platformNaam(listing)}</a>. Hieronder je betalingsbewijs.</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
       <tr><td style="background:${BRAND.creme};padding:12px 16px;font-size:13px;color:${BRAND.grijs};">Factuurnummer</td>
           <td style="background:${BRAND.creme};padding:12px 16px;font-size:13px;text-align:right;font-weight:bold;color:${BRAND.inkt};">${p.factuurnummer}</td></tr>
@@ -156,9 +195,9 @@ export function renderBetalingsbewijs(p: Payment, listing: Listing, naam: string
       <tr><td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};color:${BRAND.grijs};font-size:13px;">Betaald op</td>
           <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;color:${BRAND.grijs};font-size:13px;">${p.betaaldOp ? new Date(p.betaaldOp).toLocaleString("nl-NL") : "-"}</td></tr>
     </table>
-    <p style="margin:22px 0;">${btn(`${COMPANY.website}/dashboard`, "Naar mijn dashboard")}</p>
+    <p style="margin:22px 0;">${btn(woningUrl(listing), "Bekijk je woning")} &nbsp; ${btn(`${COMPANY.website}/dashboard`, "Naar mijn dashboard")}</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bewaar deze mail als bewijs van betaling. Klopt er iets niet? Mail info@mooihuus.nl.</p>`;
-  return { onderwerp: `Betalingsbewijs ${p.factuurnummer} — je huus staat online`, html: layout("Betalingsbewijs", inner) };
+  return { onderwerp: `Betalingsbewijs ${p.factuurnummer}: je huus staat online`, html: layout("Betalingsbewijs", inner, siteVan(listing)) };
 }
 
 export function renderOpvallerBewijs(p: Payment, listing: Listing, naam: string): { onderwerp: string; html: string } {
@@ -188,14 +227,14 @@ export function renderLead(lead: Lead, listing: Listing, ownerNaam: string): { o
   const inner = `
     <span style="display:inline-block;background:${BRAND.oranje};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Nieuwe lead — rechtstreeks naar jou</span>
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Iemand heeft interesse in “${listing.titel}” 🎉</h1>
-    <p style="line-height:1.6;">Hoi ${ownerNaam}, je hebt een nieuw bericht via Mooihuus. Reageer snel — een vlotte reactie maakt het verschil.</p>
+    <p style="line-height:1.6;">Hoi ${ownerNaam}, je hebt een nieuw bericht via ${platformNaam(listing)}. Reageer snel, een vlotte reactie maakt het verschil.</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;background:${BRAND.creme};">
       <tr><td style="padding:14px 16px;">
         <div style="font-size:12px;color:${BRAND.grijs};text-transform:uppercase;letter-spacing:.03em;">Over welke woning</div>
         <div style="font-weight:bold;color:${BRAND.bosgroenDk};font-size:16px;margin-top:4px;">${listing.titel}</div>
-        <div style="color:${BRAND.grijs};font-size:13px;margin-top:2px;">${[listing.type, listing.park, listing.provincie].filter(Boolean).join(" · ")}${listing.prijs ? " · " + euro(listing.prijs) : ""}</div>
+        <div style="color:${BRAND.grijs};font-size:13px;margin-top:2px;">${[listing.type, listing.categorie === "woonhuis" ? "" : listing.park, listing.provincie].filter(Boolean).join(" · ")}${listing.prijs ? " · " + euro(listing.prijs) : ""}</div>
         <div style="color:${BRAND.grijs};font-size:12px;margin-top:2px;">Woning-ID: ${listing.id}</div>
-        <div style="margin-top:12px;">${btn(`${COMPANY.website}/aanbod/${listing.id}`, "Bekijk de woning")}</div>
+        <div style="margin-top:12px;">${btn(woningUrl(listing), "Bekijk de woning")}</div>
       </td></tr>
     </table>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
@@ -209,13 +248,13 @@ export function renderLead(lead: Lead, listing: Listing, ownerNaam: string): { o
           <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.6;">“${lead.bericht}”</td></tr>
     </table>
     <p style="margin:22px 0;">${btn("mailto:" + lead.email, "Beantwoord " + lead.naam.split(" ")[0])}</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Deze aanvraag kwam rechtstreeks bij jou binnen. Mooihuus zit er niet tussen.</p>`;
-  return { onderwerp: `Nieuwe interesse in “${listing.titel}”`, html: layout("Nieuwe lead", inner) };
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Deze aanvraag kwam rechtstreeks bij jou binnen. ${platformNaam(listing)} zit er niet tussen.</p>`;
+  return { onderwerp: `Nieuwe interesse in “${listing.titel}”`, html: layout("Nieuwe lead", inner, siteVan(listing)) };
 }
 
 // Automatische bevestiging naar de aanvrager zelf.
 export function renderLeadBevestiging(lead: Lead, listing: Listing): { onderwerp: string; html: string } {
-  const url = `${COMPANY.website}/aanbod/${listing.id}`;
+  const url = woningUrl(listing);
   const inner = `
     <span style="display:inline-block;background:${BRAND.bosgroen};color:#fff;font-size:12px;font-weight:bold;padding:3px 10px;border-radius:999px;">Aanvraag ontvangen ✅</span>
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:12px 0 6px;">Bedankt voor je bericht, ${lead.naam.split(" ")[0]}!</h1>
@@ -227,8 +266,8 @@ export function renderLeadBevestiging(lead: Lead, listing: Listing): { onderwerp
           <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.6;">“${lead.bericht}”</td></tr>
     </table>
     <p style="margin:22px 0;">${btn(url, "Bekijk de woning")}</p>
-    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Dit is een automatische bevestiging van Mooihuus.nl — je hoeft hier niet op te reageren. Vragen? Mail info@mooihuus.nl.</p>`;
-  return { onderwerp: `We hebben je aanvraag ontvangen — ${listing.titel}`, html: layout("Aanvraag ontvangen", inner) };
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Dit is een automatische bevestiging van ${platformNaam(listing)}. Je hoeft hier niet op te reageren. Vragen? Mail info@mooihuus.nl.</p>`;
+  return { onderwerp: `We hebben je aanvraag ontvangen: ${listing.titel}`, html: layout("Aanvraag ontvangen", inner, siteVan(listing)) };
 }
 
 export function renderContact(d: {
@@ -560,10 +599,10 @@ export function renderNieuwsbrief(
 }
 
 export function renderBezichtiging(
-  listing: { titel: string; id: string },
+  listing: { titel: string; id: string; categorie?: Listing["categorie"] },
   d: { naam: string; email: string; datum: string; tijd: string; bericht: string }
 ): { onderwerp: string; html: string } {
-  const url = `${COMPANY.website}/aanbod/${listing.id}`;
+  const url = woningUrl(listing);
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Nieuw bezichtigingsverzoek</h1>
     <p style="line-height:1.6;">Voor je woning <strong>${listing.titel}</strong> is een bezichtiging aangevraagd.</p>
@@ -575,7 +614,7 @@ export function renderBezichtiging(
     ${d.bericht ? `<p style="line-height:1.6;">&ldquo;${d.bericht}&rdquo;</p>` : ""}
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Let op: dit is een <strong>verzoek</strong>, nog geen bevestigde afspraak. Neem contact op met de aanvrager om de bezichtiging te bevestigen.</p>
     <p style="margin:18px 0;">${btn(url, "Bekijk de woning")}</p>`;
-  return { onderwerp: `Bezichtigingsverzoek: ${listing.titel}`, html: layout("Bezichtigingsverzoek", inner) };
+  return { onderwerp: `Bezichtigingsverzoek: ${listing.titel}`, html: layout("Bezichtigingsverzoek", inner, siteVan(listing)) };
 }
 
 export async function sendEmail(opts: {

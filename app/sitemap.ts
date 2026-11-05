@@ -4,14 +4,28 @@ import { getBlogPosts } from "@/lib/blog";
 import { PROVINCIES, provincieSlug } from "@/lib/provincies";
 import { WONINGTYPES, typeSlug } from "@/lib/woningtypes";
 import { COMPANY } from "@/lib/company";
+import { huidigeSite } from "@/lib/site-server";
+import { WOONHUUS_URL } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = COMPANY.website;
   const nu = new Date();
+  // Woonhuus.nl heeft een eigen sitemap met alleen gewone woningen.
+  if (huidigeSite() === "woonhuus") {
+    const w = WOONHUUS_URL;
+    const vast = ["", "/te-koop", "/over-woonhuus", "/contact", "/faq", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"].map((p) => ({
+      url: `${w}${p}`, lastModified: nu, changeFrequency: (p === "" ? "daily" : "monthly") as "daily" | "monthly", priority: p === "" ? 1 : 0.6,
+    }));
+    const prov = PROVINCIES.map((p) => ({ url: `${w}/te-koop/${provincieSlug(p)}`, lastModified: nu, changeFrequency: "daily" as const, priority: 0.7 }));
+    const woningen = getLiveListings("woonhuis").filter((l) => !l.externalUrl).map((l) => ({
+      url: `${w}/aanbod/${l.id}`, lastModified: new Date(l.aangemaakt), changeFrequency: "weekly" as const, priority: 0.8,
+    }));
+    return [...vast, ...prov, ...woningen];
+  }
+  const base = COMPANY.website;
 
-  const statisch = ["", "/te-koop", "/verhuur", "/openhuizen", "/zoeker", "/blog", "/reviews", "/huusmeesters", "/fotografie", "/guest-experience", "/mantelzorg", "/verkocht", "/contact", "/faq", "/plaatsen", "/registreren", "/inloggen", "/voorwaarden", "/privacy", "/cookies", "/disclaimer"];
+  const statisch = ["", "/te-koop", "/verhuur", "/openhuizen", "/zoeker", "/blog", "/reviews", "/huusmeesters", "/fotografie", "/guest-experience", "/mantelzorg", "/verkocht", "/contact", "/faq", "/plaatsen", "/registreren", "/inloggen", "/voorwaarden", "/privacy", "/cookies", "/disclaimer", "/woonhuis-zoeken"];
   const pages: MetadataRoute.Sitemap = statisch.map((p) => ({
     url: `${base}${p}`,
     lastModified: nu,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { suggestUitjes } from "@/lib/uitjes";
 
@@ -11,6 +11,9 @@ const pakketten = [
   { naam: "Premium", prijs: "€ 79", sub: "eenmalig", feats: ["Alles van Plus", "Video of rondleiding", "Uitgelicht op de homepage"] },
 ];
 
+const TYPES_RECREATIE = ["Chalet", "Bungalow", "Tiny house", "Vrijstaand vakantiehuis"];
+const TYPES_WOONHUIS = ["Eengezinswoning", "Tussenwoning", "Hoekwoning", "Twee-onder-een-kapwoning", "Vrijstaande woning", "Appartement", "Bungalow"];
+
 const PROVINCIES = [
   "Groningen", "Friesland", "Drenthe", "Overijssel", "Flevoland", "Gelderland",
   "Utrecht", "Noord-Holland", "Zuid-Holland", "Zeeland", "Noord-Brabant", "Limburg",
@@ -19,6 +22,26 @@ const PROVINCIES = [
 export default function Plaatsen() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  // Vakantiewoning (Mooihuus.nl) of gewone woning (Woonhuus.nl)? Vanaf
+  // Woonhuus.nl komt de bezoeker binnen met ?categorie=woonhuis.
+  const [categorie, setCategorie] = useState<"recreatie" | "woonhuis">("recreatie");
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("categorie") === "woonhuis") kiesCategorie("woonhuis");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const woonhuis = categorie === "woonhuis";
+  function kiesCategorie(c: "recreatie" | "woonhuis") {
+    setCategorie(c);
+    setF((cur) => ({
+      ...cur,
+      type: c === "woonhuis" ? "Eengezinswoning" : "Chalet",
+      park: c === "woonhuis" ? "" : cur.park || "Park De Veluwe",
+      personen: c === "woonhuis" ? "" : cur.personen || "4",
+      m2: c === "woonhuis" ? "110" : "65",
+      doel: c === "woonhuis" ? "koop" : cur.doel,
+      prijs: c === "woonhuis" ? "350000" : "89000",
+    }));
+  }
   const [busy, setBusy] = useState(false);
   const [pakket, setPakket] = useState("Plus");
   const [f, setF] = useState({
@@ -58,7 +81,7 @@ export default function Plaatsen() {
     const res = await fetch("/api/ai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...f, uitjes }),
+      body: JSON.stringify({ ...f, categorie, uitjes: categorie === "woonhuis" ? [] : uitjes }),
     });
     const data = await res.json();
     setAi(data);
@@ -110,11 +133,12 @@ export default function Plaatsen() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         titel: titel || `${f.type} in ${f.provincie}`,
+        categorie,
         type: f.type,
         doel: f.doel,
         provincie: f.provincie,
         park: f.park,
-        personen: Number(f.personen),
+        personen: woonhuis ? 0 : Number(f.personen),
         m2: Number(f.m2),
         prijs: Number(f.prijs),
         prijsSuffix: f.prijsSuffix,
@@ -172,6 +196,34 @@ export default function Plaatsen() {
 
       {step === 1 && (
         <div className="card mb-5">
+          <p className="font-semibold text-sm mb-2">Wat voor woning plaats je?</p>
+          <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Soort woning">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={!woonhuis}
+              onClick={() => kiesCategorie("recreatie")}
+              className={`text-left rounded-[10px] border p-3 ${!woonhuis ? "border-bosgroen ring-1 ring-bosgroen bg-salie-lt/40" : "border-lijn bg-white"}`}
+            >
+              <div className="font-display font-bold text-bosgroen-dk">Vakantie- of recreatiewoning</div>
+              <div className="text-xs text-grijs mt-0.5">Chalet, bungalow, tiny house of vakantiehuis. Komt op Mooihuus.nl.</div>
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={woonhuis}
+              onClick={() => kiesCategorie("woonhuis")}
+              className={`text-left rounded-[10px] border p-3 ${woonhuis ? "border-[#2B5283] ring-1 ring-[#2B5283] bg-[#D5E0EC]/50" : "border-lijn bg-white"}`}
+            >
+              <div className="font-display font-bold text-[#1E3A5F]">Gewone woning</div>
+              <div className="text-xs text-grijs mt-0.5">Eengezinswoning, appartement of ander woonhuis. Komt op Woonhuus.nl.</div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step === 1 && (
+        <div className="card mb-5">
           <p className="font-semibold text-sm mb-1">Wat kost het?</p>
           <p className="text-xs text-grijs mb-3">Eenmalig, je woning staat een jaar online. Je kiest je pakket aan het eind — hier zie je vast wat het kost.</p>
           <div className="grid gap-2 sm:grid-cols-3">
@@ -196,12 +248,12 @@ export default function Plaatsen() {
           <Field label="Aanbieden als">
             <select className="field" value={f.doel} onChange={(e) => setF({ ...f, doel: e.target.value as Doel })}>
               <option value="koop">Te koop</option>
-              <option value="huur">Te huur</option>
+              {!woonhuis && <option value="huur">Te huur</option>}
             </select>
           </Field>
           <Field label="Type woning">
             <select className="field" value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>
-              <option>Chalet</option><option>Bungalow</option><option>Tiny house</option><option>Vrijstaand vakantiehuis</option>
+              {(woonhuis ? TYPES_WOONHUIS : TYPES_RECREATIE).map((tp) => <option key={tp}>{tp}</option>)}
             </select>
           </Field>
           <Field label="Provincie">
@@ -209,7 +261,7 @@ export default function Plaatsen() {
               {PROVINCIES.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
           </Field>
-          <Field label="Aantal personen"><input className="field" value={f.personen} onChange={(e) => setF({ ...f, personen: e.target.value })} /></Field>
+          {!woonhuis && <Field label="Aantal personen"><input className="field" value={f.personen} onChange={(e) => setF({ ...f, personen: e.target.value })} /></Field>}
           <Field label="Woonoppervlak (m²)"><input className="field" value={f.m2} onChange={(e) => setF({ ...f, m2: e.target.value })} /></Field>
           <Field label="Vraagprijs (€)"><input className="field" value={f.prijs} onChange={(e) => setF({ ...f, prijs: e.target.value })} /></Field>
           <Field label="Prijs-toevoeging">
@@ -231,7 +283,7 @@ export default function Plaatsen() {
               <option value="Huurgrond">Huurgrond</option>
             </select>
           </Field>
-          <Field label="Recreatiepark"><input className="field" value={f.park} onChange={(e) => setF({ ...f, park: e.target.value })} /></Field>
+          {!woonhuis && <Field label="Recreatiepark"><input className="field" value={f.park} onChange={(e) => setF({ ...f, park: e.target.value })} /></Field>}
           <Field label="Postcode"><input className="field" value={f.postcode} onChange={(e) => setF({ ...f, postcode: e.target.value })} placeholder="1234 AB" /></Field>
           <div className="sm:col-span-2 text-right"><button className="btn" onClick={() => setStep(2)}>Volgende →</button></div>
         </div>
@@ -348,7 +400,7 @@ export default function Plaatsen() {
             />
           </div>
 
-          <div className="mt-5">
+          {!woonhuis && <div className="mt-5">
             <div className="font-semibold text-sm">Uitjes in de buurt</div>
             <p className="text-xs text-grijs mb-2">Voeg leuke uitjes toe zodat je woning opvalt. Gebruik de suggesties op basis van je postcode/provincie, of voeg zelf toe.</p>
             <div className="flex gap-2">
@@ -372,7 +424,7 @@ export default function Plaatsen() {
                 ))}
               </div>
             )}
-          </div>
+          </div>}
 
           <div className="flex justify-between mt-4">
             <button className="btn btn-ghost" onClick={() => setStep(2)}>← Terug</button>

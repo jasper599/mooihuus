@@ -116,6 +116,10 @@ export default async function Dashboard() {
             <span className="jv-num">{s.woningen.huur}</span>
           </div>
           <div className="jv-row">
+            <span>🔵 Op Woonhuus.nl</span>
+            <span className="jv-num">{s.woningen.woonhuus}</span>
+          </div>
+          <div className="jv-row">
             <span>⭐ Uitgelicht</span>
             <span className="jv-num">{s.woningen.uitgelicht}</span>
           </div>

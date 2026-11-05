@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { Listing } from "@/lib/types";
 import { Locale, t } from "@/lib/i18n";
 import { ListingCard } from "./ListingCard";
+import { MOOIHUUS_URL } from "@/lib/site";
 
 const Kaart = dynamic(() => import("./Kaart").then((m) => m.Kaart), {
   ssr: false,
@@ -31,6 +32,19 @@ const M2_RANGES: Range[] = [
   { label: "75 – 100 m²", min: 75, max: 100 },
   { label: "100+ m²", min: 100, max: Infinity },
 ];
+// Woonhuus.nl: huur per maand in plaats van per nacht.
+const PRIJS_HUUR_MAAND: Range[] = [
+  { label: "tot € 1.000 p.m.", min: 0, max: 1000 },
+  { label: "€ 1.000 – € 1.500 p.m.", min: 1000, max: 1500 },
+  { label: "€ 1.500 – € 2.000 p.m.", min: 1500, max: 2000 },
+  { label: "€ 2.000+ p.m.", min: 2000, max: Infinity },
+];
+const PRIJS_KOOP_WONING: Range[] = [
+  { label: "tot € 250.000", min: 0, max: 250000 },
+  { label: "€ 250.000 – € 400.000", min: 250000, max: 400000 },
+  { label: "€ 400.000 – € 600.000", min: 400000, max: 600000 },
+  { label: "€ 600.000+", min: 600000, max: Infinity },
+];
 const PERSONEN_OPTS = [2, 4, 6, 8, 10];
 
 const PER_PAGINA = 48;
@@ -39,13 +53,15 @@ export function ListingsBrowser({
   listings,
   locale = "nl",
   modus = "koop",
+  woonhuis = false,
 }: {
   listings: Listing[];
   locale?: Locale;
   modus?: "koop" | "huur";
+  woonhuis?: boolean; // Woonhuus.nl: geen personenfilter, huur per maand
 }) {
   const huur = modus === "huur";
-  const PRIJS_RANGES = huur ? PRIJS_HUUR : PRIJS_KOOP;
+  const PRIJS_RANGES = woonhuis ? (huur ? PRIJS_HUUR_MAAND : PRIJS_KOOP_WONING) : huur ? PRIJS_HUUR : PRIJS_KOOP;
 
   const [q, setQ] = useState("");
   const [provincie, setProvincie] = useState("");
@@ -123,19 +139,21 @@ export function ListingsBrowser({
             <option key={tp} value={tp}>{tp}</option>
           ))}
         </select>
-        <select className="field w-auto" aria-label="Aantal personen" value={personen} onChange={(e) => setPersonen(e.target.value)}>
-          <option value="">Alle groottes</option>
-          {PERSONEN_OPTS.map((n) => (
-            <option key={n} value={n}>vanaf {n} pers.</option>
-          ))}
-        </select>
+        {!woonhuis && (
+          <select className="field w-auto" aria-label="Aantal personen" value={personen} onChange={(e) => setPersonen(e.target.value)}>
+            <option value="">Alle groottes</option>
+            {PERSONEN_OPTS.map((n) => (
+              <option key={n} value={n}>vanaf {n} pers.</option>
+            ))}
+          </select>
+        )}
         <select className="field w-auto" aria-label={t(locale, "home.allePrijzen")} value={prijs} onChange={(e) => setPrijs(e.target.value)}>
-          <option value="">{huur ? "Alle prijzen p.n." : t(locale, "home.allePrijzen")}</option>
+          <option value="">{huur ? (woonhuis ? "Alle huurprijzen" : "Alle prijzen p.n.") : t(locale, "home.allePrijzen")}</option>
           {PRIJS_RANGES.map((r, i) => (
             <option key={i} value={i}>{r.label}</option>
           ))}
         </select>
-        {!huur && (
+        {(!huur || woonhuis) && (
           <select className="field w-auto" aria-label="Woonoppervlak" value={m2} onChange={(e) => setM2(e.target.value)}>
             <option value="">Alle oppervlaktes</option>
             {M2_RANGES.map((r, i) => (
@@ -151,7 +169,10 @@ export function ListingsBrowser({
       </div>
 
       <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="text-sm text-grijs">{sorted.length} {t(locale, "home.resultaten")}</div>
+        <div className="text-sm text-grijs">
+          {sorted.length} {t(locale, "home.resultaten")}
+          {locale === "nl" && <> · <a href="/disclaimer#rangschikking" className="underline hover:text-bosgroen">Hoe bepalen we de volgorde?</a></>}
+        </div>
         <div className="inline-flex rounded-full border border-lijn overflow-hidden text-sm font-display font-semibold">
           <button
             type="button"
@@ -171,7 +192,18 @@ export function ListingsBrowser({
       </div>
 
       {sorted.length === 0 ? (
-        <div className="card text-grijs">{t(locale, "home.geen")}</div>
+        <div className="card text-grijs">
+          {t(locale, "home.geen")}
+          {locale === "nl" && (
+            <div className="mt-2 text-sm">
+              {woonhuis ? (
+                <>Zoek je een recreatiewoning of vakantiehuis? <a href={MOOIHUUS_URL} className="text-bosgroen font-semibold hover:underline">Misschien staat het op Mooihuus.nl →</a></>
+              ) : (
+                <>Zoek je een gewoon woonhuis? <a href="/woonhuis-zoeken" className="text-bosgroen font-semibold hover:underline">Misschien staat het op Woonhuus.nl →</a></>
+              )}
+            </div>
+          )}
+        </div>
       ) : view === "kaart" ? (
         <Kaart listings={kaartLijst} locale={locale} />
       ) : (

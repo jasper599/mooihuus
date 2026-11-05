@@ -1,20 +1,22 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/ContactForm";
+import { huidigeSite } from "@/lib/site-server";
 import { COMPANY } from "@/lib/company";
 
 export const metadata: Metadata = {
-  title: "Contact — Mooihuus",
+  title: "Contact",
   description: "Vragen over adverteren, je account, verhuur of de Huusmeesters? Neem contact op met Mooihuus.",
   alternates: { canonical: "/contact" },
 };
 
 export default function ContactPage({ searchParams }: { searchParams?: { onderwerp?: string } }) {
   const onderwerp = searchParams?.onderwerp ? String(searchParams.onderwerp) : "";
+  const woonhuus = huidigeSite() === "woonhuus";
   return (
     <div className="max-w-3xl mx-auto">
       <h1 className="font-display font-extrabold text-3xl md:text-4xl text-bosgroen-dk">Contact</h1>
       <p className="text-grijs mt-2 max-w-2xl">
-        Een vraag over adverteren, je account, verhuur of de Huusmeesters? Stuur ons
+        {woonhuus ? "Een vraag over een woning, adverteren of je account? Stuur ons" : "Een vraag over adverteren, je account, verhuur of de Huusmeesters? Stuur ons"}
         gerust een bericht. We helpen je graag verder en je hoort meestal binnen één werkdag van ons.
       </p>
 
@@ -23,9 +25,9 @@ export default function ContactPage({ searchParams }: { searchParams?: { onderwe
           <ContactForm knop="Verstuur bericht" defaultOnderwerp={onderwerp} />
         </div>
         <aside className="card bg-creme">
-          <h2 className="font-display font-bold text-bosgroen-dk">Mooihuus</h2>
+          <h2 className="font-display font-bold text-bosgroen-dk">{woonhuus ? "Woonhuus" : "Mooihuus"}</h2>
           <p className="text-sm text-grijs mt-2 leading-relaxed">
-            {COMPANY.handelsnaam}<br />
+            {woonhuus ? "Woonhuus.nl (onderdeel van Mooihuus.nl)" : COMPANY.handelsnaam}<br />
             {COMPANY.bv}<br />
             {COMPANY.adres}<br />
             {COMPANY.postcode}

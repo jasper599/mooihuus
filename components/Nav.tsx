@@ -61,6 +61,7 @@ export function Nav() {
     { href: "/reviews", label: t("footer.reviews") },
     { href: "/contact", label: t("nav.contact") },
     { href: "/faq", label: t("footer.faq") },
+    { href: "/woonhuis-zoeken", label: locale === "de" ? "Normale Wohnungen (Woonhuus.nl)" : locale === "en" ? "Regular homes (Woonhuus.nl)" : "Gewone woningen: Woonhuus.nl" },
   ];
  
   const isActive = (href: string) => (href === "/" ? rest === "/" : rest.startsWith(href));

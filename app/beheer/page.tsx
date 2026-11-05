@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategorieKnop } from "@/components/CategorieKnop";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -39,7 +40,7 @@ const TABS = [
   { key: "nieuwsbrief", label: "Nieuwsbrief" },
 ];
 
-export default async function Beheer({ searchParams }: { searchParams: { tab?: string; bron?: string; kantoor?: string; doel?: string; pstatus?: string } }) {
+export default async function Beheer({ searchParams }: { searchParams: { tab?: string; bron?: string; kantoor?: string; doel?: string; pstatus?: string; cat?: string } }) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.rol !== "beheerder") redirect("/inloggen");
 
@@ -152,6 +153,8 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
             <Stat n={String(users.length)} l="Profielen" />
             <Stat n={String(listings.length)} l="Advertenties" />
             <Stat n={String(listings.filter((l) => l.status === "live").length)} l="Waarvan live" />
+            <Stat n={String(listings.filter((l) => l.status === "live" && l.categorie !== "woonhuis").length)} l="Live op Mooihuus" />
+            <Stat n={String(listings.filter((l) => l.status === "live" && l.categorie === "woonhuis").length)} l="Live op Woonhuus" />
             <Stat n={euro(omzet)} l="Omzet (betaald)" />
             <Stat n={String(leads.length)} l="Leads" />
             <Stat n={String(payments.filter((p) => p.status === "paid").length)} l="Betalingen" />
@@ -201,19 +204,25 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
           const naam = (l as any).makelaar || (id !== "?" ? "Kantoor " + id : "Onbekend kantoor");
           kantoren[id] = { naam, n: (kantoren[id]?.n || 0) + 1 };
         }
-        const href = (ov: { bron?: string; kantoor?: string; doel?: string } = {}): string => {
+        const catFilter = searchParams.cat === "woonhuis" || searchParams.cat === "recreatie" ? searchParams.cat : "";
+        const catVan = (l: any): "recreatie" | "woonhuis" => (l.categorie === "woonhuis" ? "woonhuis" : "recreatie");
+        const href = (ov: { bron?: string; kantoor?: string; doel?: string; cat?: string } = {}): string => {
           const b = ov.bron !== undefined ? ov.bron : bronFilter;
           const k = ov.kantoor !== undefined ? ov.kantoor : kantoorFilter;
           const d = ov.doel !== undefined ? ov.doel : doelFilter;
+          const c = ov.cat !== undefined ? ov.cat : catFilter;
           const p = new URLSearchParams({ tab: "advertenties" });
           if (b) p.set("bron", b);
           if (k) p.set("kantoor", k);
           if (d) p.set("doel", d);
+          if (c) p.set("cat", c);
           return "/beheer?" + p.toString();
         };
+        const woonhuisN = listings.filter((l) => catVan(l) === "woonhuis").length;
         const naBronKantoor = listings.filter((l) =>
           (!bronFilter || (l.source || "eigen") === bronFilter) &&
-          (!kantoorFilter || kantoorId(l) === kantoorFilter)
+          (!kantoorFilter || kantoorId(l) === kantoorFilter) &&
+          (!catFilter || catVan(l) === catFilter)
         );
         const koopN = naBronKantoor.filter((l) => l.doel !== "huur").length;
         const huurN = naBronKantoor.filter((l) => l.doel === "huur").length;
@@ -228,6 +237,12 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
                 {Object.entries(bronCount).sort((a, b) => (b[1] as number) - (a[1] as number)).map(([bron, n]) => (
                   <Link key={bron} href={href({ bron, kantoor: "" })} className={pill(bronFilter === bron && !kantoorFilter)}>{bronLabel(bron)}: <strong className="ml-1">{n as number}</strong></Link>
                 ))}
+              </div>
+              <div className="flex gap-2 flex-wrap mb-3 items-center">
+                <span className="text-sm text-grijs mr-1">Etalage:</span>
+                <Link href={href({ cat: "" })} className={pill(!catFilter)}>Beide</Link>
+                <Link href={href({ cat: "recreatie" })} className={pill(catFilter === "recreatie")}>Mooihuus (recreatie): <strong className="ml-1">{listings.length - woonhuisN}</strong></Link>
+                <Link href={href({ cat: "woonhuis" })} className={pill(catFilter === "woonhuis")}>Woonhuus (woonhuizen): <strong className="ml-1">{woonhuisN}</strong></Link>
               </div>
               <div className="flex gap-2 flex-wrap mb-3 items-center">
                 <span className="text-sm text-grijs mr-1">Type:</span>
@@ -254,10 +269,11 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
               </div>
             </div>
             <div className="text-sm text-grijs mb-2">{zichtbaar.length} {zichtbaar.length === 1 ? "woning" : "woningen"}{bronFilter ? " · bron " + bronLabel(bronFilter) : ""}{kantoorFilter ? " · " + (kantoren[kantoorFilter]?.naam || "kantoor") : ""}{doelFilter ? " · " + (doelFilter === "huur" ? "te huur" : "te koop") : ""}</div>
-            <Table head={["Titel", "Bron", "Makelaar / kantoor", "Doel", "Status", "Prijs", ""]}>
+            <Table head={["Titel", "Etalage", "Bron", "Makelaar / kantoor", "Doel", "Status", "Prijs", ""]}>
               {zichtbaar.map((l) => (
                 <tr key={l.id} className="border-t border-lijn">
                   <Td>{l.titel}</Td>
+                  <Td><CategorieKnop id={l.id} categorie={catVan(l)} handmatig={!!l.categorieHandmatig} /></Td>
                   <Td><span className="pill">{bronLabel(l.source)}</span></Td>
                   <Td>{(l as any).makelaar || getUser(l.ownerId)?.naam || "—"}</Td>
                   <Td>{l.doel === "huur" ? "Te huur" : "Te koop"}</Td>
