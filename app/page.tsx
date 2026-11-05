@@ -110,7 +110,7 @@ export default function Home({ searchParams }: { searchParams?: { q?: string } }
         </div>
         {/* Rechts: illustratie van Woonhuus, het hele vlak klikt door */}
         <a
-          href={localeHref(locale, "/woonhuis-zoeken")}
+          href={WOONHUUS_URL}
           className="flex-[1_1_380px] h-[340px] rounded-3xl overflow-hidden relative block group"
           style={{ background: "#1E3A5F" }}
         >
