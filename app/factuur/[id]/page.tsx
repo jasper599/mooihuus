@@ -24,7 +24,14 @@ export default async function Factuur({ params }: { params: { id: string } }) {
   const klant = getUser(payment.userId);
   const exBtw = payment.bedrag / 1.21;
   const btw = payment.bedrag - exBtw;
-  const basisIncl = payment.kortingPct ? payment.bedrag / (1 - payment.kortingPct / 100) : payment.bedrag;
+  // Bruto bedrag vóór korting. Bij 100% korting (welkomstactie) kan dat niet uit
+  // het bedrag worden teruggerekend, dus dan gebruiken we het opgeslagen kortingsbedrag.
+  const basisIncl =
+    payment.kortingBedrag !== undefined && payment.kortingPct === 100
+      ? payment.bedrag + payment.kortingBedrag
+      : payment.kortingPct && payment.kortingPct < 100
+      ? payment.bedrag / (1 - payment.kortingPct / 100)
+      : payment.bedrag;
   const datum = payment.betaaldOp ?? payment.aangemaakt;
 
   return (
@@ -81,7 +88,7 @@ export default async function Factuur({ params }: { params: { id: string } }) {
             </tr>
             {payment.kortingPct ? (
               <tr className="border-t border-lijn text-oranje-dk">
-                <td className="py-2">Volumekorting −{payment.kortingPct}%</td>
+                <td className="py-2">{payment.kortingLabel || `Volumekorting −${payment.kortingPct}%`}</td>
                 <td className="py-2 text-right">−{euroCents((basisIncl - payment.bedrag) / 1.21)}</td>
               </tr>
             ) : null}
@@ -101,7 +108,7 @@ export default async function Factuur({ params }: { params: { id: string } }) {
         </table>
 
         <div className="text-xs text-grijs mt-6">
-          Betaalmethode: {payment.methode}. {payment.status === "paid" ? "Dit bedrag is voldaan; deze factuur dient als betalingsbewijs." : "Nog te voldoen."} Vragen? Mail {COMPANY.email}.
+          Betaalmethode: {payment.methode}. {payment.welkomstactie ? "Gratis plaatsing uit de welkomstactie: er hoeft niets betaald te worden. Na een jaar kunt u de advertentie verlengen tegen het normale tarief." : payment.status === "paid" ? "Dit bedrag is voldaan; deze factuur dient als betalingsbewijs." : "Nog te voldoen."} Vragen? Mail {COMPANY.email}.
         </div>
       </div>
     </div>

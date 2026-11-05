@@ -21,7 +21,7 @@ function euroKort(n: number): string {
 // webhook + redirect) doet niets extra's.
 // - Advertentie: activeert de advertentie en stuurt het betalingsbewijs.
 // - Opvaller: past de boost toe op de bestaande (live) advertentie.
-export async function markPaymentPaid(paymentId: string, methode: string): Promise<boolean> {
+export async function markPaymentPaid(paymentId: string, methode: string, opties: { stil?: boolean } = {}): Promise<boolean> {
   const payment = getPayment(paymentId);
   if (!payment) return false;
   if (payment.status === "paid") return true;
@@ -126,7 +126,7 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
     }
   }
 
-  if (owner && listing) {
+  if (owner && listing && !opties.stil) {
     const updated = getPayment(payment.id)!;
     const mail = renderBetalingsbewijs(updated, listing, owner.naam);
     let bijlage: { filename: string; content: string; contentType?: string }[] | undefined;
@@ -156,7 +156,7 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
   }
 
   // Nieuwe betaalde plaatsing: Guus belt Jasper even met het goede nieuws.
-  if (listing) {
+  if (listing && !opties.stil) {
     const wie = owner?.bedrijfsnaam || owner?.naam || "een particulier";
     guusBeltJasperOpAchtergrond(
       `Hoi Jasper, met Guus. Goed nieuws: er is net een nieuwe betaalde plaatsing. ${wie} heeft ${listing.titel} online gezet, pakket ${payment.pakket}, voor ${euroKort(payment.bedrag)}.`

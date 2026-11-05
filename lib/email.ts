@@ -137,7 +137,7 @@ export function renderMakelaarWelkom(naam: string, email: string): { onderwerp: 
 
 export function renderMakelaarBedankt(
   naam: string,
-  regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string; categorie?: Listing["categorie"] }[],
+  regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string; categorie?: Listing["categorie"]; gratis?: boolean; normaalBedrag?: number }[],
   tarief: number
 ): { onderwerp: string; html: string } {
   const heeftWoonhuis = regels.some((r) => r.categorie === "woonhuis");
@@ -145,18 +145,25 @@ export function renderMakelaarBedankt(
   const platformen = heeftWoonhuis && heeftRecreatie ? "Mooihuus.nl en Woonhuus.nl" : heeftWoonhuis ? "Woonhuus.nl" : "Mooihuus.nl";
   const obj = regels.length === 1 ? "woning" : "woningen";
   const totaal = Math.round(regels.reduce((sum, r) => sum + r.bedrag, 0) * 100) / 100;
+  const aantalGratis = regels.filter((r) => r.gratis).length;
   const items = regels
     .map(
       (r) => `
       <tr>
-        <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.5;">${r.titel}<br><span style="color:${BRAND.grijs};font-size:12px;">Komt op ${platformNaam(r)}${r.factuurnummer ? ` · Factuur ${r.factuurnummer}` : ""}</span><br><span style="color:${BRAND.grijs};font-size:13px;">${euro(r.bedrag)} per jaar</span></td>
-        <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;white-space:nowrap;">${btn(r.betaalUrl, "Betaal")}</td>
+        <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};line-height:1.5;">${r.titel}<br><span style="color:${BRAND.grijs};font-size:12px;">Komt op ${platformNaam(r)}${r.factuurnummer ? ` · Factuur ${r.factuurnummer}` : ""}</span><br>${r.gratis
+          ? `<span style="color:${BRAND.grijs};font-size:13px;"><s>${euro(r.normaalBedrag || tarief)}</s> <strong style="color:${BRAND.bosgroen};">Gratis</strong> · welkomstactie, 1 jaar online</span>`
+          : `<span style="color:${BRAND.grijs};font-size:13px;">${euro(r.bedrag)} per jaar</span>`}</td>
+        <td style="padding:12px 16px;border-top:1px solid ${BRAND.lijn};text-align:right;white-space:nowrap;">${r.gratis ? `<strong style="color:${BRAND.bosgroen};">Staat online</strong>` : btn(r.betaalUrl, "Betaal")}</td>
       </tr>`
     )
     .join("");
   const inner = `
     <h1 style="font-size:22px;color:${BRAND.bosgroenDk};margin:0 0 10px;">Uw factuur voor plaatsing op ${heeftWoonhuis && !heeftRecreatie ? "Woonhuus" : "Mooihuus"}</h1>
-    <p style="line-height:1.6;">Beste ${naam}, bedankt voor het aanmelden van ${regels.length} ${obj} op <strong>${platformen}</strong>. Hieronder de factuur met betaallink. <strong>Elke woning gaat online zodra deze is betaald.</strong></p>
+    <p style="line-height:1.6;">Beste ${naam}, bedankt voor het aanmelden van ${regels.length} ${obj} op <strong>${platformen}</strong>. ${aantalGratis === regels.length
+      ? `Als welkom bij Mooihuus staan ${aantalGratis === 1 ? "deze woning" : `deze ${aantalGratis} woningen`} <strong>een jaar gratis online</strong>. U hoeft niets te betalen; de factuur met 100% korting zit in de bijlage.</p>`
+      : aantalGratis > 0
+      ? `Als welkom staan uw eerste ${aantalGratis} ${aantalGratis === 1 ? "woning" : "woningen"} <strong>een jaar gratis online</strong>. Voor de overige woningen vindt u hieronder de factuur met betaallink; <strong>die gaan online zodra ze zijn betaald.</strong></p>`
+      : `Hieronder de factuur met betaallink. <strong>Elke woning gaat online zodra deze is betaald.</strong></p>`}
     ${heeftWoonhuis ? `<p style="line-height:1.6;">Gewone koopwoningen zetten we in het zonnetje op ons zusterplatform <strong>Woonhuus.nl</strong>. Recreatiewoningen komen op Mooihuus.nl. Bij elke woning hieronder ziet u waar deze komt te staan.</p>` : ""}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.lijn};border-radius:12px;overflow:hidden;margin:18px 0;">
       <tr><td colspan="2" style="background:${BRAND.creme};padding:12px 16px;font-size:13px;color:${BRAND.grijs};">Advertentie — ${euro(tarief)} per woning per jaar</td></tr>
@@ -166,7 +173,9 @@ export function renderMakelaarBedankt(
     </table>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Bedragen zijn per woning per jaar. Na betaling staat de betreffende woning direct online en ontvangt u het betaalbewijs.</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Hartelijke groet,<br>Team Mooihuus</p>`;
-  const ond = regels.length === 1
+  const ond = aantalGratis === regels.length
+    ? `Welkom: ${regels.length === 1 ? "uw woning staat" : "uw woningen staan"} gratis op ${platformen}`
+    : regels.length === 1
     ? `Factuur & betaallink: uw woning op ${platformen}`
     : `Factuur & betaallink: uw woningen op ${platformen}`;
   return { onderwerp: ond, html: layout("Uw factuur", inner, heeftWoonhuis && !heeftRecreatie ? "woonhuus" : "mooihuus") };

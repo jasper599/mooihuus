@@ -1,7 +1,7 @@
 import { Listing, User, Categorie } from "./types";
 import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails, releaseVervallenFeedListings } from "./db";
 import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt, renderSimpel } from "./email";
-import { kolibriTariefNu, maakWoningBetaling } from "./facturatie";
+import { kolibriTariefNu, maakWoningBetaling, WELKOMSTACTIE_LABEL } from "./facturatie";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
 import { verwerkVervallenAdvertenties } from "./verval";
 import { verwerkOpenstaandeBetalingen, corrigeerMakelaarPakket } from "./payments";
@@ -39,7 +39,7 @@ async function stuurWelkomInloggegevens(profiel: User): Promise<void> {
 }
 
 // 2) Bedankmail voor de aanmelding + betaallink — altijd, ongeacht of er al een profiel was.
-async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string; categorie?: Listing["categorie"] }[], bijlagen?: { filename: string; content: string; contentType?: string }[]): Promise<void> {
+async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string; categorie?: Listing["categorie"]; gratis?: boolean; normaalBedrag?: number }[], bijlagen?: { filename: string; content: string; contentType?: string }[]): Promise<void> {
   try {
     const naam = profiel.bedrijfsnaam || profiel.naam;
     const mail = renderMakelaarBedankt(naam, regels, kolibriTariefNu());
@@ -96,25 +96,31 @@ async function verwerkNieuweKantorenWelkom(): Promise<void> {
     const nieuwe = woningen.filter((l) => l.status === "offline" && !l.vervallen && !heeftBetaling(l.id));
     if (nieuwe.length === 0) continue;
 
-    const regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string; categorie?: Listing["categorie"] }[] = [];
+    const regels: { titel: string; betaalUrl: string; bedrag: number; factuurnummer?: string; categorie?: Listing["categorie"]; gratis?: boolean; normaalBedrag?: number }[] = [];
     const bijlagen: { filename: string; content: string; contentType?: string }[] = [];
     for (const l of nieuwe) {
       const b = await maakWoningBetaling(u.id, l);
       if (b.ok && b.betaalUrl) {
-        regels.push({ titel: l.titel, betaalUrl: b.betaalUrl, bedrag: b.bedrag || 0, factuurnummer: b.factuurnummer, categorie: l.categorie });
+        regels.push({ titel: l.titel, betaalUrl: b.betaalUrl, bedrag: b.bedrag || 0, factuurnummer: b.factuurnummer, categorie: l.categorie, gratis: b.gratis, normaalBedrag: b.normaalBedrag });
         try {
           const totaal = b.bedrag || 0;
           const subtotaal = Math.round((totaal / 1.21) * 100) / 100;
           const btw = Math.round((totaal - subtotaal) * 100) / 100;
+          // Bij de welkomstactie staat de woning tegen het normale tarief op de
+          // factuur, met daaronder 100% korting.
+          const normaalEx = b.gratis ? Math.round(((b.normaalBedrag || 0) / 1.21) * 100) / 100 : subtotaal;
           const pdf = await genereerFactuurPdfBase64({
             kantoor: u.bedrijfsnaam || u.naam,
+            email: u.email,
             factuurnummer: b.factuurnummer || "",
-            objecten: [{ titel: `${l.titel} (${l.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus.nl"})`, prijs: subtotaal }],
-            prijsPerObject: subtotaal,
+            objecten: [{ titel: `${l.titel} (${l.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus.nl"})`, prijs: normaalEx }],
+            prijsPerObject: normaalEx,
             subtotaal,
             btw,
             totaal,
-            betaalUrl: b.betaalUrl,
+            betaalUrl: b.gratis ? "" : b.betaalUrl,
+            korting: b.gratis ? { label: WELKOMSTACTIE_LABEL, bedrag: normaalEx } : undefined,
+            gratis: b.gratis,
           });
           bijlagen.push({ filename: "Factuur " + (b.factuurnummer || "") + " Huus BV.pdf", content: pdf, contentType: "application/pdf" });
         } catch {

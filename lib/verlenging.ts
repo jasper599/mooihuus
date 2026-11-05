@@ -23,6 +23,8 @@ import { Listing } from "./types";
 const DAG = 24 * 60 * 60 * 1000;
 const HERINNER_DAGEN = 30;
 
+import { objectPrijs } from "./facturatie";
+
 function baseUrl(): string {
   return process.env.NEXTAUTH_URL || COMPANY.website;
 }
@@ -56,8 +58,12 @@ export function verloopDatum(listing: Listing): Date | null {
 }
 
 // Het bedrag dat de klant destijds voor deze woning betaalde (voor de verlenging).
+// Woningen uit de welkomstactie (gratis eerste jaar) verlengen tegen het
+// normale tarief van dat moment; verkochte woningen staan niet meer live en
+// krijgen dus ook geen verlengfactuur.
 function oorspronkelijkBedrag(listing: Listing): number {
   const bet = advertentieBetaling(listing);
+  if (bet?.welkomstactie) return objectPrijs(listing);
   return bet?.bedrag ?? 0;
 }
 

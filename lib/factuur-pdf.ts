@@ -37,6 +37,8 @@ export interface FactuurPdfData {
   origineelFactuurnummer?: string;
   betaald?: boolean;             // true = factuur is voldaan (betaalbewijs)
   betaaldOp?: number | string | Date;
+  korting?: { label: string; bedrag: number }; // kortingsregel (excl. btw), bijv. 100% welkomstactie
+  gratis?: boolean;              // true = kosteloze plaatsing (niets te betalen)
 }
 
 export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8Array> {
@@ -79,7 +81,7 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
   };
   metaRow(credit ? "Creditnummer" : "Factuurnummer", d.factuurnummer, y);
   metaRow(credit ? "Creditdatum" : "Factuurdatum", datumNL(d.datum || Date.now()), y - 15);
-  metaRow(credit ? "Bij factuur" : "Betaalwijze", credit ? (d.origineelFactuurnummer || "—") : (betaald ? "iDEAL (voldaan)" : "iDEAL (betaallink)"), y - 30);
+  metaRow(credit ? "Bij factuur" : "Betaalwijze", credit ? (d.origineelFactuurnummer || "—") : (d.gratis ? "Kosteloos (welkomstactie)" : betaald ? "iDEAL (voldaan)" : "iDEAL (betaallink)"), y - 30);
   if (!credit) metaRow("Looptijd", "1 jaar per advertentie", y - 45);
 
   y -= credit ? 66 : 81;
@@ -106,6 +108,14 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
     y -= 17;
   });
 
+  if (d.korting) {
+    text(d.korting.label, M + 10, y, 11, bold, C.oranjeDk);
+    textR("- " + euro(Math.abs(d.korting.bedrag)), W - M - 10, y, 11, bold, C.oranjeDk);
+    y -= 7;
+    page.drawLine({ start: { x: M + 10, y }, end: { x: W - M - 10, y }, thickness: 0.5, color: C.lijn });
+    y -= 17;
+  }
+
   y -= 6;
   if (heeftBtw) {
     const lblX = W - M - 190;
@@ -129,6 +139,13 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
       "Deze creditnota verrekent factuur " + (d.origineelFactuurnummer || "") + ", die niet binnen de",
       "betaaltermijn is voldaan. Er hoeft niets betaald te worden; de oorspronkelijke",
       "factuur komt hiermee te vervallen.",
+    ]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
+  } else if (d.gratis) {
+    text("Gratis plaatsing", M, y, 11, bold, C.oranjeDk); y -= 16;
+    for (const r of [
+      "Deze woning staat een jaar kosteloos online als onderdeel van onze welkomstactie",
+      "voor Realworks-makelaars. Er hoeft niets betaald te worden. Na een jaar kunt u",
+      "de advertentie verlengen tegen het normale tarief; u krijgt daarvan vooraf bericht.",
     ]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
   } else if (betaald) {
     text("Betaald", M, y, 11, bold, C.oranjeDk); y -= 16;

@@ -148,8 +148,12 @@ export async function boekFactuurMutatie(args: {
   datum?: string; // YYYY-MM-DD
   omschrijving: string;
   bedragInclBtw: number; // negatief bij een creditnota
+  // Optioneel: een kortingsregel. Dan boeken we het brutobedrag plus een
+  // negatieve kortingsregel (bijv. 100% welkomstactie: netto EUR 0).
+  korting?: { brutoInclBtw: number; omschrijving: string };
 }): Promise<any> {
   const [omzet, deb] = await Promise.all([omzetRekening(), debiteurenRekening()]);
+  const r2 = (n: number) => Math.round(n * 100) / 100;
   const body = {
     type: 2,
     date: args.datum || new Date().toISOString().slice(0, 10),
@@ -159,14 +163,19 @@ export async function boekFactuurMutatie(args: {
     termOfPayment: 7,
     inExVat: "IN",
     description: args.omschrijving.slice(0, 200),
-    rows: [
-      {
-        ledgerId: omzet.id,
-        vatCode: btwCode(),
-        amount: Math.round(args.bedragInclBtw * 100) / 100,
-        description: args.omschrijving.slice(0, 200),
-      },
-    ],
+    rows: args.korting
+      ? [
+          { ledgerId: omzet.id, vatCode: btwCode(), amount: r2(args.korting.brutoInclBtw), description: args.omschrijving.slice(0, 200) },
+          { ledgerId: omzet.id, vatCode: btwCode(), amount: r2(args.bedragInclBtw - args.korting.brutoInclBtw), description: args.korting.omschrijving.slice(0, 200) },
+        ]
+      : [
+          {
+            ledgerId: omzet.id,
+            vatCode: btwCode(),
+            amount: r2(args.bedragInclBtw),
+            description: args.omschrijving.slice(0, 200),
+          },
+        ],
   };
   return ebFetch(`/mutation`, { method: "POST", body: JSON.stringify(body) });
 }
@@ -280,11 +289,16 @@ function teBoeken(p: Payment, _alle: Payment[]): boolean {
   if (isVerstuurdeFactuur(p)) return true;
   return p.status === "paid" && p.bedrag > 0;
 }
+// Facturen van EUR 0 slaan we over, behalve de welkomstactie: die boeken we
+// (bruto + 100% korting) zodat de factuurnummering in e-Boekhouden doorloopt.
+function boekbaarBedrag(p: Payment): boolean {
+  return p.bedrag !== 0 || !!p.welkomstactie;
+}
 
 // Aantal facturen en creditnota's dat nog naar e-Boekhouden moet (voor Beheer).
 export function aantalTeBoeken(): number {
   const alle = getPayments();
-  return alle.filter((p) => !p.geboektInEboekhouden && !!p.factuurnummer && p.bedrag !== 0 && teBoeken(p, alle)).length;
+  return alle.filter((p) => !p.geboektInEboekhouden && !!p.factuurnummer && boekbaarBedrag(p) && teBoeken(p, alle)).length;
 }
 
 // Boekt (of toont, bij dry-run) de betaalde facturen die nog niet in
@@ -295,7 +309,7 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
   const actief = eboekhoudenEnabled();
   const alle = getPayments();
   const betalingen = alle
-    .filter((p) => !p.geboektInEboekhouden && !!p.factuurnummer && p.bedrag !== 0 && teBoeken(p, alle))
+    .filter((p) => !p.geboektInEboekhouden && !!p.factuurnummer && boekbaarBedrag(p) && teBoeken(p, alle))
     // Oudste eerst, zodat een factuur altijd vóór zijn creditnota geboekt wordt.
     .sort((a, b) => (a.aangemaakt || "").localeCompare(b.aangemaakt || ""));
   const kandidaten = opts?.limiet ? betalingen.slice(0, opts.limiet) : betalingen;
@@ -351,6 +365,10 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
         datum: basis.datum || undefined,
         omschrijving: `${p.factuurnummer} ${basis.omschrijving}`,
         bedragInclBtw: p.bedrag,
+        korting:
+          p.welkomstactie && p.kortingBedrag
+            ? { brutoInclBtw: p.bedrag + p.kortingBedrag, omschrijving: `${p.factuurnummer} ${p.kortingLabel || "Korting 100%"}` }
+            : undefined,
       });
       const ebId = factuur?.id || factuur?.mutationId || "";
       updatePayment(p.id, { geboektInEboekhouden: true, eboekhoudenFactuurId: String(ebId) });

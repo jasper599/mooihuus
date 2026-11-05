@@ -118,6 +118,8 @@ export interface Payment {
   kortingPct?: number;
   kortingscode?: string;   // toegepaste kortingscode (indien gebruikt)
   kortingBedrag?: number;  // bedrag dat de code eraf haalde (euro)
+  kortingLabel?: string;   // omschrijving van de korting op de factuur (bijv. welkomstactie)
+  welkomstactie?: boolean; // gratis plaatsing uit de Realworks-welkomstactie (eerste N woningen)
   soort?: "advertentie" | "opvaller" | "makelaar-factuur" | "verlenging" | "creditnota";
   aantalObjecten?: number; // bij een makelaar-factuur: aantal gefactureerde objecten
   listingIds?: string[];   // bij een verlenging: welke woningen deze betaling verlengt

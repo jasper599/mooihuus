@@ -2,6 +2,7 @@ import { getUser, getUsers, getListingsByOwner, getPayments, addPayment, updateP
 import { mollieEnabled, createMolliePayment } from "./mollie";
 import { renderMakelaarFactuur, sendEmail } from "./email";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
+import { markPaymentPaid } from "./payments";
 import { COMPANY, factuurAfzender } from "./company";
 
 // Makelaars publiceren met het Premiumpakket tegen een vast makelaarstarief
@@ -47,11 +48,39 @@ export function objectPrijs(listing: { source?: string }, op: Date = new Date())
   return makelaarBasisTarief();
 }
 
+// --- Welkomstactie Realworks ----------------------------------------------
+// Realworks-kantoren moeten zelf de Realworks-API afnemen om aan te sluiten.
+// Om die drempel weg te nemen (en de site snel te vullen) zijn hun eerste N
+// woningen gratis: 100% korting, direct online. Na een jaar volgt de gewone
+// verlengflow (herinnering + factuur tegen het normale tarief); niet verlengd
+// of verkocht = offline.
+// Eenmalig per kantoor: de eerste N ooit, niet per jaar.
+//   REALWORKS_GRATIS_AANTAL  (default 5; 0 = actie uit)
+export const WELKOMSTACTIE_LABEL = "Welkomstactie Realworks: 100% korting";
+export function realworksGratisAantal(): number {
+  const raw = process.env.REALWORKS_GRATIS_AANTAL;
+  if (raw === undefined || raw === "") return 5;
+  const v = Number(raw);
+  return isFinite(v) && v >= 0 ? Math.floor(v) : 5;
+}
+export function realworksGratisResterend(ownerId: string): number {
+  const gebruikt = getPayments().filter((p) => p.userId === ownerId && p.welkomstactie).length;
+  return Math.max(0, realworksGratisAantal() - gebruikt);
+}
+
 // Objecten die we een makelaar in rekening brengen: hun live woningen die via
 // een feed (Kolibri/Realworks) zijn gepubliceerd.
+// Woningen uit de welkomstactie staan gratis online en tellen nooit mee in een
+// (verzamel)factuur.
+export function isWelkomstactieWoning(listingId: string): boolean {
+  return getPayments().some((p) => p.listingId === listingId && p.welkomstactie);
+}
 export function factureerbareObjecten(ownerId: string) {
   return getListingsByOwner(ownerId).filter(
-    (l) => (l.status === "live" || l.status === "offline") && (l.source === "kolibri" || l.source === "realworks")
+    (l) =>
+      (l.status === "live" || l.status === "offline") &&
+      (l.source === "kolibri" || l.source === "realworks") &&
+      !isWelkomstactieWoning(l.id)
   );
 }
 
@@ -248,9 +277,7 @@ export async function verwerkMakelaarFacturatie(): Promise<{ actief: boolean; ge
   let gefactureerd = 0;
   let offline = 0;
   for (const u of kantoren) {
-    const objecten = getListingsByOwner(u.id).filter(
-      (l) => (l.source === "kolibri" || l.source === "realworks") && (l.status === "live" || l.status === "offline")
-    );
+    const objecten = factureerbareObjecten(u.id);
     if (objecten.length === 0) continue;
     // Nieuw kantoor: eerst de welkomstmail, pas na 1 dag de facturatie-sweep.
     if (nu - Date.parse(u.aangemaakt) < 24 * 60 * 60 * 1000) continue;
@@ -281,10 +308,34 @@ export async function verwerkMakelaarFacturatie(): Promise<{ actief: boolean; ge
 export async function maakWoningBetaling(
   ownerId: string,
   listing: { id: string; titel: string; pakket?: any; source?: string; categorie?: string }
-): Promise<{ ok: boolean; betaalUrl?: string; bedrag?: number; paymentId?: string; factuurnummer?: string }> {
+): Promise<{ ok: boolean; betaalUrl?: string; bedrag?: number; paymentId?: string; factuurnummer?: string; gratis?: boolean; normaalBedrag?: number }> {
   const owner = getUser(ownerId);
   if (!owner) return { ok: false };
   const bedrag = objectPrijs(listing);
+  const platform = listing.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus";
+
+  // Welkomstactie: eerste N Realworks-woningen gratis en direct online.
+  if (listing.source === "realworks" && realworksGratisResterend(ownerId) > 0) {
+    const payment = addPayment({
+      listingId: listing.id,
+      userId: ownerId,
+      pakket: (listing.pakket as any) || "Premium",
+      bedrag: 0,
+      status: "open",
+      methode: "Kosteloos",
+      soort: "advertentie",
+      kortingPct: 100,
+      kortingBedrag: bedrag,
+      kortingLabel: WELKOMSTACTIE_LABEL,
+      welkomstactie: true,
+      omschrijving: `Jaaradvertentie ${platform}: ${listing.titel} (welkomstactie, gratis)`,
+    });
+    // Zet live via de gewone betaalflow (woning-alerts e.d.), maar zonder
+    // betaalbewijsmail en zonder belletje: de aanmeldmail meldt het al.
+    await markPaymentPaid(payment.id, "Kosteloos (welkomstactie)", { stil: true });
+    return { ok: true, betaalUrl: `${baseUrl()}/factuur/${payment.id}`, bedrag: 0, paymentId: payment.id, factuurnummer: payment.factuurnummer, gratis: true, normaalBedrag: bedrag };
+  }
+
   const payment = addPayment({
     listingId: listing.id,
     userId: ownerId,
