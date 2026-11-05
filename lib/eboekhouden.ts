@@ -236,6 +236,12 @@ function teBoeken(p: Payment, _alle: Payment[]): boolean {
   return p.status === "paid" && p.bedrag > 0;
 }
 
+// Aantal facturen en creditnota's dat nog naar e-Boekhouden moet (voor Beheer).
+export function aantalTeBoeken(): number {
+  const alle = getPayments();
+  return alle.filter((p) => !p.geboektInEboekhouden && !!p.factuurnummer && p.bedrag !== 0 && teBoeken(p, alle)).length;
+}
+
 // Boekt (of toont, bij dry-run) de betaalde facturen die nog niet in
 // e-Boekhouden staan. Standaard dry-run; boekt alleen echt als dry=false
 // EN EBOEKHOUDEN_MOOIHUUS_TOKEN is gezet.

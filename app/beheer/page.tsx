@@ -17,7 +17,7 @@ import { FeedImportKnop } from "@/components/FeedImportKnop";
 import { MakelaarFactuurKnop } from "@/components/MakelaarFactuurKnop";
 import { BetalingStatusKnop } from "@/components/BetalingStatusKnop";
 import { EboekhoudenPanel } from "@/components/EboekhoudenPanel";
-import { eboekhoudenEnabled } from "@/lib/eboekhouden";
+import { eboekhoudenEnabled, aantalTeBoeken } from "@/lib/eboekhouden";
 import { WoningVerwijderKnop } from "@/components/WoningVerwijderKnop";
 import { SocialWachtrij } from "@/components/SocialWachtrij";
 import { KortingscodeBeheer } from "@/components/KortingscodeBeheer";
@@ -301,7 +301,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
           so === "makelaar-factuur" ? "Makelaar" : so === "verlenging" ? "Verlenging" : so === "opvaller" ? "Opvaller" : "Advertentie";
         return (
           <div>
-            <EboekhoudenPanel actief={eboekhoudenEnabled()} auto={process.env.EBOEKHOUDEN_AUTO === "1"} nogTeBoeken={betaaldLijst.filter((p) => !p.geboektInEboekhouden && p.soort !== "creditnota" && p.bedrag > 0).length} />
+            <EboekhoudenPanel actief={eboekhoudenEnabled()} auto={process.env.EBOEKHOUDEN_AUTO === "1"} nogTeBoeken={aantalTeBoeken()} />
             <div className="flex flex-wrap gap-2 mb-3">
               <Link href="/beheer?tab=betalingen&pstatus=paid" className={chip(pstatus === "paid")}>Betaald: <strong className="ml-1">{betaaldLijst.length}</strong></Link>
               <Link href="/beheer?tab=betalingen&pstatus=open" className={chip(pstatus === "open")}>Open: <strong className="ml-1">{openLijst.length}</strong></Link>
