@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 700" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="lucht" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1E3A5F"/>
+      <stop offset="0.65" stop-color="#2B5283"/>
+      <stop offset="1" stop-color="#3F6A9C"/>
+    </linearGradient>
+    <linearGradient id="straat" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#16304F"/>
+      <stop offset="1" stop-color="#112640"/>
+    </linearGradient>
+    <g id="raam">
+      <rect width="34" height="46" rx="3" fill="#F6C58C"/>
+      <rect x="15.5" width="3" height="46" fill="#1E3A5F" opacity=".55"/>
+      <rect y="21" width="34" height="3" fill="#1E3A5F" opacity=".55"/>
+    </g>
+    <g id="raamdonker">
+      <rect width="34" height="46" rx="3" fill="#2B5283"/>
+      <rect x="15.5" width="3" height="46" fill="#1E3A5F" opacity=".6"/>
+      <rect y="21" width="34" height="3" fill="#1E3A5F" opacity=".6"/>
+    </g>
+  </defs>
+
+  <!-- Lucht -->
+  <rect width="800" height="700" fill="url(#lucht)"/>
+  <circle cx="640" cy="150" r="58" fill="#E8823B" opacity=".9"/>
+  <circle cx="640" cy="150" r="92" fill="#E8823B" opacity=".12"/>
+  <g fill="#D5E0EC" opacity=".18">
+    <rect x="70" y="120" width="190" height="26" rx="13"/>
+    <rect x="120" y="98" width="110" height="30" rx="15"/>
+    <rect x="430" y="210" width="150" height="20" rx="10"/>
+    <rect x="465" y="192" width="80" height="24" rx="12"/>
+  </g>
+
+  <!-- Bomen achter -->
+  <g fill="#3F6A9C" opacity=".8">
+    <circle cx="40" cy="430" r="70"/>
+    <circle cx="770" cy="420" r="80"/>
+    <circle cx="715" cy="455" r="55"/>
+  </g>
+
+  <!-- Huis 1: trapgevel -->
+  <path d="M30 560 V360 H50 V330 H70 V300 H90 V272 H150 V300 H170 V330 H190 V360 H210 V560 Z" fill="#D5E0EC"/>
+  <use href="#raam" x="70" y="380"/>
+  <use href="#raamdonker" x="126" y="380"/>
+  <use href="#raamdonker" x="103" y="300"/>
+  <rect x="100" y="470" width="40" height="90" rx="4" fill="#E8823B"/>
+  <circle cx="132" cy="518" r="3" fill="#1E3A5F"/>
+  <rect x="58" y="480" width="30" height="40" rx="3" fill="#F6C58C"/>
+
+  <!-- Huis 2: puntdak, hoger -->
+  <path d="M210 560 V330 L300 240 L390 330 V560 Z" fill="#EEF3F8"/>
+  <path d="M198 336 L300 230 L402 336" fill="none" stroke="#1B2430" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+  <use href="#raam" x="240" y="360"/>
+  <use href="#raam" x="326" y="360"/>
+  <use href="#raamdonker" x="283" y="275"/>
+  <rect x="280" y="470" width="40" height="90" rx="4" fill="#1E3A5F"/>
+  <rect x="236" y="470" width="34" height="46" rx="3" fill="#F6C58C"/>
+  <rect x="330" y="470" width="34" height="46" rx="3" fill="#2B5283"/>
+
+  <!-- Huis 3: klokgevel -->
+  <path d="M390 560 V350 C390 330 410 330 418 318 C430 300 430 270 470 262 C510 270 510 300 522 318 C530 330 550 330 550 350 V560 Z" fill="#9FB6D1"/>
+  <use href="#raamdonker" x="415" y="380"/>
+  <use href="#raam" x="491" y="380"/>
+  <circle cx="470" cy="312" r="16" fill="#F6C58C"/>
+  <rect x="450" y="470" width="40" height="90" rx="4" fill="#E8823B"/>
+  <rect x="502" y="478" width="30" height="40" rx="3" fill="#F6C58C"/>
+
+  <!-- Huis 4: breed modern met plat/puntdak -->
+  <path d="M550 560 V350 L630 290 L710 350 V560 Z" fill="#D5E0EC"/>
+  <path d="M540 356 L630 282 L720 356" fill="none" stroke="#1B2430" stroke-width="14" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="575" y="370" width="110" height="60" rx="4" fill="#F6C58C"/>
+  <rect x="628" y="370" width="4" height="60" fill="#1E3A5F" opacity=".5"/>
+  <rect x="612" y="470" width="40" height="90" rx="4" fill="#1E3A5F"/>
+  <rect x="660" y="478" width="34" height="40" rx="3" fill="#2B5283"/>
+
+  <!-- Huis 5: rand -->
+  <path d="M710 560 V380 L770 330 L830 380 V560 Z" fill="#EEF3F8"/>
+  <use href="#raam" x="735" y="400"/>
+
+  <!-- Straat en stoep -->
+  <rect y="556" width="800" height="12" fill="#9FB6D1"/>
+  <rect y="568" width="800" height="132" fill="url(#straat)"/>
+  <g fill="#D5E0EC" opacity=".35">
+    <rect x="40" y="628" width="70" height="6" rx="3"/>
+    <rect x="190" y="628" width="70" height="6" rx="3"/>
+    <rect x="340" y="628" width="70" height="6" rx="3"/>
+    <rect x="490" y="628" width="70" height="6" rx="3"/>
+    <rect x="640" y="628" width="70" height="6" rx="3"/>
+  </g>
+
+  <!-- Boompjes voor -->
+  <rect x="196" y="500" width="6" height="60" fill="#1B2430"/>
+  <circle cx="199" cy="490" r="26" fill="#5A7FA8"/>
+  <rect x="546" y="505" width="6" height="55" fill="#1B2430"/>
+  <circle cx="549" cy="496" r="22" fill="#5A7FA8"/>
+
+  <!-- Fiets -->
+  <g fill="none" stroke="#E8823B" stroke-width="4" stroke-linecap="round">
+    <circle cx="372" cy="540" r="14"/>
+    <circle cx="410" cy="540" r="14"/>
+    <path d="M372 540 L386 518 L404 518 L410 540 M386 518 L392 540 L404 518 M384 512 H392 M402 512 L406 506"/>
+  </g>
+</svg>

@@ -19,7 +19,6 @@ export default function WoonhuisZoeken() {
   const recreatie = getLiveListings()
     .filter((l) => l.doel === "koop")
     .map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined, omschrijving: "" }));
-  const voorbeeld = getLiveListings("woonhuis").find((l) => l.fotos && l.fotos.length);
   return (
     <div>
       {/* Held in dezelfde stijl als de homepage: tekst links, Woonhuus rechts */}
@@ -37,10 +36,8 @@ export default function WoonhuisZoeken() {
           </div>
         </div>
         <a href={WOONHUUS_URL} className="flex-[1_1_380px] h-[340px] rounded-3xl overflow-hidden relative block" style={{ background: "#1E3A5F" }}>
-          {voorbeeld ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={voorbeeld.fotos![0]} alt="" className="w-full h-full object-cover opacity-90" />
-          ) : null}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/woonhuus-straat.svg" alt="Illustratie van een Nederlandse straat met woonhuizen" className="w-full h-full object-cover" />
           <div className="absolute top-4 left-4 bg-white/95 rounded-xl px-3 py-1.5 font-display font-extrabold text-xl">
             <span style={{ color: "#2B5283" }}>Woon</span><span style={{ color: "#1B2430" }}>huus</span><span style={{ color: "#E8823B" }}>.nl</span>
           </div>
