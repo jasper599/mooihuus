@@ -1,6 +1,6 @@
 import { Listing, User, Categorie } from "./types";
 import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails, releaseVervallenFeedListings } from "./db";
-import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt } from "./email";
+import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt, renderSimpel } from "./email";
 import { kolibriTariefNu, maakWoningBetaling } from "./facturatie";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
 import { verwerkVervallenAdvertenties } from "./verval";
@@ -33,7 +33,6 @@ async function stuurWelkomInloggegevens(profiel: User): Promise<void> {
     const naam = profiel.bedrijfsnaam || profiel.naam;
     const mail = renderMakelaarWelkom(naam, profiel.email);
     await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html });
-    await sendEmail({ aan: COMPANY.email, onderwerp: "Kopie \u2014 nieuw makelaarskantoor op Mooihuus: " + naam, soort: "welkom", html: mail.html });
   } catch {
     /* mail mislukt - sync niet laten falen */
   }
@@ -48,7 +47,19 @@ async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; be
     const kopie = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
     const replyTo = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
     await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
-    await sendEmail({ aan: [kopie, COMPANY.email], onderwerp: "Kopie: aanmelding " + naam + " (" + regels.length + " woning(en))", soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });
+    // Geen kopie van de aanmeldmail meer naar ons; alleen een kopie van de factuur.
+    if (bijlagen && bijlagen.length) {
+      const nrs = regels.map((r) => r.factuurnummer).filter(Boolean).join(", ");
+      await sendEmail({
+        aan: [kopie, COMPANY.email],
+        onderwerp: "Kopie factuur" + (nrs ? " " + nrs : "") + " · " + naam,
+        soort: "factuur",
+        html: renderSimpel("Kopie factuur", `<p style="line-height:1.6;">Kopie van de factuur aan <strong>${naam}</strong> (${regels.length} ${regels.length === 1 ? "woning" : "woningen"}). De factuur zit als PDF in de bijlage.</p>`).html,
+        van,
+        replyTo,
+        attachments: bijlagen,
+      });
+    }
   } catch {
     /* mail mislukt - sync niet laten falen */
   }

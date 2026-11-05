@@ -80,8 +80,9 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
   metaRow(credit ? "Creditnummer" : "Factuurnummer", d.factuurnummer, y);
   metaRow(credit ? "Creditdatum" : "Factuurdatum", datumNL(d.datum || Date.now()), y - 15);
   metaRow(credit ? "Bij factuur" : "Betaalwijze", credit ? (d.origineelFactuurnummer || "—") : (betaald ? "iDEAL (voldaan)" : "iDEAL (betaallink)"), y - 30);
+  if (!credit) metaRow("Looptijd", "1 jaar per advertentie", y - 45);
 
-  y -= 66;
+  y -= credit ? 66 : 81;
   page.drawRectangle({ x: M, y: y - 6, width: W - 2 * M, height: 22, color: C.zand });
   text("OMSCHRIJVING", M + 10, y, 9, bold, C.grijs);
   textR(heeftBtw ? "BEDRAG (EXCL. BTW)" : "BEDRAG", W - M - 10, y, 9, bold, C.grijs);
@@ -96,6 +97,10 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
     if (titel !== vol && reg.widthOfTextAtSize(titel + "…", 11) <= maxTextW) titel = titel + "…";
     text(titel, M + 10, y, 11, reg, C.inkt);
     textR(euro(o.prijs ?? d.prijsPerObject ?? 0), W - M - 10, y, 11, reg, C.inkt);
+    if (!credit && regels.length <= 14) {
+      y -= 13;
+      text("Advertentie, 1 jaar online", M + 26, y, 9, reg, C.grijs);
+    }
     y -= 7;
     page.drawLine({ start: { x: M + 10, y }, end: { x: W - M - 10, y }, thickness: 0.5, color: C.lijn });
     y -= 17;
