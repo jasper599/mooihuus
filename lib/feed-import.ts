@@ -5,7 +5,7 @@ import { kolibriTariefNu, maakWoningBetaling } from "./facturatie";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
 import { verwerkVervallenAdvertenties } from "./verval";
 import { verwerkOpenstaandeBetalingen, corrigeerMakelaarPakket } from "./payments";
-import { COMPANY } from "./company";
+import { COMPANY, factuurAfzender } from "./company";
 import {
   getAllMediaContracts,
   getSummariesForRealtor,
@@ -43,7 +43,7 @@ async function stuurBedanktAanmelding(profiel: User, regels: { titel: string; be
   try {
     const naam = profiel.bedrijfsnaam || profiel.naam;
     const mail = renderMakelaarBedankt(naam, regels, kolibriTariefNu());
-    const van = process.env.MAIL_FROM_FACTUUR || "Mooihuus <facturen@mooihuus.nl>";
+    const van = factuurAfzender();
     const kopie = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
     const replyTo = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
     await sendEmail({ aan: profiel.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html, van, replyTo, attachments: bijlagen });

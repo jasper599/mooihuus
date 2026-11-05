@@ -1,7 +1,7 @@
 import { getPayment, getPayments, updatePayment, getListing, updateListing, getUser, zoekopdrachtenVoorWoning, addSocialPost, updateSocialPost } from "./db";
 import { mollieEnabled, getMollieStatus } from "./mollie";
 import { renderBetalingsbewijs, renderOpvallerBewijs, renderWoningAlert, renderFactuurBetaald, renderVerlengBevestiging, renderSocialTopperAlert, sendEmail } from "./email";
-import { COMPANY } from "./company";
+import { COMPANY, factuurAfzender } from "./company";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
 import { genereerSocialCaption } from "./social-caption";
 import { activeerVerlenging } from "./verlenging";
@@ -9,7 +9,7 @@ import { instagramEnabled, postToInstagram } from "./instagram";
 import { guusBeltJasperOpAchtergrond } from "./guus-bel";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
 
-const FACTUUR_VAN = process.env.MAIL_FROM_FACTUUR || "Mooihuus <facturen@mooihuus.nl>";
+const FACTUUR_VAN = factuurAfzender();
 const FACTUUR_KOPIE = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
 const FACTUUR_REPLYTO = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
 

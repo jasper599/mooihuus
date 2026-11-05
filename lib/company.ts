@@ -13,3 +13,12 @@ export const COMPANY = {
 };
 
 export const LAATST_BIJGEWERKT = "november 2026";
+
+// Afzender van factuurmails: altijd op naam van Huus B.V. Het adres komt uit
+// MAIL_FROM_FACTUUR (als die is ingesteld), anders facturen@mooihuus.nl.
+export function factuurAfzender(): string {
+  const env = process.env.MAIL_FROM_FACTUUR || "";
+  const m = env.match(/<([^>]+)>/);
+  const adres = (m ? m[1] : env.includes("@") ? env.trim() : "") || "facturen@mooihuus.nl";
+  return `Huus B.V. <${adres}>`;
+}

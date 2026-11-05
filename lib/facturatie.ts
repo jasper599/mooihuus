@@ -2,7 +2,7 @@ import { getUser, getUsers, getListingsByOwner, getPayments, addPayment, updateP
 import { mollieEnabled, createMolliePayment } from "./mollie";
 import { renderMakelaarFactuur, sendEmail } from "./email";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
-import { COMPANY } from "./company";
+import { COMPANY, factuurAfzender } from "./company";
 
 // Makelaars publiceren met het Premiumpakket tegen een vast makelaarstarief
 // van € 65 per object (instelbaar via env). Geen volumekorting: makelaars
@@ -59,7 +59,7 @@ function baseUrl(): string {
   return process.env.NEXTAUTH_URL || COMPANY.website;
 }
 
-const FACTUUR_VAN = process.env.MAIL_FROM_FACTUUR || "Mooihuus <facturen@mooihuus.nl>";
+const FACTUUR_VAN = factuurAfzender();
 const FACTUUR_KOPIE = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
 const FACTUUR_REPLYTO = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
 

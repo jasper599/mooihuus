@@ -2,9 +2,9 @@ import { getPayments, getListing, getUser, addPayment, updatePayment, updateList
 import { mollieEnabled, cancelMolliePayment } from "./mollie";
 import { sendEmail, renderCreditnota } from "./email";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
-import { COMPANY } from "./company";
+import { COMPANY, factuurAfzender } from "./company";
 
-const FACTUUR_VAN = process.env.MAIL_FROM_FACTUUR || "Mooihuus <facturen@mooihuus.nl>";
+const FACTUUR_VAN = factuurAfzender();
 const FACTUUR_KOPIE = process.env.FACTUUR_EMAIL || "facturen@mooihuus.nl";
 const FACTUUR_REPLYTO = process.env.FACTUUR_REPLYTO || "facturen@mooihuus.nl";
 
