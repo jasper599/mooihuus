@@ -32,6 +32,7 @@ export default function WoonhuisZoeken() {
           <div className="mt-5 flex gap-3 flex-wrap">
             <a href={WOONHUUS_URL} className="btn">Naar Woonhuus.nl →</a>
             <a href="#aanbod" className="btn btn-green">Bekijk recreatiewoningen</a>
+            <a href="/zusterplatform-woonhuus" className="btn btn-ghost">Lees meer over Woonhuus</a>
           </div>
         </div>
         <div className="p-6 md:p-8 flex flex-col justify-center gap-2" style={{ background: "#1E3A5F", color: "#fff" }}>

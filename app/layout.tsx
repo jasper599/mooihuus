@@ -134,6 +134,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Link href={localeHref(locale, "/cookies")} className="hover:underline">{t(locale, "footer.cookies")}</Link>
                   <Link href={localeHref(locale, "/disclaimer")} className="hover:underline">{t(locale, "footer.disclaimer")}</Link>
                   <Link href={localeHref(locale, "/woonhuis-zoeken")} className="hover:underline">Gewone woning zoeken? Woonhuus.nl</Link>
+                  <Link href="/zusterplatform-woonhuus" className="hover:underline">Ons zusterplatform Woonhuus</Link>
                 </nav>
                 <p className="mt-4 text-xs text-grijs">
                   {t(locale, "footer.dienstVan")} <strong>Huus B.V.</strong> · {COMPANY.adres}, {COMPANY.postcode} · KvK {COMPANY.kvk} · btw {COMPANY.btw} · © {new Date().getFullYear()} Huus B.V.
@@ -189,6 +190,7 @@ function WoonhuusLayout({ children }: { children: React.ReactNode }) {
                 <nav className="mt-4 flex gap-4 flex-wrap font-semibold text-bosgroen-dk" aria-label="Footer">
                   <Link href="/te-koop" className="hover:underline">Te koop per provincie</Link>
                   <Link href="/over-woonhuus" className="hover:underline">Over Woonhuus</Link>
+                  <Link href="/over-mooihuus" className="hover:underline">Ons zusterplatform Mooihuus</Link>
                   <Link href="/contact" className="hover:underline">Contact</Link>
                   <Link href="/faq" className="hover:underline">Veelgestelde vragen</Link>
                   <Link href="/voorwaarden" className="hover:underline">Voorwaarden</Link>

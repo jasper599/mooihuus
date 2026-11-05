@@ -32,7 +32,8 @@ export function middleware(req: NextRequest) {
     const intern =
       pathname === "/" ? "/woonhuus" :
       pathname.startsWith("/te-koop") ? `/woonhuus${pathname}` :
-      pathname === "/over-woonhuus" ? "/woonhuus/over" : null;
+      pathname === "/over-woonhuus" ? "/woonhuus/over" :
+      pathname === "/over-mooihuus" ? "/woonhuus/over-mooihuus" : null;
     if (intern) {
       const url = req.nextUrl.clone();
       url.pathname = intern;
@@ -44,7 +45,7 @@ export function middleware(req: NextRequest) {
   // Mooihuus: de interne Woonhuus-routes zijn hier niet bereikbaar.
   if (pathname === "/woonhuus" || pathname.startsWith("/woonhuus/")) {
     const rest = pathname.replace(/^\/woonhuus/, "") || "/";
-    return NextResponse.redirect(`${WOONHUUS_URL}${rest === "/over" ? "/over-woonhuus" : rest}${search}`, 307);
+    return NextResponse.redirect(`${WOONHUUS_URL}${rest === "/over" ? "/over-woonhuus" : rest === "/over-mooihuus" ? "/over-mooihuus" : rest}${search}`, 307);
   }
 
   const seg = pathname.split("/")[1];

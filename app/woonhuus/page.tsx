@@ -77,6 +77,9 @@ export default function WoonhuusHome({ searchParams }: { searchParams?: { q?: st
           <span className="inline-block mt-3 font-semibold text-bosgroen">Naar Mooihuus.nl →</span>
         </a>
       </section>
+      <p className="mt-4 text-sm text-grijs">
+        Benieuwd hoe Woonhuus en Mooihuus samenwerken? <a href="/over-mooihuus" className="font-semibold text-bosgroen hover:underline">Lees meer over ons zusterplatform Mooihuus →</a>
+      </p>
     </div>
   );
 }
