@@ -147,7 +147,7 @@ export async function markPaymentPaid(paymentId: string, methode: string): Promi
         betaald: true,
         betaaldOp: updated.betaaldOp || nu,
       });
-      bijlage = [{ filename: "Factuur " + updated.factuurnummer + " (betaald) Mooihuus.pdf", content: pdf, contentType: "application/pdf" }];
+      bijlage = [{ filename: "Factuur " + updated.factuurnummer + " (betaald) Huus BV.pdf", content: pdf, contentType: "application/pdf" }];
     } catch {
       bijlage = undefined;
     }

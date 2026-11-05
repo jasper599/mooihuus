@@ -43,8 +43,9 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
   const credit = !!d.credit;
   const betaald = !!d.betaald;
   const doc = await PDFDocument.create();
-  doc.setTitle((credit ? "Creditnota " : "Factuur ") + d.factuurnummer + " — Mooihuus");
-  doc.setProducer("Mooihuus.nl");
+  doc.setTitle((credit ? "Creditnota " : "Factuur ") + d.factuurnummer + " · " + COMPANY.bv);
+  doc.setAuthor(COMPANY.bv);
+  doc.setProducer(COMPANY.bv);
   const page = doc.addPage([595.28, 841.89]);
   const W = 595.28, H = 841.89;
   const reg = await doc.embedFont(StandardFonts.Helvetica);
@@ -60,12 +61,10 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
   const heeftBtw = typeof d.subtotaal === "number" && typeof d.btw === "number";
 
   const hH = 104;
-  page.drawRectangle({ x: 0, y: H - hH, width: W, height: hH, color: C.bosgroenDk });
-  let wx = M; const wy = H - 52, wsz = 22;
-  text("Mooi", wx, wy, wsz, bold, C.salie); wx += bold.widthOfTextAtSize("Mooi", wsz);
-  text("huus", wx, wy, wsz, bold, C.wit); wx += bold.widthOfTextAtSize("huus", wsz);
-  text(".nl", wx, wy, wsz, bold, C.oranje);
-  text("Het platform voor recreatiewoningen", M, H - 72, 9.5, reg, C.salie);
+  // Factuur op naam van de BV: Huus B.V., met beide platformen eronder.
+  page.drawRectangle({ x: 0, y: H - hH, width: W, height: hH, color: C.inkt });
+  text(COMPANY.bv, M, H - 52, 22, bold, C.wit);
+  text("Mooihuus.nl  ·  Woonhuus.nl", M, H - 72, 9.5, reg, rgb(0.81, 0.85, 0.83));
   textR(credit ? "CREDITNOTA" : "FACTUUR", W - M, H - 50, 24, bold, C.wit);
   textR((credit ? "Creditnr. " : "Betaalkenmerk ") + d.factuurnummer, W - M, H - 72, 9.5, reg, rgb(0.81, 0.88, 0.83));
 
@@ -132,7 +131,7 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
     text("Bewaar deze factuur als betaalbewijs.", M, y, 10, reg, C.inkt); y -= 14;
   } else {
     text("Betalen", M, y, 11, bold, C.bosgroenDk); y -= 16;
-    for (const r of ["Betaal deze factuur veilig via iDEAL met de betaallink. Zodra de betaling", "binnen is, gaat de woning automatisch online op Mooihuus.nl."]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
+    for (const r of ["Betaal deze factuur veilig via iDEAL met de betaallink. Zodra de betaling", "binnen is, gaat de woning automatisch online op Mooihuus.nl of Woonhuus.nl."]) { text(r, M, y, 10, reg, C.inkt); y -= 14; }
     y -= 2;
     text("Betaallink:", M, y, 9.5, bold, C.grijs);
     let link = d.betaalUrl || ""; const volLink = link;
@@ -144,7 +143,7 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
   const fy = 60;
   page.drawLine({ start: { x: M, y: fy + 20 }, end: { x: W - M, y: fy + 20 }, thickness: 0.6, color: C.lijn });
   const web = (COMPANY.website || "").replace(/^https?:\/\//, "");
-  text(COMPANY.bv + " · handelsnaam " + COMPANY.handelsnaam + " · " + COMPANY.adres + ", " + COMPANY.postcode, M, fy + 6, 8.5, reg, C.grijs);
+  text(COMPANY.bv + " (Mooihuus.nl en Woonhuus.nl) · " + COMPANY.adres + ", " + COMPANY.postcode, M, fy + 6, 8.5, reg, C.grijs);
   text("KvK " + COMPANY.kvk + " · btw " + COMPANY.btw + " · " + COMPANY.email + " · " + web, M, fy - 6, 8.5, reg, C.grijs);
   textR("Zelf de regie, nooit alleen.", W - M, fy - 6, 8.5, bold, C.salie);
 

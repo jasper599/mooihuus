@@ -74,7 +74,7 @@ async function verstuurFactuurMetPdf(
   let attachments: { filename: string; content: string; contentType?: string }[] | undefined;
   try {
     const pdf = await genereerFactuurPdfBase64(pdfData);
-    attachments = [{ filename: "Factuur " + pdfData.factuurnummer + " Mooihuus.pdf", content: pdf, contentType: "application/pdf" }];
+    attachments = [{ filename: "Factuur " + pdfData.factuurnummer + " Huus BV.pdf", content: pdf, contentType: "application/pdf" }];
   } catch {
     attachments = undefined;
   }

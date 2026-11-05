@@ -105,7 +105,7 @@ async function verwerkNieuweKantorenWelkom(): Promise<void> {
             totaal,
             betaalUrl: b.betaalUrl,
           });
-          bijlagen.push({ filename: "Factuur " + (b.factuurnummer || "") + " Mooihuus.pdf", content: pdf, contentType: "application/pdf" });
+          bijlagen.push({ filename: "Factuur " + (b.factuurnummer || "") + " Huus BV.pdf", content: pdf, contentType: "application/pdf" });
         } catch {
           /* PDF niet kunnen maken is niet fataal */
         }
