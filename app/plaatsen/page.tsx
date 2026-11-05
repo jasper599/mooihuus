@@ -57,6 +57,11 @@ export default function Plaatsen() {
     grond: "",
     park: "Park De Veluwe",
     postcode: "",
+    // Extra kenmerken voor gewone woningen (filters op Woonhuus.nl)
+    slaapkamers: "",
+    bouwjaar: "",
+    energielabel: "",
+    perceel: "",
   });
   const [fotos, setFotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -145,6 +150,10 @@ export default function Plaatsen() {
         prijs: Number(f.prijs),
         prijsSuffix: f.prijsSuffix,
         grond: f.grond,
+        slaapkamers: woonhuis && f.slaapkamers ? Number(f.slaapkamers) : undefined,
+        bouwjaar: woonhuis && f.bouwjaar ? Number(f.bouwjaar) : undefined,
+        energielabel: woonhuis && f.energielabel ? f.energielabel : undefined,
+        perceel: woonhuis && f.perceel ? Number(f.perceel) : undefined,
         omschrijving,
         fotos,
         plattegrond: plattegrond || undefined,
@@ -227,7 +236,7 @@ export default function Plaatsen() {
       {step === 1 && (
         <div className="card mb-5">
           <p className="font-semibold text-sm mb-1">Wat kost het?</p>
-          <p className="text-xs text-grijs mb-3">Eenmalig, je woning staat een jaar online. Je kiest je pakket aan het eind — hier zie je vast wat het kost.</p>
+          <p className="text-xs text-grijs mb-3">Eenmalig, je woning staat een jaar online. Je kiest je pakket aan het eind; hier zie je vast wat het kost.</p>
           <div className="grid gap-2 sm:grid-cols-3">
             {pakketten.map((p) => (
               <div key={p.naam} className={`rounded-[10px] border p-3 ${p.feat ? "border-oranje" : "border-lijn"}`}>
@@ -247,12 +256,14 @@ export default function Plaatsen() {
 
       {step === 1 && (
         <div className="card grid gap-3 sm:grid-cols-2">
-          <Field label="Aanbieden als">
-            <select className="field" value={f.doel} onChange={(e) => setF({ ...f, doel: e.target.value as Doel })}>
-              <option value="koop">Te koop</option>
-              {!woonhuis && <option value="huur">Te huur</option>}
-            </select>
-          </Field>
+          {!woonhuis && (
+            <Field label="Aanbieden als">
+              <select className="field" value={f.doel} onChange={(e) => setF({ ...f, doel: e.target.value as Doel })}>
+                <option value="koop">Te koop</option>
+                <option value="huur">Te huur</option>
+              </select>
+            </Field>
+          )}
           <Field label="Type woning">
             <select className="field" value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>
               {(woonhuis ? TYPES_WOONHUIS : TYPES_RECREATIE).map((tp) => <option key={tp}>{tp}</option>)}
@@ -268,13 +279,22 @@ export default function Plaatsen() {
           <Field label="Vraagprijs (€)"><input className="field" value={f.prijs} onChange={(e) => setF({ ...f, prijs: e.target.value })} /></Field>
           <Field label="Prijs-toevoeging">
             <select className="field" value={f.prijsSuffix} onChange={(e) => setF({ ...f, prijsSuffix: e.target.value })}>
-              <option value="">Automatisch (koop → k.k.)</option>
-              <option value="k.k.">k.k. (kosten koper)</option>
-              <option value="v.o.n.">v.o.n. (vrij op naam)</option>
-              <option value="excl. btw">excl. btw</option>
-              <option value="per week">per week</option>
-              <option value="per maand">per maand</option>
-              <option value="geen">Geen toevoeging</option>
+              {woonhuis ? (
+                <>
+                  <option value="">k.k. (kosten koper)</option>
+                  <option value="v.o.n.">v.o.n. (vrij op naam)</option>
+                </>
+              ) : (
+                <>
+                  <option value="">Automatisch (koop → k.k.)</option>
+                  <option value="k.k.">k.k. (kosten koper)</option>
+                  <option value="v.o.n.">v.o.n. (vrij op naam)</option>
+                  <option value="excl. btw">excl. btw</option>
+                  <option value="per week">per week</option>
+                  <option value="per maand">per maand</option>
+                  <option value="geen">Geen toevoeging</option>
+                </>
+              )}
             </select>
           </Field>
           <Field label="Grond">
@@ -285,6 +305,19 @@ export default function Plaatsen() {
               <option value="Huurgrond">Huurgrond</option>
             </select>
           </Field>
+          {woonhuis && (
+            <>
+              <Field label="Slaapkamers"><input className="field" inputMode="numeric" value={f.slaapkamers} onChange={(e) => setF({ ...f, slaapkamers: e.target.value })} placeholder="Bijvoorbeeld 3" /></Field>
+              <Field label="Bouwjaar"><input className="field" inputMode="numeric" value={f.bouwjaar} onChange={(e) => setF({ ...f, bouwjaar: e.target.value })} placeholder="Bijvoorbeeld 1985" /></Field>
+              <Field label="Energielabel">
+                <select className="field" value={f.energielabel} onChange={(e) => setF({ ...f, energielabel: e.target.value })}>
+                  <option value="">Onbekend / niet tonen</option>
+                  {["A++++", "A+++", "A++", "A+", "A", "B", "C", "D", "E", "F", "G"].map((l) => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </Field>
+              <Field label="Perceel (m²)"><input className="field" inputMode="numeric" value={f.perceel} onChange={(e) => setF({ ...f, perceel: e.target.value })} placeholder="Optioneel" /></Field>
+            </>
+          )}
           {!woonhuis && <Field label="Recreatiepark"><input className="field" value={f.park} onChange={(e) => setF({ ...f, park: e.target.value })} /></Field>}
           <Field label="Postcode"><input className="field" value={f.postcode} onChange={(e) => setF({ ...f, postcode: e.target.value })} placeholder="1234 AB" /></Field>
           <div className="sm:col-span-2 text-right"><button className="btn" onClick={() => setStep(2)}>Volgende →</button></div>
