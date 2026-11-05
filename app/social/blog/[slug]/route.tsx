@@ -4,14 +4,14 @@ import { getBlogPost } from "@/lib/blog";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Merkgestileerde Instagram-postafbeelding (1080x1080) per blogartikel.
+// Merkgestileerde Instagram-postafbeelding (1080x1350, staand 4:5; tekst binnen de uitsnede van het profielraster) per blogartikel.
 export async function GET(_req: Request, { params }: { params: { slug: string } }) {
   const p = getBlogPost(params.slug);
   if (!p) return new Response("Not found", { status: 404 });
 
   return new ImageResponse(
     (
-      <div style={{ width: 1080, height: 1080, display: "flex", flexDirection: "column", position: "relative", backgroundColor: "#2C6B45", fontFamily: "sans-serif", padding: 80 }}>
+      <div style={{ width: 1080, height: 1350, display: "flex", flexDirection: "column", position: "relative", backgroundColor: "#2C6B45", fontFamily: "sans-serif", padding: "110px 120px" }}>
         <div style={{ position: "absolute", right: -120, top: -120, width: 420, height: 420, borderRadius: 999, backgroundColor: "#7CAE86", opacity: 0.35, display: "flex" }} />
         <div style={{ position: "absolute", left: -100, bottom: -140, width: 360, height: 360, borderRadius: 999, backgroundColor: "#E8823B", opacity: 0.25, display: "flex" }} />
 
@@ -29,6 +29,6 @@ export async function GET(_req: Request, { params }: { params: { slug: string } 
         <div style={{ display: "flex", fontSize: 40, fontWeight: 600, color: "#DDECE0" }}>Lees meer via de link in onze bio</div>
       </div>
     ),
-    { width: 1080, height: 1080 }
+    { width: 1080, height: 1350 }
   );
 }
