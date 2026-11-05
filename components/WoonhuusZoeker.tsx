@@ -129,6 +129,9 @@ export function WoonhuusZoeker({
   const [view, setView] = useState<"lijst" | "kaart">("lijst");
   const [pagina, setPagina] = useState(0);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  // Coördinaten van woningpostcodes die nog niet in de cache stonden.
+  const [extraGeo, setExtraGeo] = useState<Record<string, [number, number]>>({});
+  const geoAlles = useMemo(() => ({ ...geo, ...extraGeo }), [geo, extraGeo]);
 
   // Zoekterm omzetten naar een punt, alleen als er een straal is gekozen.
   useEffect(() => {
@@ -142,6 +145,26 @@ export function WoonhuusZoeker({
       weg = true;
     };
   }, [q, straal]);
+
+  // Bij zoeken met straal: ontbrekende woningpostcodes opzoeken en bewaren.
+  useEffect(() => {
+    if (!straal || !punt) return;
+    let weg = false;
+    const missend = Array.from(new Set(listings.map((l) => normPc(l.postcode)).filter((pc) => pc.length >= 4 && !geoAlles[pc]))).slice(0, 40);
+    (async () => {
+      for (const pc of missend) {
+        if (weg) return;
+        const c = await geocode(pc);
+        if (!c || weg) continue;
+        setExtraGeo((g) => ({ ...g, [pc]: c }));
+        fetch("/api/postcodegeo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pc, lat: c[0], lon: c[1] }) }).catch(() => {});
+      }
+    })();
+    return () => {
+      weg = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [straal, punt, listings]);
 
   useEffect(() => setPagina(0), [q, straal, punt, prijsVan, prijsTot, oppVan, oppTot, perceelVan, slaapkamers, soorten, types, labels, bouw, sinds, openHuis, sort]);
 
@@ -161,7 +184,7 @@ export function WoonhuusZoeker({
         const tekst = `${l.titel} ${l.provincie} ${l.postcode ?? ""} ${l.park} ${l.makelaar ?? ""}`.toLowerCase();
         const tekstMatch = tekst.includes(term) || (termPc.length >= 4 && normPc(l.postcode).startsWith(termPc));
         if (straal && punt) {
-          const c = geo[normPc(l.postcode)];
+          const c = geoAlles[normPc(l.postcode)];
           const binnen = c ? afstandKm(punt, c) <= straal : false;
           if (!binnen && !tekstMatch) return false;
         } else if (!tekstMatch) return false;
@@ -186,7 +209,7 @@ export function WoonhuusZoeker({
       if (openHuis && !(l.openhuisDatum && l.openhuisDatum >= vandaag)) return false;
       return true;
     });
-  }, [listings, vasteProvincie, q, straal, punt, geo, prijsVan, prijsTot, oppVan, oppTot, perceelVan, slaapkamers, soorten, types, labels, bouw, sinds, openHuis, vandaag]);
+  }, [listings, vasteProvincie, q, straal, punt, geoAlles, prijsVan, prijsTot, oppVan, oppTot, perceelVan, slaapkamers, soorten, types, labels, bouw, sinds, openHuis, vandaag]);
 
   const gesorteerd = useMemo(() => {
     const r = [...gefilterd];
