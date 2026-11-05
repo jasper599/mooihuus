@@ -11,8 +11,8 @@ export function WoonhuusNav({ mooihuusUrl }: { mooihuusUrl: string }) {
   const path = usePathname() || "/";
   const [open, setOpen] = useState(false);
   const links = [
-    { href: "/", label: "Koopwoningen" },
-    { href: "/te-koop", label: "Per provincie" },
+    { href: "/te-koop", label: "Koopwoningen" },
+    { href: "/te-koop#provincies", label: "Per provincie" },
     { href: "/favorieten", label: "Favorieten" },
   ];
   const actief = (href: string) => (href === "/" ? path === "/" || path === "/woonhuus" : path.startsWith(href) || path.startsWith("/woonhuus" + href));

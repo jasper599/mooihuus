@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getLiveListings } from "@/lib/db";
-import { ListingsBrowser } from "@/components/ListingsBrowser";
 import { ListingCard } from "@/components/ListingCard";
 import { HeroZoek } from "@/components/HeroZoek";
 import { MOOIHUUS_URL } from "@/lib/site";
@@ -9,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 // Homepage van Woonhuus.nl (bereikt via de middleware op woonhuus.nl): het
 // koopaanbod van gewone woningen, van makelaars en particulieren.
-export default function WoonhuusHome({ searchParams }: { searchParams?: { q?: string; prijs?: string } }) {
+export default function WoonhuusHome() {
   const listings = getLiveListings("woonhuis")
     .filter((l) => l.doel === "koop")
     .map((l) => ({ ...l, fotos: l.fotos && l.fotos.length ? [l.fotos[0]] : undefined, omschrijving: "" }));
@@ -25,7 +24,7 @@ export default function WoonhuusHome({ searchParams }: { searchParams?: { q?: st
           <p className="m-0 text-salie-lt text-lg">
             Eengezinswoningen, appartementen en starterswoningen te koop, aangeboden door makelaars en particulieren.
           </p>
-          <HeroZoek site="woonhuus" labels={{ waar: "Plaats of postcode", placeholder: "Bijvoorbeeld Brunssum", maxPrijs: "Max. prijs", geenMax: "Geen maximum", zoeken: "Zoeken" }} />
+          <HeroZoek site="woonhuus" labels={{ waar: "Plaats, buurt, adres of postcode", placeholder: "Bijvoorbeeld Brunssum of 6445", maxPrijs: "Straal", zoeken: "Zoeken" }} />
         </div>
         <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-salie/20" />
       </section>
@@ -34,7 +33,7 @@ export default function WoonhuusHome({ searchParams }: { searchParams?: { q?: st
         <section className="mt-10">
           <div className="flex flex-wrap items-baseline gap-3 mb-4">
             <h2 className="m-0 font-display font-extrabold text-2xl md:text-3xl text-bosgroen-dk">Net binnen</h2>
-            <a href="#aanbod" className="ml-auto font-semibold text-bosgroen hover:underline">Alle woningen →</a>
+            <a href="/te-koop" className="ml-auto font-semibold text-bosgroen hover:underline">Alle woningen →</a>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {nieuw.map((l) => <ListingCard key={l.id} listing={l} />)}
@@ -55,15 +54,13 @@ export default function WoonhuusHome({ searchParams }: { searchParams?: { q?: st
         ))}
       </section>
 
-      <h2 className="mt-12 mb-0 font-display font-extrabold text-2xl md:text-3xl text-bosgroen-dk">Alle koopwoningen</h2>
-      <ListingsBrowser
-        listings={listings}
-        locale="nl"
-        modus="koop"
-        woonhuis
-        initialQ={searchParams?.q ? String(searchParams.q) : ""}
-        initialPrijs={searchParams?.prijs && /^[0-3]$/.test(String(searchParams.prijs)) ? String(searchParams.prijs) : ""}
-      />
+      <div className="mt-10 flex flex-wrap gap-3 items-center rounded-2xl border border-lijn bg-white p-5">
+        <div className="flex-[1_1_300px]">
+          <div className="font-display font-bold text-lg text-bosgroen-dk">Alle koopwoningen bekijken</div>
+          <p className="text-sm text-grijs mt-1 mb-0">Zoek op plaats en straal en filter op prijs, oppervlakte, slaapkamers, energielabel en meer.</p>
+        </div>
+        <Link href="/te-koop" className="btn text-base px-6 py-3">Bekijk het aanbod →</Link>
+      </div>
 
       <section className="mt-10 grid gap-4 md:grid-cols-2">
         <a href={`${MOOIHUUS_URL}/plaatsen?categorie=woonhuis`} className="card hover:shadow-md transition-shadow block">
