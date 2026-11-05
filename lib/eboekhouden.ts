@@ -86,12 +86,16 @@ export async function zoekOfMaakRelatie(args: {
     try {
       const res = await ebFetch(`/relation?email=${encodeURIComponent(args.email)}`);
       const items = res.items || res || [];
-      if (Array.isArray(items) && items.length && items[0].id) return items[0].id;
+      const hit = Array.isArray(items)
+        ? items.find((x: any) => String(x.emailAddress || x.email || "").toLowerCase() === String(args.email).toLowerCase()) ||
+          (items.length === 1 ? items[0] : undefined)
+        : undefined;
+      if (hit && hit.id) return hit.id;
     } catch {
       // doorgaan naar aanmaken
     }
   }
-  const body: any = { name: args.naam || "Onbekende relatie" };
+  const body: any = { name: args.naam || "Onbekende relatie", type: "B" };
   if (args.email) body.emailAddress = args.email;
   if (args.btwNummer) body.vatNumber = args.btwNummer;
   if (args.adres) body.address = args.adres;
@@ -105,11 +109,18 @@ export async function zoekOfMaakRelatie(args: {
 // De API verwacht bij een factuurregel het id van de grootboekrekening, niet
 // de rekeningcode. We zoeken de code op in het rekeningschema van Huus B.V.
 
-let _ledger: { code: string; id: any; omschrijving: string } | null = null;
+const _ledgers: Record<string, { code: string; id: any; omschrijving: string }> = {};
 
 export async function omzetRekening(): Promise<{ code: string; id: any; omschrijving: string }> {
-  const code = omzetLedger();
-  if (_ledger && _ledger.code === code) return _ledger;
+  return rekeningVanCode(omzetLedger());
+}
+// Debiteurenrekening (tegenrekening van een verkoopfactuur), standaard 1300.
+export async function debiteurenRekening(): Promise<{ code: string; id: any; omschrijving: string }> {
+  return rekeningVanCode((process.env.EB_DEBITEUREN_LEDGER || "1300").trim());
+}
+
+async function rekeningVanCode(code: string): Promise<{ code: string; id: any; omschrijving: string }> {
+  if (_ledgers[code]) return _ledgers[code];
   let items: any[] = [];
   try {
     const res = await ebFetch(`/ledger?code=${encodeURIComponent(code)}`);
@@ -122,11 +133,45 @@ export async function omzetRekening(): Promise<{ code: string; id: any; omschrij
     hit = Array.isArray(alle) ? alle.find((l: any) => String(l.code) === code) : undefined;
   }
   if (!hit || hit.id === undefined || hit.id === null) throw new Error(`Grootboekrekening ${code} niet gevonden in e-Boekhouden`);
-  _ledger = { code, id: hit.id, omschrijving: hit.description ?? hit.omschrijving ?? "" };
-  return _ledger;
+  _ledgers[code] = { code, id: hit.id, omschrijving: hit.description ?? hit.omschrijving ?? "" };
+  return _ledgers[code];
 }
 
-// ---- Verkoopfactuur aanmaken ----------------------------------------------
+// ---- Verkoopfactuur boeken als mutatie "Factuur verstuurd" ----------------
+// We boeken de factuur alleen in de administratie (mutatie type 2), niet via de
+// factuurmodule: er is geen sjabloon nodig en e-Boekhouden mailt niets. De
+// factuur zelf heeft de klant al van ons gekregen. De factuur komt als open
+// post op debiteuren; de Mollie-koppeling lettert de betaling af op het nummer.
+export async function boekFactuurMutatie(args: {
+  relationId: number;
+  factuurnummer: string;
+  datum?: string; // YYYY-MM-DD
+  omschrijving: string;
+  bedragInclBtw: number; // negatief bij een creditnota
+}): Promise<any> {
+  const [omzet, deb] = await Promise.all([omzetRekening(), debiteurenRekening()]);
+  const body = {
+    type: 2,
+    date: args.datum || new Date().toISOString().slice(0, 10),
+    ledgerId: deb.id,
+    relationId: args.relationId,
+    invoiceNumber: args.factuurnummer,
+    termOfPayment: 7,
+    inExVat: "IN",
+    description: args.omschrijving.slice(0, 200),
+    rows: [
+      {
+        ledgerId: omzet.id,
+        vatCode: btwCode(),
+        amount: Math.round(args.bedragInclBtw * 100) / 100,
+        description: args.omschrijving.slice(0, 200),
+      },
+    ],
+  };
+  return ebFetch(`/mutation`, { method: "POST", body: JSON.stringify(body) });
+}
+
+// ---- Verkoopfactuur aanmaken (factuurmodule, niet meer gebruikt) -----------
 
 export async function maakVerkoopfactuur(args: {
   relationId: number;
@@ -265,7 +310,8 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
   if (actief) {
     try {
       const r = await omzetRekening();
-      rekening = `${r.code} ${r.omschrijving}`.trim();
+      const d = await debiteurenRekening();
+      rekening = `${r.code} ${r.omschrijving}`.trim() + ` (tegenrekening ${d.code} ${d.omschrijving})`.replace(/\s+\)/, ")");
     } catch (e: any) {
       return { ok: false, dry, actief, aantalKandidaten: kandidaten.length, geboekt: 0, rekening: undefined, voorstellen: [], fouten: [{ paymentId: "-", fout: String(e?.message || e) }] };
     }
@@ -299,15 +345,14 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
         postcode: owner?.postcode,
         plaats: owner?.plaats,
       });
-      const factuur = await maakVerkoopfactuur({
+      const factuur = await boekFactuurMutatie({
         relationId,
         factuurnummer: p.factuurnummer,
         datum: basis.datum || undefined,
-        omschrijving: basis.omschrijving,
+        omschrijving: `${p.factuurnummer} ${basis.omschrijving}`,
         bedragInclBtw: p.bedrag,
-        aantal: p.aantalObjecten || 1,
       });
-      const ebId = factuur?.id || factuur?.invoiceId || "";
+      const ebId = factuur?.id || factuur?.mutationId || "";
       updatePayment(p.id, { geboektInEboekhouden: true, eboekhoudenFactuurId: String(ebId) });
       geboekt++;
       voorstellen.push({ ...basis, actie: "geboekt", eboekhoudenId: ebId });
