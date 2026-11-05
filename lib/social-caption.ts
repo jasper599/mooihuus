@@ -12,6 +12,13 @@ import { vraagAnthropic } from "./anthropic";
 
 const MAX = 700;
 
+// Gewone woningen staan op ons zusterplatform Woonhuus.nl en worden ook via de
+// Mooihuus-Instagram gedeeld, met een eigen afsluiter die naar Woonhuus wijst.
+const isWoonhuis = (l: Listing) => l.categorie === "woonhuis";
+const CTA_MOOIHUUS = "👉 Bekijk 'm nu op Mooihuus.nl (link in bio)";
+const CTA_WOONHUUS = "👉 Bekijk 'm op ons zusterplatform Woonhuus.nl (link in bio)";
+const cta = (l: Listing) => (isWoonhuis(l) ? CTA_WOONHUUS : CTA_MOOIHUUS);
+
 function locatie(listing: Listing): string {
   const delen = [listing.park, listing.provincie].map((s) => (s || "").trim()).filter(Boolean);
   return Array.from(new Set(delen)).join(", ");
@@ -36,7 +43,7 @@ export function socialCaptionTemplate(listing: Listing): string {
   const doelWoord = listing.doel === "huur" ? "te huur" : "te koop";
   const loc = locatie(listing);
   const locZin = loc ? ` in ${loc}` : "";
-  const type = (listing.type || "recreatiewoning").toLowerCase();
+  const type = (listing.type || (isWoonhuis(listing) ? "woning" : "recreatiewoning")).toLowerCase();
   const kenmerken = kenmerkenLijst(listing);
   const regels = [
     `✨ Nieuw ${doelWoord}: ${type}${locZin}`,
@@ -44,7 +51,7 @@ export function socialCaptionTemplate(listing: Listing): string {
     kenmerken.length ? `🏡 ${kenmerken.join(" · ")}` : "",
     `💶 ${prijsTekst(listing)}`,
     "",
-    "👉 Bekijk 'm nu op Mooihuus.nl (link in bio)",
+    cta(listing),
   ].filter((r) => r !== "");
   return regels.join("\n");
 }
@@ -97,7 +104,11 @@ function normaliseer(tekst: string, listing: Listing): string {
   }
   if (extra.length) t += "\n\n" + extra.join("\n");
   // Merknaam / CTA borgen.
-  if (!/mooihuus\.nl/i.test(t)) t += "\n\n👉 Bekijk 'm op Mooihuus.nl (link in bio)";
+  if (isWoonhuis(listing)) {
+    // Bij een gewone woning hoort de verwijzing naar Woonhuus.nl, niet naar Mooihuus.nl.
+    t = t.replace(/[^\n]*mooihuus\.nl[^\n]*\n?/gi, "").trim();
+    if (!/woonhuus\.nl/i.test(t)) t += "\n\n" + CTA_WOONHUUS;
+  } else if (!/mooihuus\.nl/i.test(t)) t += "\n\n👉 Bekijk 'm op Mooihuus.nl (link in bio)";
   return t;
 }
 
@@ -107,26 +118,32 @@ export async function genereerSocialCaption(listing: Listing, nu: Date = new Dat
   if (!key) return socialCaptionTemplate(listing);
 
   const doelWoord = listing.doel === "huur" ? "te huur" : "te koop";
+  const woon = isWoonhuis(listing);
   const feiten = [
-    `Type: ${listing.type || "recreatiewoning"}`,
+    `Type: ${listing.type || (woon ? "woning" : "recreatiewoning")}`,
     `Aanbod: ${doelWoord}`,
     locatie(listing) ? `Locatie: ${locatie(listing)}` : "",
     `Prijs: ${prijsTekst(listing)}`,
     listing.slaapkamers ? `Slaapkamers: ${listing.slaapkamers}` : "",
-    listing.personen ? `Max. personen: ${listing.personen}` : "",
+    listing.personen && !woon ? `Max. personen: ${listing.personen}` : "",
     listing.m2 ? `Woonoppervlak: ${listing.m2} m²` : "",
     listing.bouwjaar ? `Bouwjaar: ${listing.bouwjaar}` : "",
   ].filter(Boolean).join("\n");
 
+  const platformZin = woon
+    ? `Je schrijft de Instagram-caption voor het Instagram-account van Mooihuus.nl, over een GEWONE woning om permanent in te wonen (geen vakantie- of recreatiewoning). ` +
+      `Deze woning staat op Woonhuus.nl, het zusterplatform van Mooihuus voor gewone koopwoningen. Gebruik geen vakantie- of recreatietaal. `
+    : `Je schrijft de Instagram-caption voor Mooihuus.nl, hét onafhankelijke platform voor recreatiewoningen in Nederland. `;
+  const merk = woon ? "Woonhuus.nl" : "Mooihuus.nl";
   const system =
-    `Je schrijft de Instagram-caption voor Mooihuus.nl, hét onafhankelijke platform voor recreatiewoningen in Nederland. ` +
+    platformZin +
     `Toon: warm, nuchter, uitnodigend, je/jij. Schrijf in het Nederlands.\n\n` +
     `Eisen aan de caption:\n` +
     `- Begin met ÉÉN korte, pakkende openingszin (max ~90 tekens) die op zichzelf al werkt. Instagram kapt de rest af, dus die eerste regel moet meteen prikkelen. Neem NIET klakkeloos de woningtitel over.\n` +
     `- Noem duidelijk de PRIJS en de LOCATIE (plaats/park/provincie).\n` +
     `- Kort en scanbaar: korte regels, hooguit een paar passende emoji (niet overdrijven).\n` +
-    `- Sluit af met een uitnodiging om de woning op Mooihuus.nl te bekijken, met exact de tekst "link in bio".\n` +
-    `- Schrijf NOOIT een volledige URL of webadres uit (dus niet "mooihuus.nl/..." of "https://..."). Noem alleen de merknaam "Mooihuus.nl" en "link in bio".\n` +
+    `- Sluit af met een uitnodiging om de woning op ${woon ? "ons zusterplatform Woonhuus.nl" : "Mooihuus.nl"} te bekijken, met exact de tekst "link in bio".\n` +
+    `- Schrijf NOOIT een volledige URL of webadres uit (dus niet "${merk.toLowerCase()}/..." of "https://..."). Noem alleen de merknaam "${merk}" en "link in bio".\n` +
     `- GEEN hashtags. GEEN verzonnen kenmerken. GEEN beloftes over rendement of waardestijging. GEEN telefoonnummers.\n` +
     `- Maak elke zin volledig af; eindig niet halverwege een zin of woord.\n` +
     `- Maximaal ~110 woorden.\n\n` +
