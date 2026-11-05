@@ -357,7 +357,15 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
       geboekt++;
       voorstellen.push({ ...basis, actie: "geboekt", eboekhoudenId: ebId });
     } catch (e: any) {
-      fouten.push({ paymentId: p.id, fout: String(e?.message || e) });
+      const fout = String(e?.message || e);
+      // Factuurnummer staat al in e-Boekhouden (eerder handmatig of via een
+      // andere koppeling geboekt): niet nog eens boeken, wel als geboekt markeren.
+      if (/MUT_019/.test(fout)) {
+        updatePayment(p.id, { geboektInEboekhouden: true, eboekhoudenFactuurId: "bestond-al" });
+        voorstellen.push({ ...basis, actie: "stond al in e-Boekhouden" });
+      } else {
+        fouten.push({ paymentId: p.id, fout });
+      }
     }
   }
 
