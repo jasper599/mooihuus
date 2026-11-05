@@ -92,7 +92,6 @@ export default function Home({ searchParams }: { searchParams?: { q?: string } }
 
   // Heldfoto: eerst een uitgelichte woning met foto, anders de nieuwste met foto.
   const metFoto = koop.filter((l) => !l.externalUrl && l.fotos && l.fotos.length);
-  const held = metFoto.find((l) => l.uitgelicht) || metFoto[0];
 
   // Nieuw op Mooihuus: de drie nieuwste eigen woningen met foto.
   const nieuw = [...metFoto]
@@ -102,26 +101,22 @@ export default function Home({ searchParams }: { searchParams?: { q?: string } }
 
   return (
     <div>
-      {/* Held: tekst en zoekvak links, foto rechts */}
+      {/* Held: tekst links, Woonhuus-illustratie rechts */}
       <section className="flex flex-wrap gap-8 items-center pt-2">
         <div className="flex-[1_1_440px] flex flex-col gap-4">
           <p className="m-0 text-sm font-semibold tracking-[0.08em] uppercase text-bosgroen">{T.tag}</p>
           <h1 className="m-0 font-display font-extrabold text-4xl md:text-5xl leading-[1.08] text-bosgroen-dk">{T.titel}</h1>
           <p className="m-0 text-lg leading-relaxed text-grijs">{T.sub}</p>
         </div>
-        <div className="flex-[1_1_380px] h-[340px] rounded-3xl overflow-hidden bg-salie-lt relative">
-          {held && (
-            <Link href={localeHref(locale, `/aanbod/${held.id}`)} className="block w-full h-full">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={held.fotos![0]} alt={held.titel || T.fotoAlt} className="w-full h-full object-cover" />
-            </Link>
-          )}
-          {/* Blauwe Woonhuus-banner onderin de foto */}
-          <a
-            href={localeHref(locale, "/woonhuis-zoeken")}
-            className="absolute bottom-3 left-3 right-3 rounded-xl px-4 py-2.5 flex items-center gap-3 text-white shadow-md hover:brightness-110 transition"
-            style={{ background: "#1E3A5F" }}
-          >
+        {/* Rechts: illustratie van Woonhuus, het hele vlak klikt door */}
+        <a
+          href={localeHref(locale, "/woonhuis-zoeken")}
+          className="flex-[1_1_380px] h-[340px] rounded-3xl overflow-hidden relative block group"
+          style={{ background: "#1E3A5F" }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/woonhuus-straat.svg" alt="" className="w-full h-full object-cover" />
+          <span className="absolute bottom-3 left-3 right-3 rounded-xl px-4 py-2.5 flex items-center gap-3 text-white shadow-md group-hover:brightness-110 transition" style={{ background: "#1E3A5F" }}>
             <span className="font-display font-extrabold text-base shrink-0">
               <span style={{ color: "#D5E0EC" }}>Woon</span>huus<span style={{ color: "#E8823B" }}>.nl</span>
             </span>
@@ -129,8 +124,8 @@ export default function Home({ searchParams }: { searchParams?: { q?: string } }
               {locale === "de" ? "Normale Wohnungen zum Kauf" : locale === "en" ? "Regular homes for sale" : "Op zoek naar een gewoon woonhuis?"}
             </span>
             <span className="ml-auto font-display font-semibold text-sm shrink-0">→</span>
-          </a>
-        </div>
+          </span>
+        </a>
       </section>
 
       {/* Nieuw op Mooihuus */}
