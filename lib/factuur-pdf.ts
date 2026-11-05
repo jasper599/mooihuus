@@ -62,11 +62,11 @@ export async function genereerFactuurPdfBytes(d: FactuurPdfData): Promise<Uint8A
 
   const hH = 104;
   // Factuur op naam van de BV: Huus B.V., met beide platformen eronder.
-  page.drawRectangle({ x: 0, y: H - hH, width: W, height: hH, color: C.inkt });
+  page.drawRectangle({ x: 0, y: H - hH, width: W, height: hH, color: C.oranje });
   text(COMPANY.bv, M, H - 52, 22, bold, C.wit);
-  text("Mooihuus.nl  ·  Woonhuus.nl", M, H - 72, 9.5, reg, rgb(0.81, 0.85, 0.83));
+  text("Mooihuus.nl  ·  Woonhuus.nl", M, H - 72, 9.5, reg, rgb(1, 0.93, 0.87));
   textR(credit ? "CREDITNOTA" : "FACTUUR", W - M, H - 50, 24, bold, C.wit);
-  textR((credit ? "Creditnr. " : "Betaalkenmerk ") + d.factuurnummer, W - M, H - 72, 9.5, reg, rgb(0.81, 0.88, 0.83));
+  textR((credit ? "Creditnr. " : "Betaalkenmerk ") + d.factuurnummer, W - M, H - 72, 9.5, reg, rgb(1, 0.93, 0.87));
 
   let y = H - hH - 42;
   text("FACTUUR AAN", M, y, 9, bold, C.grijs);
