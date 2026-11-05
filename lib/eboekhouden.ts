@@ -195,7 +195,9 @@ export interface SyncResultaat {
 export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }): Promise<SyncResultaat> {
   const dry = opts?.dry !== false;
   const actief = eboekhoudenEnabled();
-  const betalingen = getPayments().filter((p) => p.status === "paid" && !p.geboektInEboekhouden);
+  // Creditnota's horen bij een factuur die nooit betaald (en dus nooit geboekt)
+  // is; die slaan we over, anders komt er negatieve omzet zonder factuur.
+  const betalingen = getPayments().filter((p) => p.status === "paid" && p.soort !== "creditnota" && p.bedrag > 0 && !p.geboektInEboekhouden);
   const kandidaten = opts?.limiet ? betalingen.slice(0, opts.limiet) : betalingen;
 
   const voorstellen: SyncVoorstel[] = [];

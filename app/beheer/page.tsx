@@ -16,6 +16,8 @@ import { NieuwsbriefLeden } from "@/components/NieuwsbriefLeden";
 import { FeedImportKnop } from "@/components/FeedImportKnop";
 import { MakelaarFactuurKnop } from "@/components/MakelaarFactuurKnop";
 import { BetalingStatusKnop } from "@/components/BetalingStatusKnop";
+import { EboekhoudenPanel } from "@/components/EboekhoudenPanel";
+import { eboekhoudenEnabled } from "@/lib/eboekhouden";
 import { WoningVerwijderKnop } from "@/components/WoningVerwijderKnop";
 import { SocialWachtrij } from "@/components/SocialWachtrij";
 import { KortingscodeBeheer } from "@/components/KortingscodeBeheer";
@@ -299,15 +301,16 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
           so === "makelaar-factuur" ? "Makelaar" : so === "verlenging" ? "Verlenging" : so === "opvaller" ? "Opvaller" : "Advertentie";
         return (
           <div>
+            <EboekhoudenPanel actief={eboekhoudenEnabled()} auto={process.env.EBOEKHOUDEN_AUTO === "1"} nogTeBoeken={betaaldLijst.filter((p) => !p.geboektInEboekhouden && p.soort !== "creditnota" && p.bedrag > 0).length} />
             <div className="flex flex-wrap gap-2 mb-3">
               <Link href="/beheer?tab=betalingen&pstatus=paid" className={chip(pstatus === "paid")}>Betaald: <strong className="ml-1">{betaaldLijst.length}</strong></Link>
               <Link href="/beheer?tab=betalingen&pstatus=open" className={chip(pstatus === "open")}>Open: <strong className="ml-1">{openLijst.length}</strong></Link>
               <Link href="/beheer?tab=betalingen" className={chip(pstatus === "alle")}>Alle: <strong className="ml-1">{alle.length}</strong></Link>
             </div>
             <div className="text-sm text-grijs mb-2">Totaal betaald: <strong className="text-bosgroen-dk">{euroCents(somBetaald)}</strong> · {zichtbaar.length} {zichtbaar.length === 1 ? "factuur" : "facturen"} getoond</div>
-            <Table head={["Factuur", "Betaler", "Soort", "Bedrag", "Betaald op", "Methode", "Status"]}>
+            <Table head={["Factuur", "Betaler", "Soort", "Bedrag", "Betaald op", "Methode", "Status", "Boekhouding"]}>
               {zichtbaar.length === 0 ? (
-                <tr><Td>—</Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td></tr>
+                <tr><Td>—</Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td><Td> </Td></tr>
               ) : zichtbaar.map((p) => {
                 const u = getUser(p.userId);
                 return (
@@ -319,6 +322,7 @@ export default async function Beheer({ searchParams }: { searchParams: { tab?: s
                     <Td>{p.betaaldOp ? new Date(p.betaaldOp).toLocaleDateString("nl-NL") : "—"}</Td>
                     <Td>{p.methode}</Td>
                     <Td><BetalingStatusKnop paymentId={p.id} status={p.status} /></Td>
+                    <Td>{p.geboektInEboekhouden ? <span className="text-bosgroen font-semibold">✓ geboekt</span> : p.status === "paid" ? <span className="text-grijs">nog niet</span> : "—"}</Td>
                   </tr>
                 );
               })}

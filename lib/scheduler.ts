@@ -8,6 +8,7 @@
 import fs from "fs";
 import path from "path";
 import { maakBackup } from "./backup";
+import { eboekhoudenEnabled, syncBetalingen } from "./eboekhouden";
 import { verwerkVerlopendeAdvertenties } from "./verlenging";
 import { metricoolEnabled, scheduleInstagramPost, volgendeSlot } from "./metricool";
 import { instagramEnabled, postToInstagram } from "./instagram";
@@ -433,6 +434,11 @@ async function draaiDagelijks(): Promise<void> {
     await maakBackup().catch(() => {});
     await verwerkVerlopendeAdvertenties().catch(() => {});
     try { draaiUitgelicht(); } catch { /* niet fataal */ }
+    // Boekhouding: betaalde facturen 1×/dag naar e-Boekhouden, alleen als de
+    // koppeling actief is én automatisch boeken aan staat (EBOEKHOUDEN_AUTO=1).
+    if (eboekhoudenEnabled() && process.env.EBOEKHOUDEN_AUTO === "1") {
+      await syncBetalingen({ dry: false }).catch(() => {});
+    }
     markeer(); // pas markeren als alles klaar is (crasht het eerder, dan retry volgende tick)
   } finally {
     bezig = false;
