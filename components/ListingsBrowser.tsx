@@ -54,20 +54,24 @@ export function ListingsBrowser({
   locale = "nl",
   modus = "koop",
   woonhuis = false,
+  initialQ = "",
+  initialPrijs = "",
 }: {
   listings: Listing[];
   locale?: Locale;
   modus?: "koop" | "huur";
   woonhuis?: boolean; // Woonhuus.nl: geen personenfilter, huur per maand
+  initialQ?: string; // zoekterm uit het zoekvak bovenaan de homepage
+  initialPrijs?: string; // index van de prijsklasse uit het zoekvak
 }) {
   const huur = modus === "huur";
   const PRIJS_RANGES = woonhuis ? (huur ? PRIJS_HUUR_MAAND : PRIJS_KOOP_WONING) : huur ? PRIJS_HUUR : PRIJS_KOOP;
 
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQ);
   const [provincie, setProvincie] = useState("");
   const [type, setType] = useState("");
   const [personen, setPersonen] = useState("");
-  const [prijs, setPrijs] = useState("");
+  const [prijs, setPrijs] = useState(initialPrijs);
   const [m2, setM2] = useState("");
   const [sort, setSort] = useState("");
   const [view, setView] = useState<"lijst" | "kaart">("lijst");

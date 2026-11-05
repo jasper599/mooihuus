@@ -43,6 +43,7 @@ export const WOONHUUS_EIGEN_PADEN = [
   /^\/aanbod(\/.*)?$/,
   /^\/te-koop(\/.*)?$/,
   /^\/over-woonhuus$/,
+  /^\/over-mooihuus$/,
   /^\/favorieten$/,
   /^\/contact$/,
   /^\/faq$/,
