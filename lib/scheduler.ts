@@ -439,6 +439,48 @@ async function draaiBoekhouding(): Promise<void> {
   }
 }
 
+
+// Groeimelding: bij 2.500, 3.000 en 3.500 woningen één keer een mail aan Jasper
+// dat het tijd is om de database klaar te maken voor 10.000 woningen (rond
+// 3.500 à 4.000 woningen past de back-up niet meer in een mail en wordt de site
+// trager). Ook een waarschuwing als de back-up richting de mailgrens van 25 MB gaat.
+const GROEI_STAMP = path.join(DATA_DIR, "groei-melding.json");
+const GROEI_DREMPELS = [2500, 3000, 3500];
+async function draaiGroeiMelding(): Promise<void> {
+  let gemeld: { drempels: number[]; backupWaarschuwing?: boolean } = { drempels: [] };
+  try { gemeld = JSON.parse(fs.readFileSync(GROEI_STAMP, "utf8")); } catch { /* nog niets gemeld */ }
+  const aantal = getListings().length;
+  let dbMb = 0;
+  try { dbMb = fs.statSync(path.join(DATA_DIR, "db.json")).size / 1024 / 1024; } catch { /* onbekend */ }
+
+  const nieuweDrempel = GROEI_DREMPELS.filter((d) => aantal >= d && !gemeld.drempels.includes(d)).pop();
+  const backupKrap = dbMb >= 18 && !gemeld.backupWaarschuwing;
+  if (!nieuweDrempel && !backupKrap) return;
+
+  const html = `
+    <p>Hoi Jasper,</p>
+    <p>In de database van Mooihuus en Woonhuus staan nu <strong>${aantal.toLocaleString("nl-NL")} woningen</strong> (live en verlopen samen). De database is ${dbMb.toFixed(1)} MB.</p>
+    <p>Tijd om de site klaar te maken voor 10.000 woningen, zoals afgesproken:</p>
+    <ol>
+      <li>De echte database (Postgres) wordt de hoofddatabase.</li>
+      <li>Zoeken en lijsten laden per pagina.</li>
+      <li>Foto's naar een opslag met cache.</li>
+      <li>De nachtelijke back-up naar Google Drive in plaats van mail (de mailgrens is 25 MB).</li>
+      <li>Eerst een stille belastingtest met 10.000 nepwoningen op een testomgeving.</li>
+    </ol>
+    ${backupKrap ? "<p><strong>Let op:</strong> de back-up nadert de mailgrens van 25 MB. Zet stap 4 voorrang.</p>" : ""}
+    <p>Guus</p>`;
+  const mail = renderSimpel("Mooihuus groeit: tijd voor de opschaling", html);
+  await sendEmail({ aan: GUUS_MAIL_AAN, onderwerp: "📈 " + mail.onderwerp, soort: "alert", html: mail.html, van: `Guus <${COMPANY.email}>` });
+
+  if (nieuweDrempel) gemeld.drempels = GROEI_DREMPELS.filter((d) => aantal >= d);
+  if (backupKrap) gemeld.backupWaarschuwing = true;
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(GROEI_STAMP, JSON.stringify(gemeld), "utf8");
+  } catch { /* niet fataal */ }
+}
+
 let bezig = false;
 async function draaiDagelijks(): Promise<void> {
   if (bezig || alGedraaidVandaag()) return;
@@ -447,6 +489,7 @@ async function draaiDagelijks(): Promise<void> {
     await maakBackup().catch(() => {});
     await verwerkVerlopendeAdvertenties().catch(() => {});
     try { draaiUitgelicht(); } catch { /* niet fataal */ }
+    await draaiGroeiMelding().catch(() => {});
     markeer(); // pas markeren als alles klaar is (crasht het eerder, dan retry volgende tick)
   } finally {
     bezig = false;
