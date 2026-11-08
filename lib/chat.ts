@@ -9,7 +9,7 @@ export const KENNIS: Entry[] = [
   {
     keywords: ["prijs", "prijzen", "kost", "kosten", "tarief", "betalen", "hoeveel", "duur"],
     antwoord:
-      "Adverteren kost eenmalig per woning: Basis € 25, Plus € 49 of Premium € 79. Geen commissie over de verkoop. Losse opvallers (zoals ‘Omhoog’ € 1,95) koop je optioneel bij.",
+      "Adverteren kost eenmalig per woning: Basis € 35, Plus € 49 of Premium € 79. Geen commissie over de verkoop. Losse opvallers (zoals ‘Omhoog’ € 1,95) koop je optioneel bij.",
   },
   {
     keywords: ["account", "registreren", "aanmelden", "inloggen", "profiel"],
@@ -128,7 +128,7 @@ te koop of te huur adverteren. Toon: warm, nuchter, behulpzaam, je/jij, korte an
 Nederlands.
  
 Over Mooihuus:
-- Adverteren kost eenmalig: Basis €25, Plus €49, Premium €79. Geen commissie/courtage.
+- Adverteren kost eenmalig: Basis €35, Plus €49, Premium €79. Geen commissie/courtage.
 - Betalen met iDEAL; betalingsbewijs per e-mail.
 - Leads komen rechtstreeks bij de eigenaar (mail + dashboard).
 - Verhuur loopt via verhuurpartners (Mooihuus is zelf geen boekingsplatform).

@@ -1,7 +1,7 @@
 import { Pakket } from "./types";
 
 export const PAKKET_PRIJS: Record<Pakket, number> = {
-  Basis: 25,
+  Basis: 35,
   Plus: 49,
   Premium: 79,
 };

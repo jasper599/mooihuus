@@ -7,7 +7,7 @@ import { useSkin } from "@/components/SkinContext";
 
 type Doel = "koop" | "huur";
 const pakketten = [
-  { naam: "Basis", prijs: "€ 25", sub: "eenmalig · 1 jaar online", feats: ["Tot 12 foto's", "AI-basistekst", "Leads direct naar jou"] },
+  { naam: "Basis", prijs: "€ 35", sub: "eenmalig · 1 jaar online", feats: ["Tot 12 foto's", "AI-basistekst", "Leads direct naar jou"] },
   { naam: "Plus", prijs: "€ 49", sub: "eenmalig", feats: ["Alles van Basis", "Tot 20 foto's", "Plattegrond erbij"], feat: true },
   { naam: "Premium", prijs: "€ 79", sub: "eenmalig", feats: ["Alles van Plus", "Video of rondleiding", "Uitgelicht op de homepage"] },
 ];
@@ -470,7 +470,7 @@ export default function Plaatsen() {
 
       {step === 4 && (
         <div>
-          <p className="font-semibold mb-3">Kies je pakket — eenmalig, al vanaf € 25.</p>
+          <p className="font-semibold mb-3">Kies je pakket — eenmalig, al vanaf € 35.</p>
           <div className="grid gap-3 sm:grid-cols-3">
             {pakketten.map((p) => (
               <button

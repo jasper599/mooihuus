@@ -62,7 +62,7 @@ const CONTENT: Record<Locale, Content> = {
         { v: "Wat is Mooihuus?", a: "Het onafhankelijke platform waar je je recreatiewoning zelf in de etalage zet — te koop of te huur. Zelf de regie, met hulp binnen handbereik." },
         { v: "Is Mooihuus een makelaar?", a: "Nee. Mooihuus is een advertentieplatform en geen partij bij de koop of huur. Je houdt zelf de regie." },
         { v: "Wat is Woonhuus.nl?", a: "Ons zusterplatform voor gewone koopwoningen, zoals eengezinswoningen en appartementen. Recreatiewoningen staan op Mooihuus.nl, gewone woningen op Woonhuus.nl. Bij een recreatiewoning begeleiden we je volledig; op Woonhuus bieden we alleen de advertentie aan. Je account, inloggen en betalen lopen voor beide via Mooihuus.nl." },
-        { v: "Wat kost adverteren?", a: "Eenmalig per advertentie: Basis € 25, Plus € 49 of Premium € 79. Geen commissie over de verkoop. Vanaf 5 objecten krijg je 15% korting, vanaf 10 objecten 25%." },
+        { v: "Wat kost adverteren?", a: "Eenmalig per advertentie: Basis € 35, Plus € 49 of Premium € 79. Geen commissie over de verkoop. Vanaf 5 objecten krijg je 15% korting, vanaf 10 objecten 25%." },
       ]},
       { titel: "Account & meerdere objecten", items: [
         { v: "Kan ik meerdere woningen plaatsen?", a: "Ja. Je plaatst per object een advertentie en beheert ze allemaal onder hetzelfde account." },
@@ -84,7 +84,7 @@ const CONTENT: Record<Locale, Content> = {
       { titel: "General", items: [
         { v: "What is Mooihuus?", a: "The independent platform where you list your holiday home yourself — for sale or for rent. You stay in control, with help close by." },
         { v: "Is Mooihuus an estate agent?", a: "No. Mooihuus is a listing platform and not a party to the sale or rental. You stay in control." },
-        { v: "What does listing cost?", a: "A one-off fee per listing: Basic € 25, Plus € 49 or Premium € 79. No sales commission. From 5 objects you get 15% off, from 10 objects 25%." },
+        { v: "What does listing cost?", a: "A one-off fee per listing: Basic € 35, Plus € 49 or Premium € 79. No sales commission. From 5 objects you get 15% off, from 10 objects 25%." },
       ]},
       { titel: "Account & multiple objects", items: [
         { v: "Can I list multiple homes?", a: "Yes. You create one listing per object and manage them all under the same account." },
@@ -106,7 +106,7 @@ const CONTENT: Record<Locale, Content> = {
       { titel: "Allgemein", items: [
         { v: "Was ist Mooihuus?", a: "Die unabhängige Plattform, auf der du dein Ferienhaus selbst einstellst — zum Verkauf oder zur Vermietung. Du behältst die Regie, mit Hilfe in Reichweite." },
         { v: "Ist Mooihuus ein Makler?", a: "Nein. Mooihuus ist eine Inserate-Plattform und keine Partei beim Kauf oder der Miete. Du behältst die Regie." },
-        { v: "Was kostet ein Inserat?", a: "Einmalig pro Inserat: Basis 25 €, Plus 49 € oder Premium 79 €. Keine Verkaufsprovision. Ab 5 Objekten 15% Rabatt, ab 10 Objekten 25%." },
+        { v: "Was kostet ein Inserat?", a: "Einmalig pro Inserat: Basis 35 €, Plus 49 € oder Premium 79 €. Keine Verkaufsprovision. Ab 5 Objekten 15% Rabatt, ab 10 Objekten 25%." },
       ]},
       { titel: "Konto & mehrere Objekte", items: [
         { v: "Kann ich mehrere Häuser inserieren?", a: "Ja. Du erstellst pro Objekt ein Inserat und verwaltest alle unter demselben Konto." },
