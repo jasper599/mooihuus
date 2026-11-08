@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 // Wordt in het dashboard getoond zolang iemand nog geen akkoord heeft gegeven op
 // de actuele voorwaarden: onder meer makelaars wier woningen via Kolibri of
 // Realworks binnenkomen en die dus nooit het plaatsformulier doorlopen.
-export function VoorwaardenAkkoord({ versieLabel, eerderAkkoord }: { versieLabel: string; eerderAkkoord: boolean }) {
+export function VoorwaardenAkkoord({ versieLabel }: { versieLabel: string }) {
   const router = useRouter();
   const [akkoord, setAkkoord] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -32,12 +32,10 @@ export function VoorwaardenAkkoord({ versieLabel, eerderAkkoord }: { versieLabel
   return (
     <div className="max-w-xl mx-auto card">
       <h1 className="font-display font-extrabold text-2xl text-bosgroen-dk">
-        {eerderAkkoord ? "Onze voorwaarden zijn bijgewerkt" : "Nog één stap"}
+        Nog één stap
       </h1>
       <p className="text-grijs mt-2">
-        {eerderAkkoord
-          ? `We hebben de algemene voorwaarden en huisregels bijgewerkt (versie ${versieLabel}). Lees ze even door en geef je akkoord om verder te gaan.`
-          : `Voordat je verdergaat, vragen we je akkoord te gaan met onze algemene voorwaarden en huisregels (versie ${versieLabel}). Die gelden voor alle woningen in je account, ook als ze automatisch via je makelaarssysteem binnenkomen.`}
+        {`Voordat je verdergaat, vragen we je eenmalig akkoord te gaan met onze algemene voorwaarden en huisregels (versie ${versieLabel}). Die gelden voor alle woningen in je account, ook als ze automatisch via je makelaarssysteem binnenkomen.`}
       </p>
       <label className="flex items-start gap-2 text-sm mt-4 cursor-pointer">
         <input type="checkbox" className="mt-1" checked={akkoord} onChange={(e) => setAkkoord(e.target.checked)} />

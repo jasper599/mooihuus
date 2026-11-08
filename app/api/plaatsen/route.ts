@@ -2,7 +2,7 @@ import { maakAkkoord } from "@/lib/voorwaarden";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { updateUser, addListing, addPayment, updatePayment, getListings, getListingsByOwner, valideerKortingscode, redeemKortingscode } from "@/lib/db";
+import { getUser, updateUser, addListing, addPayment, updatePayment, getListings, getListingsByOwner, valideerKortingscode, redeemKortingscode } from "@/lib/db";
 import { prijsMetKorting } from "@/lib/money";
 import { Doel, Pakket } from "@/lib/types";
 import { mollieEnabled, createMolliePayment } from "@/lib/mollie";
@@ -23,7 +23,8 @@ export async function POST(req: Request) {
   }
 
   const b = await req.json();
-  if (b.akkoord !== true) {
+  const eerderAkkoord = getUser(userId)?.voorwaardenAkkoord;
+  if (b.akkoord !== true && !eerderAkkoord) {
     return NextResponse.json({ error: "Vink aan dat je akkoord gaat met de algemene voorwaarden en huisregels." }, { status: 400 });
   }
   const pakket = (["Basis", "Plus", "Premium"].includes(b.pakket) ? b.pakket : "Basis") as Pakket;
@@ -50,9 +51,9 @@ export async function POST(req: Request) {
   }
 
   const categorie = b.categorie === "woonhuis" ? "woonhuis" : "recreatie";
-  updateUser(userId, { voorwaardenAkkoord: maakAkkoord("plaatsen") });
+  if (!eerderAkkoord) updateUser(userId, { voorwaardenAkkoord: maakAkkoord("plaatsen") });
   const listing = addListing({
-    voorwaardenAkkoord: maakAkkoord("plaatsen"),
+    voorwaardenAkkoord: eerderAkkoord || maakAkkoord("plaatsen"),
     ownerId: userId,
     categorie,
     titel,

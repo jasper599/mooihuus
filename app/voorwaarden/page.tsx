@@ -196,7 +196,7 @@ export default function Voorwaarden() {
       </p>
 
       <h2>14. Wijzigingen</h2>
-      <p>Wij mogen deze voorwaarden en de dienst wijzigen. De actuele versie staat altijd op de website. Bij een wijziging vragen wij je bij je volgende bezoek aan je account opnieuw om akkoord.</p>
+      <p>Wij mogen deze voorwaarden en de dienst wijzigen. De actuele versie staat altijd op de website.</p>
       <p><em>Versie {VOORWAARDEN_VERSIE_LABEL}.</em></p>
 
       <h2>15. Slotbepalingen</h2>
