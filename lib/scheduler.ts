@@ -23,6 +23,7 @@ import { kolibriGeconfigureerd } from "./kolibri";
 import { HUUSMEESTERS_CATEGORIEEN, huusmeesterSlug } from "./partners";
 import { COMPANY } from "./company";
 import { sendEmail, renderSimpel } from "./email";
+import { guusBeltJasper } from "./guus-bel";
 import { guusDagoverzicht, guusOverzichtHtml } from "./guus-overzicht";
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
@@ -446,9 +447,36 @@ async function draaiBoekhouding(): Promise<void> {
 // trager). Ook een waarschuwing als de back-up richting de mailgrens van 25 MB gaat.
 const GROEI_STAMP = path.join(DATA_DIR, "groei-melding.json");
 const GROEI_DREMPELS = [2500, 3000, 3500];
+// Guus belt op werkdagen om 10:00 en 15:00 (Amsterdam) zolang de melding openstaat,
+// totdat Jasper in de mail op "Gezien" klikt.
+const GROEI_BELMOMENTEN = [10 * 60, 15 * 60];
+
+type GroeiStatus = {
+  drempels: number[];
+  backupWaarschuwing?: boolean;
+  open?: { token: string; aantal: number; sinds: string; bevestigd?: string; gebeld: string[] };
+};
+
+function leesGroei(): GroeiStatus {
+  try { return JSON.parse(fs.readFileSync(GROEI_STAMP, "utf8")); } catch { return { drempels: [] }; }
+}
+function schrijfGroei(g: GroeiStatus): void {
+  try {
+    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(GROEI_STAMP, JSON.stringify(g), "utf8");
+  } catch { /* niet fataal */ }
+}
+
+// Vanuit de "Gezien"-knop in de mail: zet de openstaande melding op bevestigd.
+export function bevestigGroeiMelding(token: string): boolean {
+  const g = leesGroei();
+  if (!g.open || !token || g.open.token !== token) return false;
+  if (!g.open.bevestigd) { g.open.bevestigd = new Date().toISOString(); schrijfGroei(g); }
+  return true;
+}
+
 async function draaiGroeiMelding(): Promise<void> {
-  let gemeld: { drempels: number[]; backupWaarschuwing?: boolean } = { drempels: [] };
-  try { gemeld = JSON.parse(fs.readFileSync(GROEI_STAMP, "utf8")); } catch { /* nog niets gemeld */ }
+  const gemeld = leesGroei();
   const aantal = getListings().length;
   let dbMb = 0;
   try { dbMb = fs.statSync(path.join(DATA_DIR, "db.json")).size / 1024 / 1024; } catch { /* onbekend */ }
@@ -457,6 +485,8 @@ async function draaiGroeiMelding(): Promise<void> {
   const backupKrap = dbMb >= 18 && !gemeld.backupWaarschuwing;
   if (!nieuweDrempel && !backupKrap) return;
 
+  const token = (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)).slice(0, 24);
+  const gezienUrl = `${SITE}/api/groei/gezien?token=${token}`;
   const html = `
     <p>Hoi Jasper,</p>
     <p>In de database van Mooihuus en Woonhuus staan nu <strong>${aantal.toLocaleString("nl-NL")} woningen</strong> (live en verlopen samen). De database is ${dbMb.toFixed(1)} MB.</p>
@@ -469,16 +499,44 @@ async function draaiGroeiMelding(): Promise<void> {
       <li>Eerst een stille belastingtest met 10.000 nepwoningen op een testomgeving.</li>
     </ol>
     ${backupKrap ? "<p><strong>Let op:</strong> de back-up nadert de mailgrens van 25 MB. Zet stap 4 voorrang.</p>" : ""}
+    <p>Ik bel je op werkdagen om 10:00 en 15:00 tot je hieronder op <strong>Gezien</strong> klikt.</p>
+    <p style="margin:22px 0;"><a href="${gezienUrl}" style="background:#E8823B;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:700;">Gezien, ik pak het op</a></p>
     <p>Guus</p>`;
   const mail = renderSimpel("Mooihuus groeit: tijd voor de opschaling", html);
   await sendEmail({ aan: GUUS_MAIL_AAN, onderwerp: "📈 " + mail.onderwerp, soort: "alert", html: mail.html, van: `Guus <${COMPANY.email}>` });
 
   if (nieuweDrempel) gemeld.drempels = GROEI_DREMPELS.filter((d) => aantal >= d);
   if (backupKrap) gemeld.backupWaarschuwing = true;
+  gemeld.open = { token, aantal, sinds: new Date().toISOString(), gebeld: [] };
+  schrijfGroei(gemeld);
+}
+
+// Belt Jasper zolang de groeimelding niet is bevestigd: op werkdagen om 10:00
+// en 15:00, elk belmoment hooguit één keer.
+let bezigGroeiBel = false;
+async function draaiGroeiBellen(nu: Date): Promise<void> {
+  if (bezigGroeiBel) return;
+  const g = leesGroei();
+  if (!g.open || g.open.bevestigd) return;
+  if (!WERKDAGEN.has(amsWeekdag(nu))) return;
+  const min = amsMinuten(nu);
+  const moment = GROEI_BELMOMENTEN.filter((m) => min >= m && min < m + 120).pop();
+  if (moment === undefined) return;
+  const sleutel = `${amsDatum(nu)}-${moment}`;
+  if (g.open.gebeld.includes(sleutel)) return;
+
+  bezigGroeiBel = true;
   try {
-    if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-    fs.writeFileSync(GROEI_STAMP, JSON.stringify(gemeld), "utf8");
-  } catch { /* niet fataal */ }
+    const aantal = g.open.aantal.toLocaleString("nl-NL");
+    const r = await guusBeltJasper(
+      `Hoi Jasper, met Guus van Mooihuus. Even iets belangrijks: we hebben nu ${aantal} woningen in de database. ` +
+      `Het is tijd om de site klaar te maken voor tienduizend woningen, zoals je had afgesproken. ` +
+      `Ik heb je er een mail over gestuurd. Klik daarin op de knop Gezien, anders blijf ik je bellen.`
+    );
+    if (r.ok) { g.open.gebeld.push(sleutel); schrijfGroei(g); }
+  } finally {
+    bezigGroeiBel = false;
+  }
 }
 
 let bezig = false;
@@ -506,6 +564,7 @@ function tick(): void {
   void vulAgenda(new Date()).catch(() => {});
   void draaiSocial().catch(() => {});
   void draaiGuusOchtendmail(new Date()).catch(() => {});
+  void draaiGroeiBellen(new Date()).catch(() => {});
   void draaiBoekhouding().catch(() => {});
 }
 
