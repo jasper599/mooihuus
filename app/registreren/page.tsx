@@ -14,6 +14,7 @@ export default function Registreren() {
   const [ts] = useState(() => Date.now()); // laadtijd, voor de antispam-tijdcontrole
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [akkoord, setAkkoord] = useState(false);
 
   // Voorselecteren op basis van ?type=zakelijk (deeplink vanaf inloggen/knoppen).
   useEffect(() => {
@@ -28,7 +29,7 @@ export default function Registreren() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, type, ts }),
+      body: JSON.stringify({ ...form, type, ts, akkoord }),
     });
     if (!res.ok) {
       const d = await res.json();
@@ -99,7 +100,15 @@ export default function Registreren() {
         <input type="email" className="field" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
         <label className="label">Wachtwoord</label>
         <input type="password" className="field" value={form.wachtwoord} onChange={(e) => setForm({ ...form, wachtwoord: e.target.value })} required />
-        <button className="btn w-full mt-4" disabled={busy}>{busy ? "Bezig…" : "Account aanmaken"}</button>
+        <label className="flex items-start gap-2 text-sm mt-3 cursor-pointer">
+          <input type="checkbox" className="mt-1" checked={akkoord} onChange={(e) => setAkkoord(e.target.checked)} required />
+          <span>
+            Ik ga akkoord met de{" "}
+            <a href="/voorwaarden" target="_blank" rel="noopener" className="underline text-bosgroen font-semibold">algemene voorwaarden</a>{" "}en{" "}
+            <a href="/voorwaarden#huisregels" target="_blank" rel="noopener" className="underline text-bosgroen font-semibold">huisregels</a>.
+          </span>
+        </label>
+        <button className="btn w-full mt-4" disabled={busy || !akkoord}>{busy ? "Bezig…" : "Account aanmaken"}</button>
       </form>
       <p className="text-sm text-grijs mt-4 text-center">
         Al een account? <Link href="/inloggen" className="text-bosgroen font-semibold">Inloggen</Link>

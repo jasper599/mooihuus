@@ -99,6 +99,7 @@ export default function Plaatsen() {
 
   const [fout, setFout] = useState("");
   const [code, setCode] = useState("");
+  const [akkoord, setAkkoord] = useState(false);
 
   async function upload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files || []);
@@ -162,6 +163,7 @@ export default function Plaatsen() {
         postcode: f.postcode,
         uitjes,
         code: code.trim() || undefined,
+        akkoord,
       }),
     });
     if (res.status === 401) {
@@ -513,16 +515,20 @@ export default function Plaatsen() {
               {fout}
             </div>
           )}
+          <label className="flex items-start gap-2 text-sm mt-4 cursor-pointer">
+            <input type="checkbox" className="mt-1" checked={akkoord} onChange={(e) => setAkkoord(e.target.checked)} />
+            <span>
+              Ik ga akkoord met de{" "}
+              <a href="/voorwaarden" target="_blank" rel="noopener" className="underline text-bosgroen font-semibold">algemene voorwaarden</a>{" "}en{" "}
+              <a href="/voorwaarden#huisregels" target="_blank" rel="noopener" className="underline text-bosgroen font-semibold">huisregels</a>.
+            </span>
+          </label>
           <div className="flex justify-between items-center mt-4">
             <button className="btn btn-ghost" onClick={() => setStep(3)}>← Terug</button>
-            <button className="btn" onClick={publiceer} disabled={busy}>
+            <button className="btn" onClick={publiceer} disabled={busy || !akkoord} title={akkoord ? undefined : "Vink eerst aan dat je akkoord gaat met de voorwaarden"}>
               {busy ? "Bezig…" : "Betaal met iDEAL & plaats →"}
             </button>
           </div>
-          <p className="text-xs text-grijs mt-2">
-            Door je huus te plaatsen ga je akkoord met onze{" "}
-            <a href="/voorwaarden" className="underline text-bosgroen">algemene voorwaarden en huisregels</a>.
-          </p>
         </div>
       )}
     </div>

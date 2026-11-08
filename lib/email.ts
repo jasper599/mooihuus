@@ -131,6 +131,7 @@ export function renderMakelaarWelkom(naam: string, email: string): { onderwerp: 
     <p style="line-height:1.6;">Biedt u ook gewone koopwoningen aan? Die zetten we in het zonnetje op ons zusterplatform <strong>Woonhuus.nl</strong>, waar kopers van gewone woningen zoeken. Uw recreatiewoningen blijven op Mooihuus.nl. Het gaat vanzelf: u beheert alles met dit ene account. Let op: gewone huurwoningen bieden we niet aan, en voor gewone woningen bieden we alleen de advertentie aan.</p>
     <p style="line-height:1.6;"><strong>Inloggen:</strong> log in met dit e-mailadres (<strong>${email}</strong>) en stel uw wachtwoord in.</p>
     <p style="margin:22px 0;">${btn(`${COMPANY.website}/wachtwoord-vergeten`, "Stel uw wachtwoord in")}</p>
+    <p style="line-height:1.6;color:${BRAND.grijs};font-size:13px;">Op het gebruik van Mooihuus.nl en Woonhuus.nl zijn onze <a href="${COMPANY.website}/voorwaarden" style="color:${BRAND.bosgroen};">algemene voorwaarden</a> en <a href="${COMPANY.website}/voorwaarden#huisregels" style="color:${BRAND.bosgroen};">huisregels</a> van toepassing.</p>
     <p style="line-height:1.6;color:${BRAND.grijs};font-size:14px;">Hartelijke groet,<br>Team Mooihuus</p>`;
   return { onderwerp: "Welkom bij Mooihuus.nl \u2014 uw inloggegevens", html: layout("Welkom bij Mooihuus", inner) };
 }

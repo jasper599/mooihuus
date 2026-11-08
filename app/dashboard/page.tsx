@@ -7,6 +7,8 @@ import { gradient } from "@/lib/format";
 import { euro } from "@/lib/money";
 import { ListingActions } from "@/components/ListingActions";
 import { woningUrl } from "@/lib/site";
+import { VoorwaardenAkkoord } from "@/components/VoorwaardenAkkoord";
+import { heeftActueelAkkoord, VOORWAARDEN_VERSIE_LABEL } from "@/lib/voorwaarden";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +18,9 @@ export default async function Dashboard() {
   if (!userId) redirect("/inloggen");
 
   const user = getUser(userId);
+  if (user && !heeftActueelAkkoord(user.voorwaardenAkkoord)) {
+    return <VoorwaardenAkkoord versieLabel={VOORWAARDEN_VERSIE_LABEL} eerderAkkoord={!!user.voorwaardenAkkoord} />;
+  }
   const groet = user?.type === "zakelijk" && user.bedrijfsnaam ? user.bedrijfsnaam : session!.user?.name?.split(" ")[0];
   const listings = getListingsByOwner(userId);
   const leads = getLeadsForOwner(userId);

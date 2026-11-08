@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { addUser, getUserByEmail } from "@/lib/db";
 import { renderWelkom, sendEmail } from "@/lib/email";
 import { isSpam } from "@/lib/antispam";
+import { maakAkkoord } from "@/lib/voorwaarden";
+import { updateUser } from "@/lib/db";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -14,6 +16,9 @@ export async function POST(req: Request) {
   // Botnamen zijn doorgaans wartaal ("BXDZEYzbsyYHQrTDOuoId"); daarnaast honeypot + tijd.
   if (isSpam({ naam, email, honeypot: body.bedrijf, ts: body.ts })) {
     return NextResponse.json({ ok: true });
+  }
+  if (body.akkoord !== true) {
+    return NextResponse.json({ error: "Ga akkoord met de algemene voorwaarden en huisregels om je account aan te maken." }, { status: 400 });
   }
   if (String(wachtwoord).length < 6) {
     return NextResponse.json({ error: "Kies een wachtwoord van minstens 6 tekens." }, { status: 400 });
@@ -28,6 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Er bestaat al een account met dit e-mailadres." }, { status: 409 });
   }
   const user = addUser({ naam, email, wachtwoord, type, bedrijfsnaam, kvk, btw, telefoon, adres, postcode, plaats, iban, factuurEmail, website });
+  updateUser(user.id, { voorwaardenAkkoord: maakAkkoord("registratie") });
   const mail = renderWelkom(user.naam, user.email);
   await sendEmail({ aan: user.email, onderwerp: mail.onderwerp, soort: "welkom", html: mail.html });
   return NextResponse.json({ ok: true });

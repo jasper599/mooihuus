@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LegalShell } from "@/components/LegalShell";
 import { COMPANY } from "@/lib/company";
+import { VOORWAARDEN_VERSIE_LABEL } from "@/lib/voorwaarden";
 
 export const metadata = { title: "Algemene voorwaarden" };
 
@@ -96,7 +97,7 @@ export default function Voorwaarden() {
         <li>Wij mogen een account weigeren, opschorten of beëindigen bij misbruik of strijd met deze voorwaarden.</li>
       </ul>
 
-      <h2>4. Advertenties plaatsen</h2>
+      <h2 id="huisregels">4. Advertenties plaatsen (huisregels)</h2>
       <ul>
         <li>Je staat ervoor in dat je gerechtigd bent de woning aan te bieden en dat je advertentie juist en volledig is.</li>
         <li>Geen misleidende, onrechtmatige of inbreukmakende inhoud; je hebt de rechten op geplaatste foto’s en teksten.</li>
@@ -195,7 +196,8 @@ export default function Voorwaarden() {
       </p>
 
       <h2>14. Wijzigingen</h2>
-      <p>Wij mogen deze voorwaarden en de dienst wijzigen. De actuele versie staat altijd op de website.</p>
+      <p>Wij mogen deze voorwaarden en de dienst wijzigen. De actuele versie staat altijd op de website. Bij een wijziging vragen wij je bij je volgende bezoek aan je account opnieuw om akkoord.</p>
+      <p><em>Versie {VOORWAARDEN_VERSIE_LABEL}.</em></p>
 
       <h2>15. Slotbepalingen</h2>
       <ul>

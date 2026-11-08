@@ -30,6 +30,7 @@ export interface User {
   betaaldTot?: string;
   welkomGestuurd?: boolean;
   inlogMailGestuurd?: boolean;  // t/m wanneer het jaarabonnement van dit kantoor betaald is
+  voorwaardenAkkoord?: import("./voorwaarden").VoorwaardenAkkoord; // laatst gegeven akkoord (versie + datum)
   aangemaakt: string;
 }
  
@@ -82,6 +83,7 @@ export interface Listing {
   verlengHerinnerd?: string;    // ISO: wanneer de 30-dagen-herinnering is verstuurd (per periode)
   verlengVerlopen?: string;     // ISO: wanneer de 'verlopen + offline'-mail is verstuurd
   aangemaakt: string;
+  voorwaardenAkkoord?: import("./voorwaarden").VoorwaardenAkkoord; // akkoord bij het plaatsen van deze woning
 }
  
 export interface Huusmeester {
