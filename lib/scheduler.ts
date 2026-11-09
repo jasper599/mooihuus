@@ -445,7 +445,7 @@ async function draaiBoekhouding(): Promise<void> {
 // dat het tijd is om de database klaar te maken voor 10.000 woningen (rond
 // 3.500 à 4.000 woningen past de back-up niet meer in een mail en wordt de site
 // trager). Ook een waarschuwing als de back-up richting de mailgrens van 25 MB gaat.
-const GROEI_STAMP = path.join(DATA_DIR, "groei-melding.json");
+const GROEI_STAMP = path.join(DATA_DIR, "groei-melding-v2.json"); // v2: telt alleen live woningen
 const GROEI_DREMPELS = [2500, 3000, 3500];
 // Guus belt op werkdagen om 10:00 en 15:00 (Amsterdam) zolang de melding openstaat,
 // totdat Jasper in de mail op "Gezien" klikt.
@@ -477,7 +477,8 @@ export function bevestigGroeiMelding(token: string): boolean {
 
 async function draaiGroeiMelding(): Promise<void> {
   const gemeld = leesGroei();
-  const aantal = getListings().length;
+  // Alleen woningen die nu live staan tellen mee (niet verlopen, concept of gearchiveerd).
+  const aantal = getListings().filter((l) => l.status === "live").length;
   let dbMb = 0;
   try { dbMb = fs.statSync(path.join(DATA_DIR, "db.json")).size / 1024 / 1024; } catch { /* onbekend */ }
 
@@ -489,7 +490,7 @@ async function draaiGroeiMelding(): Promise<void> {
   const gezienUrl = `${SITE}/api/groei/gezien?token=${token}`;
   const html = `
     <p>Hoi Jasper,</p>
-    <p>In de database van Mooihuus en Woonhuus staan nu <strong>${aantal.toLocaleString("nl-NL")} woningen</strong> (live en verlopen samen). De database is ${dbMb.toFixed(1)} MB.</p>
+    <p>In de database van Mooihuus en Woonhuus staan nu <strong>${aantal.toLocaleString("nl-NL")} woningen live</strong>. De database is ${dbMb.toFixed(1)} MB.</p>
     <p>Tijd om de site klaar te maken voor 10.000 woningen, zoals afgesproken:</p>
     <ol>
       <li>De echte database (Postgres) wordt de hoofddatabase.</li>
@@ -529,7 +530,7 @@ async function draaiGroeiBellen(nu: Date): Promise<void> {
   try {
     const aantal = g.open.aantal.toLocaleString("nl-NL");
     const r = await guusBeltJasper(
-      `Hoi Jasper, met Guus van Mooihuus. Even iets belangrijks: we hebben nu ${aantal} woningen in de database. ` +
+      `Hoi Jasper, met Guus van Mooihuus. Even iets belangrijks: we hebben nu ${aantal} woningen live staan. ` +
       `Het is tijd om de site klaar te maken voor tienduizend woningen, zoals je had afgesproken. ` +
       `Ik heb je er een mail over gestuurd. Klik daarin op de knop Gezien, anders blijf ik je bellen.`
     );
