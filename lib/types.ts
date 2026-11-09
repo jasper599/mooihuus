@@ -84,6 +84,7 @@ export interface Listing {
   verlengVerlopen?: string;     // ISO: wanneer de 'verlopen + offline'-mail is verstuurd
   aangemaakt: string;
   voorwaardenAkkoord?: import("./voorwaarden").VoorwaardenAkkoord; // akkoord bij het plaatsen van deze woning
+  statusSinds?: string; // ISO: sinds wanneer de huidige status geldt (voor de bewaartermijnen)
 }
  
 export interface Huusmeester {

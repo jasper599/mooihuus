@@ -2,7 +2,8 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
-import { getListing, getUser } from "@/lib/db";
+import { getListing, getUser, getVerwijderdeWoning } from "@/lib/db";
+import { PROVINCIES, provincieSlug } from "@/lib/provincies";
 import { gradient, euro, prijsSuffix, grondInfo, embedVideoUrl, openhuisInfo } from "@/lib/format";
 import { getLocale } from "@/lib/i18n-server";
 import { t, localeHref, vertaalType } from "@/lib/i18n";
@@ -58,7 +59,12 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
  
 export default function ListingDetail({ params }: { params: { id: string } }) {
   const listing = getListing(params.id);
-  if (!listing) return notFound();
+  if (!listing) {
+    // Opgeruimde woning (bewaartermijn verstreken): stuur door naar vergelijkbaar aanbod.
+    const weg = getVerwijderdeWoning(params.id);
+    if (weg) permanentRedirect(weg.categorie === "woonhuis" ? "/woonhuis-zoeken" : weg.provincie && PROVINCIES.includes(weg.provincie as any) ? `/te-koop/${provincieSlug(weg.provincie)}` : "/te-koop");
+    return notFound();
+  }
   // Staat de woning op de andere etalage (woonhuis op Mooihuus of andersom),
   // dan permanent doorsturen naar het juiste domein.
   const woonhuis = categorieVan(listing) === "woonhuis";

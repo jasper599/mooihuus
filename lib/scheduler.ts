@@ -24,6 +24,7 @@ import { HUUSMEESTERS_CATEGORIEEN, huusmeesterSlug } from "./partners";
 import { COMPANY } from "./company";
 import { sendEmail, renderSimpel } from "./email";
 import { guusBeltJasper } from "./guus-bel";
+import { draaiOpruimen } from "./opruimen";
 import { guusDagoverzicht, guusOverzichtHtml } from "./guus-overzicht";
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
@@ -549,6 +550,7 @@ async function draaiDagelijks(): Promise<void> {
     await verwerkVerlopendeAdvertenties().catch(() => {});
     try { draaiUitgelicht(); } catch { /* niet fataal */ }
     await draaiGroeiMelding().catch(() => {});
+    await draaiOpruimen().catch(() => {});
     markeer(); // pas markeren als alles klaar is (crasht het eerder, dan retry volgende tick)
   } finally {
     bezig = false;

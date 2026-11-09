@@ -37,6 +37,9 @@ interface DB {
   laatsteMaandrapportMaand?: string; // "yyyy-mm" van de laatst verstuurde ronde
   resetTokens?: { token: string; userId: string; expires: number }[];
   aiStyling?: { datum: string; totaal: number; perUser: Record<string, number> };
+  // Opgeruimde woningen (bewaartermijn verstreken): voor doorverwijzen van oude links
+  // en zodat een makelaarsfeed een verwijderde woning niet opnieuw aanmaakt.
+  verwijderdeWoningen?: { id: string; source?: string; externalId?: string; provincie?: string; categorie?: string; datum: string }[];
   seq: number;
 }
  
@@ -432,6 +435,7 @@ export function updateListing(id: string, patch: Partial<Listing>): Listing | un
   const db = load();
   const l = db.listings.find((x) => x.id === id);
   if (!l) return undefined;
+  if (patch.status && patch.status !== l.status && !patch.statusSinds) patch = { ...patch, statusSinds: new Date().toISOString() };
   Object.assign(l, patch);
   save();
   return l;
@@ -459,9 +463,14 @@ export function upsertFeedListing(source: string, externalId: string, data: Part
       const { categorie: _feedCategorie, ...rest } = data;
       data = rest;
     }
+    if (data.status && data.status !== bestaand.status && !data.statusSinds) data = { ...data, statusSinds: new Date().toISOString() };
     Object.assign(bestaand, data, { source, externalId });
     if (opslaan) save();
     return bestaand;
+  }
+  // Eerder opgeruimd (bewaartermijn verstreken)? Dan niet opnieuw aanmaken.
+  if ((db.verwijderdeWoningen || []).some((v) => v.source === source && v.externalId === externalId)) {
+    return { ...(data as Listing), id: "", source, externalId };
   }
   const id = `${source}-${externalId}`.toLowerCase().replace(/[^a-z0-9-]+/g, "-").slice(0, 90);
   const listing: Listing = {
@@ -550,6 +559,43 @@ export function deleteListing(id: string): boolean {
   db.listings.splice(i, 1);
   save();
   return true;
+}
+
+// Ruimt een woning op na het verstrijken van de bewaartermijn: woning, de leads
+// bij die woning en geüploade foto's gaan weg; betalingen en facturen blijven
+// (fiscale bewaarplicht). Een kleine notitie blijft over voor doorverwijzing.
+export function ruimWoningOp(id: string): boolean {
+  const db = load();
+  const l = db.listings.find((x) => x.id === id);
+  if (!l) return false;
+  for (const f of l.fotos || []) {
+    const m = /^\/api\/foto\/([A-Za-z0-9._-]+)$/.exec(typeof f === "string" ? f : "");
+    if (m) { try { fs.unlinkSync(path.join(DATA_DIR, "uploads", m[1])); } catch { /* al weg */ } }
+  }
+  db.listings = db.listings.filter((x) => x.id !== id);
+  db.leads = db.leads.filter((x) => x.listingId !== id);
+  db.verwijderdeWoningen = db.verwijderdeWoningen || [];
+  db.verwijderdeWoningen.push({ id, source: l.source, externalId: l.externalId, provincie: l.provincie, categorie: l.categorie, datum: new Date().toISOString() });
+  save();
+  return true;
+}
+
+// Geeft woningen zonder statusdatum in één keer een startdatum (één schrijfactie).
+export function startStatusKlok(statussen: string[]): number {
+  const db = load();
+  const nu = new Date().toISOString();
+  let n = 0;
+  for (const l of db.listings) {
+    if (l.statusSinds || !statussen.includes(l.status)) continue;
+    l.statusSinds = (l.status === "concept" || l.status === "wacht_op_betaling") && l.aangemaakt ? l.aangemaakt : nu;
+    n++;
+  }
+  if (n) save();
+  return n;
+}
+
+export function getVerwijderdeWoning(id: string) {
+  return (load().verwijderdeWoningen || []).find((v) => v.id === id);
 }
 
 // Verwijdert een gebruikersprofiel (bijv. spam-registraties) uit het beheer.
