@@ -1,5 +1,5 @@
 import { Listing, User, Categorie } from "./types";
-import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails, releaseVervallenFeedListings } from "./db";
+import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails, releaseVervallenFeedListings, getRealworksKoppelingen, updateRealworksKoppeling } from "./db";
 import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt, renderSimpel } from "./email";
 import { kolibriTariefNu, maakWoningBetaling, WELKOMSTACTIE_LABEL } from "./facturatie";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
@@ -143,6 +143,10 @@ export interface FeedAdapter {
   fetchObjects(): Promise<FeedObject[]>;
   // Optioneel: aantal objecten dat bij de laatste fetch niet opgehaald kon worden.
   overgeslagen?: number;
+  // Optioneel: true als een deel van de bron niet bereikbaar was (bijv. één
+  // Realworks-kantoor met een verlopen sleutel). Dan slaan we het opschonen over,
+  // zodat de woningen van dat kantoor niet onterecht verdwijnen.
+  onvolledig?: boolean;
 }
 
 export interface FeedResultaat {
@@ -156,6 +160,7 @@ export interface FeedResultaat {
 // Draait één volledige synchronisatie voor een bron.
 export async function importFeed(adapter: FeedAdapter): Promise<FeedResultaat> {
   adapter.overgeslagen = 0;
+  adapter.onvolledig = false;
   const objects = await adapter.fetchObjects();
   const seen: string[] = [];
   for (const o of objects) {
@@ -167,7 +172,7 @@ export async function importFeed(adapter: FeedAdapter): Promise<FeedResultaat> {
   // Veiligheidsstop: levert de bron niets op (storing, lege parse, verlopen token),
   // dan niets opschonen. Anders zou releaseVervallenFeedListings alle vervallen
   // woningen van deze bron, inclusief hun betalingen, verwijderen.
-  const opschoningOvergeslagen = objects.length === 0;
+  const opschoningOvergeslagen = objects.length === 0 || !!adapter.onvolledig;
   let offline = 0;
   if (!opschoningOvergeslagen) {
     offline = sweepFeed(adapter.source, seen, false);
@@ -452,9 +457,12 @@ export async function syncKolibri(): Promise<FeedResultaat> {
 // Haalt het woningaanbod van een makelaar op via de Realworks Wonen API en
 // filtert op recreatiewoningen (bestemmingRecreatiewoning). Zelfde opzet als
 // de Kolibri-adapter; alleen het ophalen/mappen verschilt per bron.
+// Meerdere kantoren: elk kantoor activeert in Realworks zelf de Wonen API en
+// stuurt ons zijn sleutel via de aansluitpagina (/makelaars/aansluiten). Die
+// sleutels staan in realworksKoppelingen; de sync loopt ze allemaal af.
 // Config via env:
-//   REALWORKS_TOKEN       (verplicht) RW auth token: de dev-token of een
-//                         per-makelaar token uit het Realworks Developer Portal.
+//   REALWORKS_TOKEN       (optioneel) extra RW auth token, bijv. de dev-token
+//                         of het eigen kantoor; komt bovenop de koppelingen.
 //   REALWORKS_API_URL     (optioneel) default https://api.realworks.nl
 //                         (gebruik https://devapi-test.realworks.nl voor testdata)
 //   REALWORKS_AUTH_PREFIX (optioneel) schema voor de Authorization-header,
@@ -462,14 +470,37 @@ export async function syncKolibri(): Promise<FeedResultaat> {
 function realworksBase(): string {
   return (process.env.REALWORKS_API_URL || "https://api.realworks.nl").replace(/\/*$/, "");
 }
-export function realworksGeconfigureerd(): boolean {
-  return !!process.env.REALWORKS_TOKEN;
+function actieveRealworksSleutels(): { koppelingId?: string; token: string }[] {
+  const lijst: { koppelingId?: string; token: string }[] = [];
+  if (process.env.REALWORKS_TOKEN) lijst.push({ token: process.env.REALWORKS_TOKEN });
+  for (const k of getRealworksKoppelingen()) {
+    if (k.status === "gestopt" || !k.token) continue;
+    if (lijst.some((x) => x.token === k.token)) continue;
+    lijst.push({ koppelingId: k.id, token: k.token });
+  }
+  return lijst;
 }
-function realworksAuthHeader(): string {
-  const t = process.env.REALWORKS_TOKEN;
-  if (!t) throw new Error("REALWORKS_TOKEN ontbreekt - Realworks-koppeling niet geconfigureerd.");
+export function realworksGeconfigureerd(): boolean {
+  return actieveRealworksSleutels().length > 0;
+}
+function realworksAuthHeader(token: string): string {
   const prefix = process.env.REALWORKS_AUTH_PREFIX ?? "rwauth ";
-  return `${prefix}${t}`;
+  return `${prefix}${token}`;
+}
+
+// Controleert één sleutel met een lichte aanvraag (1 object). Gebruikt bij
+// aanmelding, zodat de makelaar direct hoort of de sleutel werkt.
+export async function testRealworksSleutel(token: string): Promise<{ ok: boolean; aantal?: number; fout?: string }> {
+  try {
+    const res = await fetch(`${realworksBase()}/wonen/v3/objecten?actief=true&aantal=1&vanaf=0`, {
+      headers: { Authorization: realworksAuthHeader(token), Accept: "application/json;charset=UTF-8" },
+    });
+    if (!res.ok) return { ok: false, fout: `Realworks gaf ${res.status} (${res.statusText})` };
+    const body: any = await res.json();
+    return { ok: true, aantal: Number(body?.paginering?.totaalAantal ?? 0) || 0 };
+  } catch (e: any) {
+    return { ok: false, fout: String(e?.message || e) };
+  }
 }
 
 const RW_PROVINCIE: Record<string, string> = {
@@ -608,21 +639,25 @@ function mapRealworksObject(o: any): Partial<Listing> | null {
 export const realworksAdapter: FeedAdapter = {
   source: "realworks",
   async fetchObjects(): Promise<FeedObject[]> {
-    if (!realworksGeconfigureerd()) {
-      throw new Error("REALWORKS_TOKEN ontbreekt - zet de RW auth token (dev-token of per-makelaar) als omgevingsvariabele.");
+    const sleutels = actieveRealworksSleutels();
+    if (sleutels.length === 0) {
+      throw new Error("Geen Realworks-sleutels: nog geen kantoor aangesloten en geen REALWORKS_TOKEN gezet.");
     }
-    const auth = realworksAuthHeader();
     const base = realworksBase();
     const WELKOM_AAN = process.env.FACTURATIE_AUTO === "1";
     const objecten: FeedObject[] = [];
     const perPagina = 100;
+    for (const sleutel of sleutels) {
+    const auth = realworksAuthHeader(sleutel.token);
+    const vanDitKantoor = objecten.length;
+    try {
     let vanaf = 0;
     let totaal = Infinity;
     while (vanaf < totaal) {
       const url = `${base}/wonen/v3/objecten?actief=true&aantal=${perPagina}&vanaf=${vanaf}`;
       const res = await fetch(url, { headers: { Authorization: auth, Accept: "application/json;charset=UTF-8" } });
       if (!res.ok) {
-        throw new Error(`Realworks Wonen API gaf ${res.status} (${res.statusText}). Controleer token, geaccepteerde voorwaarden en IP-whitelist.`);
+        throw new Error(`Realworks Wonen API gaf ${res.status} (${res.statusText}). Controleer sleutel, geaccepteerde voorwaarden en IP-whitelist.`);
       }
       const body: any = await res.json();
       totaal = Number(body?.paginering?.totaalAantal ?? 0) || 0;
@@ -656,6 +691,26 @@ export const realworksAdapter: FeedAdapter = {
       }
       vanaf += perPagina;
       if (resultaten.length < perPagina) break;
+    }
+    if (sleutel.koppelingId) {
+      updateRealworksKoppeling(sleutel.koppelingId, {
+        status: "actief",
+        fout: undefined,
+        laatsteSync: new Date().toISOString(),
+        aantalWoningen: objecten.length - vanDitKantoor,
+      });
+    }
+    } catch (e: any) {
+      // Eén kantoor faalt (verlopen sleutel, storing): de rest gaat door, maar
+      // er wordt deze ronde niets opgeschoond.
+      realworksAdapter.onvolledig = true;
+      objecten.length = vanDitKantoor;
+      if (sleutel.koppelingId) {
+        updateRealworksKoppeling(sleutel.koppelingId, { status: "fout", fout: String(e?.message || e), laatsteSync: new Date().toISOString() });
+      } else if (sleutels.length === 1) {
+        throw e;
+      }
+    }
     }
     return objecten;
   },

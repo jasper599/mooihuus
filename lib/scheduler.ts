@@ -18,7 +18,7 @@ import { genereerBlogpost } from "./blog-generator";
 import { genereerSocialCaption } from "./social-caption";
 import { syncMarinaparken } from "./marinaparken-feed";
 import { syncAlleTradeTracker } from "./tradetracker-feed";
-import { syncKolibri } from "./feed-import";
+import { syncKolibri, syncRealworks, realworksGeconfigureerd } from "./feed-import";
 import { kolibriGeconfigureerd } from "./kolibri";
 import { HUUSMEESTERS_CATEGORIEEN, huusmeesterSlug } from "./partners";
 import { COMPANY } from "./company";
@@ -155,6 +155,22 @@ async function draaiKolibri(nu: Date): Promise<void> {
     }
   } finally {
     bezigKolibri = false;
+  }
+}
+
+// Realworks: elk uur alle aangesloten kantoren langs (zelfde 30-min-tick, met
+// een eigen uurgrens zodat de API niet onnodig vaak wordt bevraagd).
+let bezigRealworks = false;
+let laatsteRealworks = 0;
+async function draaiRealworks(): Promise<void> {
+  if (bezigRealworks || Date.now() - laatsteRealworks < 55 * 60 * 1000) return;
+  if (!realworksGeconfigureerd()) return;
+  bezigRealworks = true;
+  try {
+    await syncRealworks().catch(() => {});
+    laatsteRealworks = Date.now();
+  } finally {
+    bezigRealworks = false;
   }
 }
 
@@ -564,6 +580,7 @@ function tick(): void {
   void draaiBlog(new Date()).catch(() => {});
   void draaiFeeds(new Date()).catch(() => {});
   void draaiKolibri(new Date()).catch(() => {});
+  void draaiRealworks().catch(() => {});
   void vulAgenda(new Date()).catch(() => {});
   void draaiSocial().catch(() => {});
   void draaiGuusOchtendmail(new Date()).catch(() => {});

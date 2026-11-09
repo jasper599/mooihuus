@@ -87,6 +87,23 @@ export interface Listing {
   statusSinds?: string; // ISO: sinds wanneer de huidige status geldt (voor de bewaartermijnen)
 }
  
+// Aanmelding/koppeling van een Realworks-kantoor. De makelaar activeert in
+// Realworks zelf de Wonen API en stuurt ons de API-sleutel (token) via de
+// aansluitpagina. Per kantoor (vestiging) één sleutel.
+export interface RealworksKoppeling {
+  id: string;
+  kantoor: string;
+  contactNaam: string;
+  email: string;
+  telefoon?: string;
+  token: string;
+  status: "nieuw" | "actief" | "fout" | "gestopt";
+  aangemaakt: string;
+  laatsteSync?: string;
+  aantalWoningen?: number;
+  fout?: string;
+}
+
 export interface Huusmeester {
   id: string;
   bedrijf: string;

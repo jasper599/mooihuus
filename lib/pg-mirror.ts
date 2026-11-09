@@ -37,7 +37,7 @@ const COLLECTIES: { veld: string; model: string; id: (e: any, i: number) => stri
   { veld: "kortingscodes", model: "kortingscode", id: (e) => e.id },
 ];
 
-const META_VELDEN = ["seq", "laatsteNieuwsbriefSlug", "laatsteMaandrapportMaand", "resetTokens", "aiStyling", "integraties"];
+const META_VELDEN = ["seq", "laatsteNieuwsbriefSlug", "laatsteMaandrapportMaand", "resetTokens", "aiStyling", "integraties", "realworksKoppelingen"];
 
 const CHUNK = 500;
 

@@ -48,7 +48,7 @@ export const KENNIS: Entry[] = [
   {
     keywords: ["makelaar", "kolibri"],
     antwoord:
-      "Makelaarskantoren kunnen straks hun aanbod via Kolibri automatisch op Mooihuus zetten. Die koppeling volgt in een latere fase.",
+      "Makelaars sluiten aan via Kolibri of Realworks: recreatiewoningen komen op Mooihuus.nl, gewone koopwoningen op Woonhuus.nl. Alle stappen staan op mooihuus.nl/makelaars/aansluiten.",
   },
   {
     keywords: ["privacy", "avg", "veilig", "gegevens", "data"],

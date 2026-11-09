@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import { randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
-import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, Idee, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost, Kortingscode, Categorie } from "./types";
+import { User, Listing, Lead, Payment, EmailRecord, Enquete, Huusmeester, Zoekopdracht, Review, Idee, PartnerKlik, Pageview, PostcodeGeo, NieuwsbriefLid, SocialPost, Kortingscode, Categorie, RealworksKoppeling } from "./types";
 import { LM_OWNER, LM_LISTINGS } from "./lm-listings";
 import type { BlogPost } from "./blog";
  
@@ -39,6 +39,7 @@ interface DB {
   aiStyling?: { datum: string; totaal: number; perUser: Record<string, number> };
   // Opgeruimde woningen (bewaartermijn verstreken): voor doorverwijzen van oude links
   // en zodat een makelaarsfeed een verwijderde woning niet opnieuw aanmaakt.
+  realworksKoppelingen?: RealworksKoppeling[];
   verwijderdeWoningen?: { id: string; source?: string; externalId?: string; provincie?: string; categorie?: string; datum: string }[];
   seq: number;
 }
@@ -749,6 +750,34 @@ export function addEmail(data: Omit<EmailRecord, "id" | "datum">): EmailRecord {
 }
  
 // ---------- Huusmeesters ----------
+// ---------- Realworks-koppelingen (één API-sleutel per kantoor) ----------
+export function getRealworksKoppelingen(): RealworksKoppeling[] {
+  return load().realworksKoppelingen || [];
+}
+export function addRealworksKoppeling(data: Omit<RealworksKoppeling, "id" | "aangemaakt" | "status">): RealworksKoppeling {
+  const db = load();
+  db.realworksKoppelingen = db.realworksKoppelingen || [];
+  // Dezelfde sleutel nogmaals ingestuurd: bestaande koppeling bijwerken.
+  const bestaand = db.realworksKoppelingen.find((k) => k.token === data.token);
+  if (bestaand) {
+    Object.assign(bestaand, data, { status: bestaand.status === "gestopt" ? "nieuw" : bestaand.status });
+    save();
+    return bestaand;
+  }
+  const k: RealworksKoppeling = { ...data, id: nextId("rw-"), aangemaakt: new Date().toISOString(), status: "nieuw" };
+  db.realworksKoppelingen.push(k);
+  save();
+  return k;
+}
+export function updateRealworksKoppeling(id: string, patch: Partial<RealworksKoppeling>): RealworksKoppeling | undefined {
+  const db = load();
+  const k = (db.realworksKoppelingen || []).find((x) => x.id === id);
+  if (!k) return undefined;
+  Object.assign(k, patch);
+  save();
+  return k;
+}
+
 export function getHuusmeesters(): Huusmeester[] {
   return load().huusmeesters;
 }
