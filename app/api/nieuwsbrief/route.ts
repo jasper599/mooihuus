@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { addNieuwsbriefPending } from "@/lib/db";
-import { isSpam } from "@/lib/antispam";
+import { isSpam, isAanmeldSpam } from "@/lib/antispam";
 import { sendEmail, renderSimpel } from "@/lib/email";
 import { COMPANY } from "@/lib/company";
 
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   }
   // Bots: honeypot gevuld of binnen enkele honderden ms ingestuurd. Stil
   // accepteren (ok terug) maar niet aanmelden — zo leert de bot niets.
-  if (isSpam({ email, honeypot: b.bedrijf, ts: b.ts })) {
+  if (isSpam({ email, honeypot: b.bedrijf, ts: b.ts }) || isAanmeldSpam(req, { email, honeypot: b.bedrijf, ts: b.ts })) {
     return NextResponse.json({ ok: true });
   }
 

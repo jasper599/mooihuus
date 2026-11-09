@@ -85,3 +85,49 @@ export function isSpam(input: SpamInput): boolean {
   if ((input.honeypot || "").toString().trim() !== "") return true;
   return spamScore(input) >= 2;
 }
+
+// ------------------------------------------------------------------
+// Strengere check voor aanmeldformulieren (nieuwsbrief, woning-alert). Die sturen
+// een mail naar het opgegeven adres, dus bots misbruiken ze om vreemden te mailen.
+// Weigert: geen of ongeldig laadtijdstip, binnen 3 s verstuurd, ouder dan 24 u,
+// honeypot gevuld, wegwerp-/bekende spamdomeinen, te veel pogingen per IP of
+// per adres. Stil weigeren (ok terug) zodat de bot niets leert.
+// ------------------------------------------------------------------
+const SPAM_DOMEINEN = /(@|\.)(mail\.ru|yandex\.(ru|com)|qq\.com|aliyun\.com|docomo\.ne\.jp|vtext\.com|mailinator\.com|guerrillamail\.com|10minutemail\.com|tempmail\.[a-z]+)$/i;
+
+const perIp = new Map<string, number[]>();
+const perAdres = new Map<string, number>();
+
+function ipVan(req: Request): string {
+  const f = req.headers.get("x-forwarded-for") || "";
+  return (f.split(",")[0] || req.headers.get("x-real-ip") || "onbekend").trim();
+}
+
+export function isAanmeldSpam(req: Request, input: { email: string; honeypot?: string; ts?: number | string }): boolean {
+  if ((input.honeypot || "").toString().trim() !== "") return true;
+  const ts = typeof input.ts === "string" ? parseInt(input.ts, 10) : input.ts;
+  if (typeof ts !== "number" || !Number.isFinite(ts) || ts <= 0) return true;
+  const dt = Date.now() - ts;
+  if (dt < 3000 || dt > 24 * 3600_000) return true;
+
+  const email = (input.email || "").trim().toLowerCase();
+  if (SPAM_DOMEINEN.test(email)) return true;
+  // Gmail-truc met puntjes tussen elke letter (r.o.g.e.r…@gmail.com).
+  const lokaal = email.split("@")[0] || "";
+  if ((lokaal.match(/\./g) || []).length >= 4) return true;
+
+  const nu = Date.now();
+  // Hooguit 3 aanmeldingen per IP per uur.
+  const ip = ipVan(req);
+  const lijst = (perIp.get(ip) || []).filter((t) => nu - t < 3600_000);
+  if (lijst.length >= 3) { perIp.set(ip, lijst); return true; }
+  lijst.push(nu);
+  perIp.set(ip, lijst);
+  // Hooguit 1 aanmeldmail per adres per 24 uur.
+  const laatst = perAdres.get(email) || 0;
+  if (nu - laatst < 24 * 3600_000) return true;
+  perAdres.set(email, nu);
+  if (perAdres.size > 20000) perAdres.clear();
+  if (perIp.size > 20000) perIp.clear();
+  return false;
+}

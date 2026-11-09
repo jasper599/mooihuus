@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { addZoekopdracht, getLiveListings, matchtZoekopdracht } from "@/lib/db";
 import { renderZoekBevestiging, sendEmail } from "@/lib/email";
-import { isSpam } from "@/lib/antispam";
+import { isSpam, isAanmeldSpam } from "@/lib/antispam";
 import { Zoekopdracht } from "@/lib/types";
 
 export async function POST(req: Request) {
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
   // Bots: honeypot, te snel ingestuurd, of wartaal-naam ("HIORrZOaXsaVSYBdaeei").
   // Stil accepteren — geen zoekopdracht opslaan en geen mail sturen.
-  if (isSpam({ naam, email, honeypot: b.bedrijf, ts: b.ts })) {
+  if (isSpam({ naam, email, honeypot: b.bedrijf, ts: b.ts }) || isAanmeldSpam(req, { email, honeypot: b.bedrijf, ts: b.ts })) {
     return NextResponse.json({ ok: true, matches: 0 });
   }
 
