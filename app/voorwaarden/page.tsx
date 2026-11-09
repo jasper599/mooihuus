@@ -3,6 +3,9 @@ import { LegalShell } from "@/components/LegalShell";
 import { COMPANY } from "@/lib/company";
 import { VOORWAARDEN_VERSIE_LABEL } from "@/lib/voorwaarden";
 
+// Elk uur opnieuw opbouwen, zodat o.a. het adres na de verhuizing (15-12-2026) vanzelf klopt.
+export const revalidate = 3600;
+
 export const metadata = { title: "Algemene voorwaarden" };
 
 export default function Voorwaarden() {

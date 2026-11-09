@@ -1,9 +1,19 @@
 // Bedrijfsgegevens Huus B.V. (exploitant van Mooihuus.nl).
+const VERHUISDATUM = new Date("2026-12-15T00:00:00+01:00");
+export function naVerhuizing(nu: Date = new Date()): boolean {
+  return nu.getTime() >= VERHUISDATUM.getTime();
+}
+
 export const COMPANY = {
   bv: "Huus B.V.",
   handelsnaam: "Mooihuus.nl",
-  adres: "Vlietlaan 44 B",
-  postcode: "1404 CC Bussum",
+  // Verhuizing per 15 december 2026: Vlietlaan 44 B Bussum -> Gunningweg 3-0003 Nunspeet (automatisch).
+  get adres(): string {
+    return naVerhuizing() ? "Gunningweg 3-0003" : "Vlietlaan 44 B";
+  },
+  get postcode(): string {
+    return naVerhuizing() ? "8072 RB Nunspeet" : "1404 CC Bussum";
+  },
   kvk: "75241889",
   vestiging: "000043126340",
   btw: "NL860204212B01",

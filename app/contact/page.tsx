@@ -3,6 +3,9 @@ import { ContactForm } from "@/components/ContactForm";
 import { huidigeSite } from "@/lib/site-server";
 import { COMPANY } from "@/lib/company";
 
+// Elk uur opnieuw opbouwen, zodat o.a. het adres na de verhuizing (15-12-2026) vanzelf klopt.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title: "Contact",
   description: "Vragen over adverteren, je account, verhuur of de Huusmeesters? Neem contact op met Mooihuus.",

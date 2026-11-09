@@ -1,6 +1,9 @@
 import { LegalShell } from "@/components/LegalShell";
 import { COMPANY } from "@/lib/company";
 
+// Elk uur opnieuw opbouwen, zodat o.a. het adres na de verhuizing (15-12-2026) vanzelf klopt.
+export const revalidate = 3600;
+
 export const metadata = { title: "Privacyverklaring" };
 
 export default function Privacy() {
