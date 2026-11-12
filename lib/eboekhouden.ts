@@ -383,8 +383,10 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
       // Factuurnummer staat al in e-Boekhouden (eerder handmatig of via een
       // andere koppeling geboekt): niet nog eens boeken, wel als geboekt markeren.
       if (/MUT_019/.test(fout)) {
-        updatePayment(p.id, { geboektInEboekhouden: true, eboekhoudenFactuurId: "bestond-al" });
-        voorstellen.push({ ...basis, actie: "stond al in e-Boekhouden" });
+        // Het nummer bestaat al in e-Boekhouden. Dat kan een andere factuur met
+        // hetzelfde nummer zijn (zo ging 0006 in oktober mis), dus niet stilletjes
+        // als geboekt markeren: melden, zodat iemand het nakijkt.
+        fouten.push({ paymentId: p.id, fout: `Factuurnummer ${p.factuurnummer} bestaat al in e-Boekhouden; controleer of het dezelfde factuur is (${basis.klant}, ${p.bedrag})` });
       } else {
         fouten.push({ paymentId: p.id, fout });
       }
