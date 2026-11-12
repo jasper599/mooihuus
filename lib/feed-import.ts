@@ -1,5 +1,5 @@
 import { Listing, User, Categorie } from "./types";
-import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails, releaseVervallenFeedListings } from "./db";
+import { upsertFeedListing, sweepFeed, bewaarFeeds, dedupliceerExterneWoningen, zoekOfMaakMakelaar, getFeedListing, getUsers, updateUser, getPayments, getListingsByOwner, getEmails, releaseVervallenFeedListings, getListing, getUser, updatePayment } from "./db";
 import { sendEmail, renderMakelaarWelkom, renderMakelaarBedankt, renderSimpel } from "./email";
 import { kolibriTariefNu, maakWoningBetaling, WELKOMSTACTIE_LABEL } from "./facturatie";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
@@ -441,6 +441,7 @@ export async function syncKolibri(): Promise<FeedResultaat> {
   dedupliceerExterneWoningen();
   try { await verwerkOpenstaandeBetalingen(); } catch { /* betaalcheck mag de sync niet breken */ }
   try { corrigeerMakelaarPakket(); } catch { /* pakket-correctie mag de sync niet breken */ }
+  try { await hernummerDubbeleFactuur0013(); } catch (e) { console.error("[hernummer] mislukt", e); }
   if (process.env.FACTURATIE_AUTO === "1") {
     try { await verwerkNieuweKantorenWelkom(); } catch { /* welkom/facturatie mag de sync niet breken */ }
     try { await verwerkVervallenAdvertenties(); } catch { /* verval mag de sync niet breken */ }
@@ -673,4 +674,55 @@ export async function syncRealworks(): Promise<FeedResultaat> {
 
 export function adapterVoor(bron: string): FeedAdapter {
   return bron === "realworks" ? realworksAdapter : kolibriAdapter;
+}
+
+
+// Eenmalige correctie (12-11-2026): de factuur van 12 november kreeg nummer
+// MH-2026-0013, dat eerder al voor een creditnota was gebruikt (die creditnota
+// was door een fout uit de database verwijderd). Geeft die factuur een nieuw,
+// uniek nummer en stuurt hem opnieuw, met de nieuwe pdf. Doet daarna niets meer.
+async function hernummerDubbeleFactuur0013(): Promise<void> {
+  const oud = "MH-2026-0013";
+  const p = getPayments().find(
+    (x) => x.factuurnummer === oud && x.soort === "advertentie" && (x.aangemaakt || "").startsWith("2026-11-12") && !(x as any).geboektInEboekhouden
+  );
+  if (!p) return;
+  const prefix = "MH-2026-";
+  const hoogste = getPayments().reduce((max, x) => {
+    const f = x.factuurnummer || "";
+    if (!f.startsWith(prefix)) return max;
+    const n = parseInt(f.slice(prefix.length), 10);
+    return Number.isFinite(n) && n > max ? n : max;
+  }, 0);
+  const nieuw = prefix + String(hoogste + 1).padStart(4, "0");
+  updatePayment(p.id, { factuurnummer: nieuw, mollieId: undefined, omschrijving: p.omschrijving } as any);
+  console.log(`[hernummer] ${oud} -> ${nieuw} (${p.id})`);
+  if (p.status !== "open") return;
+
+  const u = getUser(p.userId);
+  const l = getListing(p.listingId);
+  if (!u || !l) return;
+  const basis = process.env.NEXTAUTH_URL || COMPANY.website;
+  const betaalUrl = `${basis}/betaling/${p.id}`;
+  const totaal = p.bedrag || 0;
+  const subtotaal = Math.round((totaal / 1.21) * 100) / 100;
+  const btw = Math.round((totaal - subtotaal) * 100) / 100;
+  const bijlagen: { filename: string; content: string; contentType?: string }[] = [];
+  try {
+    const pdf = await genereerFactuurPdfBase64({
+      kantoor: u.bedrijfsnaam || u.naam,
+      email: u.email,
+      factuurnummer: nieuw,
+      objecten: [{ titel: `${l.titel} (${l.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus.nl"})`, prijs: subtotaal }],
+      prijsPerObject: subtotaal,
+      subtotaal,
+      btw,
+      totaal,
+      betaalUrl,
+    });
+    bijlagen.push({ filename: "Factuur " + nieuw + " Huus BV.pdf", content: pdf, contentType: "application/pdf" });
+  } catch {
+    /* zonder pdf toch de mail met betaallink */
+  }
+  await stuurBedanktAanmelding(u, [{ titel: l.titel, betaalUrl, bedrag: totaal, factuurnummer: nieuw, categorie: l.categorie }], bijlagen);
 }
