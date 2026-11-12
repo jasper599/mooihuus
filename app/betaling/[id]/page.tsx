@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPayment, getListing } from "@/lib/db";
+import { getPayment, getPayments, getListing } from "@/lib/db";
 import { euroCents } from "@/lib/money";
-import { mollieEnabled, getMollieStatus } from "@/lib/mollie";
+import { mollieEnabled, getMollieStatus, isGecrediteerd } from "@/lib/mollie";
 import { markPaymentPaid } from "@/lib/payments";
 import { CheckoutButton } from "./CheckoutButton";
 import { huidigeSkin } from "@/lib/site-server";
@@ -15,7 +15,7 @@ export default async function BetalingPage({ params }: { params: { id: string } 
   if (!payment) return notFound();
 
   // Terug van Mollie: controleer de status.
-  if (payment.status === "open" && mollieEnabled() && payment.mollieId) {
+  if (payment.status !== "paid" && mollieEnabled() && payment.mollieId) {
     const st = await getMollieStatus(payment.mollieId);
     if (st === "paid") {
       await markPaymentPaid(payment.id, "iDEAL");
@@ -57,7 +57,19 @@ export default async function BetalingPage({ params }: { params: { id: string } 
     );
   }
 
-  // Open: interne iDEAL-simulatie (of instructie voor Mollie).
+  if (isGecrediteerd(payment, getPayments())) {
+    return (
+      <div className="max-w-md mx-auto text-center">
+        <h1 className="font-display font-extrabold text-2xl text-bosgroen-dk">Deze factuur is vervallen</h1>
+        <p className="text-grijs mt-2">
+          Factuur {payment.factuurnummer} kan niet meer betaald worden. Wil je de woning alsnog plaatsen? Mail ons via{" "}
+          <a href="mailto:info@mooihuus.nl" className="underline">info@mooihuus.nl</a>.
+        </p>
+      </div>
+    );
+  }
+
+  // Open: betaalknop (maakt bij klikken een verse Mollie-betaling).
   return (
     <div className="max-w-md mx-auto">
       <div className="card">

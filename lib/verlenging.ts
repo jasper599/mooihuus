@@ -13,9 +13,8 @@
 // vanzelf buiten (die hebben geen betaling).
 
 import {
-  getListings, getUser, getPayments, addPayment, updatePayment, updateListing, getListing,
+  getListings, getUser, getPayments, addPayment, updateListing, getListing,
 } from "./db";
-import { mollieEnabled, createMolliePayment } from "./mollie";
 import { renderVerlengHerinnering, renderVerlengVerlopen, sendEmail } from "./email";
 import { COMPANY } from "./company";
 import { Listing } from "./types";
@@ -87,22 +86,9 @@ async function maakVerlengBetaling(ownerId: string, listings: Listing[]): Promis
     omschrijving: `Verlenging ${listings.length} woning${listings.length > 1 ? "en" : ""} — ${titels}`.slice(0, 180),
   });
 
-  let betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
-  if (mollieEnabled()) {
-    try {
-      const { mollieId, checkoutUrl } = await createMolliePayment({
-        factuurnummer: payment.factuurnummer,
-        bedrag,
-        beschrijving: `Mooihuus verlenging — ${listings.length} woning(en)`,
-        redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
-        webhookUrl: `${baseUrl()}/api/webhook/mollie`,
-      });
-      updatePayment(payment.id, { mollieId });
-      betaalUrl = checkoutUrl || betaalUrl;
-    } catch {
-      // val terug op interne betaalpagina
-    }
-  }
+  const betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
+  // Geen Mollie-link in de mail: een iDEAL-link verloopt na ongeveer 15 minuten.
+  // De mail linkt naar onze eigen betaalpagina; die maakt bij het klikken een verse Mollie-betaling.
   return { betaalUrl, bedrag, factuurnummer: payment.factuurnummer };
 }
 

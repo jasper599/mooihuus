@@ -78,7 +78,7 @@ export async function verwerkVervallenAdvertenties(): Promise<{ verwerkt: number
     }
 
     // 4) originele factuur afboeken; woning on hold
-    updatePayment(p.id, { status: "failed" });
+    updatePayment(p.id, { status: "failed", methode: "Gecrediteerd" });
     if (listing) updateListing(listing.id, { vervallen: true, vervallenOp: new Date().toISOString() });
     verwerkt++;
   }

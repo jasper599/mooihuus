@@ -1,5 +1,4 @@
-import { getUser, getUsers, getListingsByOwner, getPayments, addPayment, updatePayment, updateListing } from "./db";
-import { mollieEnabled, createMolliePayment } from "./mollie";
+import { getUser, getUsers, getListingsByOwner, getPayments, addPayment, updateListing } from "./db";
 import { renderMakelaarFactuur, sendEmail } from "./email";
 import { genereerFactuurPdfBase64 } from "./factuur-pdf";
 import { markPaymentPaid } from "./payments";
@@ -149,22 +148,9 @@ export async function maakMakelaarFactuur(ownerId: string, stil = false): Promis
   });
 
   // Mollie-betaallink (of simulatie zonder key).
-  let betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
-  if (mollieEnabled()) {
-    try {
-      const { mollieId, checkoutUrl } = await createMolliePayment({
-        factuurnummer: payment.factuurnummer,
-        bedrag,
-        beschrijving: `Mooihuus advertenties — ${kantoor} (${objecten.length} objecten)`,
-        redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
-        webhookUrl: `${baseUrl()}/api/webhook/mollie`,
-      });
-      updatePayment(payment.id, { mollieId });
-      betaalUrl = checkoutUrl || betaalUrl;
-    } catch {
-      // val terug op interne betaalpagina
-    }
-  }
+  const betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
+  // Geen Mollie-link in de mail: een iDEAL-link verloopt na ongeveer 15 minuten.
+  // De mail linkt naar onze eigen betaalpagina; die maakt bij het klikken een verse Mollie-betaling.
 
   // Factuur mailen met de betaallink erin.
   const updated = { ...payment, factuurnummer: payment.factuurnummer };
@@ -224,22 +210,9 @@ export async function maakLosseFactuur(args: {
     omschrijving,
   });
 
-  let betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
-  if (mollieEnabled()) {
-    try {
-      const { mollieId, checkoutUrl } = await createMolliePayment({
-        factuurnummer: payment.factuurnummer,
-        bedrag,
-        beschrijving: `Mooihuus — ${omschrijving} (${kantoor})`,
-        redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
-        webhookUrl: `${baseUrl()}/api/webhook/mollie`,
-      });
-      updatePayment(payment.id, { mollieId });
-      betaalUrl = checkoutUrl || betaalUrl;
-    } catch {
-      // val terug op de interne betaalpagina
-    }
-  }
+  const betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
+  // Geen Mollie-link in de mail: een iDEAL-link verloopt na ongeveer 15 minuten.
+  // De mail linkt naar onze eigen betaalpagina; die maakt bij het klikken een verse Mollie-betaling.
 
   if (args.mailen) {
     const mail = renderMakelaarFactuur({
@@ -346,21 +319,8 @@ export async function maakWoningBetaling(
     soort: "advertentie",
     omschrijving: `Jaaradvertentie ${listing.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus"}: ${listing.titel}`,
   });
-  let betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
-  if (mollieEnabled()) {
-    try {
-      const { mollieId, checkoutUrl } = await createMolliePayment({
-        factuurnummer: payment.factuurnummer,
-        bedrag,
-        beschrijving: `${listing.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus"} advertentie: ${listing.titel}`,
-        redirectUrl: `${baseUrl()}/betaling/${payment.id}`,
-        webhookUrl: `${baseUrl()}/api/webhook/mollie`,
-      });
-      updatePayment(payment.id, { mollieId });
-      betaalUrl = checkoutUrl || betaalUrl;
-    } catch {
-      /* val terug op de interne betaalpagina */
-    }
-  }
+  const betaalUrl = `${baseUrl()}/betaling/${payment.id}`;
+  // Geen Mollie-link in de mail: een iDEAL-link verloopt na ongeveer 15 minuten.
+  // De mail linkt naar onze eigen betaalpagina; die maakt bij het klikken een verse Mollie-betaling.
   return { ok: true, betaalUrl, bedrag, paymentId: payment.id, factuurnummer: payment.factuurnummer };
 }

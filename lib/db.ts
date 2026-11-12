@@ -1262,8 +1262,9 @@ export function verwijderZoekopdrachten(ids: string[]): number {
 }
 
 // Her-activatie: verwijder "vervallen" feed-woningen die niet meer in de feed
-// staan (de makelaar heeft ze in Kolibri uit het kanaal gehaald), inclusief hun
-// betalingen. Een nieuwe publicatie telt daarna weer als nieuwe aanmelding en
+// staan (de makelaar heeft ze in Kolibri uit het kanaal gehaald). Betalingen,
+// facturen en creditnota's blijven altijd bewaard (fiscale bewaarplicht, en anders
+// wordt een factuurnummer opnieuw uitgedeeld). Een nieuwe publicatie telt daarna weer als nieuwe aanmelding en
 // levert een nieuwe factuur op.
 export function releaseVervallenFeedListings(source: string, seenExternalIds: string[]): number {
   const db = load();
@@ -1272,7 +1273,6 @@ export function releaseVervallenFeedListings(source: string, seenExternalIds: st
   if (weg.length === 0) return 0;
   const ids = new Set(weg.map((l) => l.id));
   db.listings = db.listings.filter((l) => !ids.has(l.id));
-  db.payments = db.payments.filter((p) => !ids.has(p.listingId));
   save();
   return weg.length;
 }

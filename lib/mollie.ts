@@ -55,3 +55,32 @@ export async function cancelMolliePayment(mollieId: string): Promise<boolean> {
     return false;
   }
 }
+
+// Bestaande Mollie-betaling hergebruiken als die nog open staat; anders null.
+export async function bruikbareCheckout(mollieId: string): Promise<string | null> {
+  try {
+    const { default: createMollieClient } = (await import("@mollie/api-client")) as any;
+    const client = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY as string });
+    const payment = await client.payments.get(mollieId);
+    if (payment.status !== "open") return null;
+    return payment.getCheckoutUrl() ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// Ruwe Mollie-status (open, pending, paid, failed, canceled, expired, ...).
+export async function mollieRuweStatus(mollieId: string): Promise<string> {
+  const { default: createMollieClient } = (await import("@mollie/api-client")) as any;
+  const client = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY as string });
+  const payment = await client.payments.get(mollieId);
+  return String(payment.status || "");
+}
+
+// Is deze factuur definitief afgeboekt (gecrediteerd)? Dan kan er niet meer
+// betaald worden. Een mislukte iDEAL-poging telt niet: die mag opnieuw.
+export function isGecrediteerd(p: { status: string; methode?: string; factuurnummer: string }, alle: { soort?: string; omschrijving?: string }[]): boolean {
+  if (p.status !== "failed") return false;
+  if (p.methode === "Gecrediteerd") return true;
+  return alle.some((c) => c.soort === "creditnota" && (c.omschrijving || "").includes(p.factuurnummer));
+}

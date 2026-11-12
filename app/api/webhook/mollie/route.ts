@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPayments, updatePayment } from "@/lib/db";
-import { getMollieStatus } from "@/lib/mollie";
+import { mollieRuweStatus } from "@/lib/mollie";
 import { markPaymentPaid } from "@/lib/payments";
 import { guusBeltJasperOpAchtergrond } from "@/lib/guus-bel";
 
@@ -18,7 +18,10 @@ export async function POST(req: Request) {
     const payment = getPayments().find((p) => p.mollieId === mollieId);
     if (!payment) return NextResponse.json({ ok: true });
 
-    const status = await getMollieStatus(mollieId);
+    // Afgebroken of verlopen iDEAL-betalingen laten de factuur gewoon open staan:
+    // de klant kan via de link in de mail opnieuw betalen (er komt dan een verse
+    // Mollie-betaling). Alleen een echt mislukte betaling wordt vastgelegd.
+    const status = await mollieRuweStatus(mollieId);
     if (status === "paid") {
       await markPaymentPaid(payment.id, "iDEAL");
     } else if (status === "failed" && payment.status !== "failed" && payment.status !== "paid") {
