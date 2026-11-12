@@ -282,7 +282,11 @@ function isVerstuurdeFactuur(p: Payment): boolean {
   if (p.soort === "makelaar-factuur" || p.soort === "verlenging") return true;
   if (p.soort === "opvaller" || p.soort === "creditnota") return false;
   const l = getListing(p.listingId);
-  return !!l && (l.source === "kolibri" || l.source === "realworks");
+  if (l) return l.source === "kolibri" || l.source === "realworks";
+  // Woning is inmiddels weg (opgeruimd of uit de feed gehaald): een factuur die
+  // gecrediteerd is, is dus echt verstuurd. Dan moeten factuur en creditnota
+  // allebei geboekt worden, anders staat er alleen een creditnota in de boeken.
+  return p.methode === "Gecrediteerd" || getPayments().some((c) => c.soort === "creditnota" && (c.omschrijving || "").includes(p.factuurnummer));
 }
 function teBoeken(p: Payment, _alle: Payment[]): boolean {
   if (p.soort === "creditnota") return true;
