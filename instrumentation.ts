@@ -6,6 +6,11 @@ export async function register() {
     const { startScheduler } = await import("./lib/scheduler");
     startScheduler();
 
+    // Eenmalige alleen-lezen controle factuurnummering (12-11-2026), daarna weghalen.
+    setTimeout(() => {
+      import("./lib/eboekhouden").then((m) => m.controleerNummering()).catch((e) => console.error("[EB-CHECK] mislukt", e));
+    }, 30000);
+
     // Postgres-spiegel (Fase 1): schrijft op de achtergrond mee naar Postgres.
     // Volledig geïsoleerd en nooit fataal — als dit faalt draait de app gewoon
     // door op db.json. Start alleen als DATABASE_URL gezet is.

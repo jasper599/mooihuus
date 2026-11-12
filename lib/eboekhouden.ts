@@ -393,3 +393,27 @@ export async function syncBetalingen(opts?: { dry?: boolean; limiet?: number }):
 
   return { ok: true, dry, actief, aantalKandidaten: kandidaten.length, geboekt, rekening, voorstellen, fouten };
 }
+
+// Eenmalige controle (alleen lezen): welke MH-2026-facturen staan in
+// e-Boekhouden, en welke staan in Mooihuus. Schrijft alleen naar de log.
+export async function controleerNummering(): Promise<void> {
+  const lokaal = getPayments()
+    .filter((p) => (p.factuurnummer || "").startsWith("MH-2026-"))
+    .map((p) => `${p.factuurnummer}:${p.soort}:${p.status}:${p.bedrag}:${p.geboektInEboekhouden ? "geboekt" : "niet-geboekt"}`)
+    .sort();
+  console.log(`[EB-CHECK] Mooihuus ${lokaal.length}: ${lokaal.join(" | ")}`);
+  if (!eboekhoudenEnabled()) { console.log("[EB-CHECK] e-Boekhouden niet actief"); return; }
+  const regels: string[] = [];
+  for (let i = 1; i <= 20; i++) {
+    const nr = "MH-2026-" + String(i).padStart(4, "0");
+    try {
+      const r = await ebFetch(`/mutation?invoiceNumber=${encodeURIComponent(nr)}&limit=10`);
+      const items: any[] = Array.isArray(r) ? r : r.items || r.data || [];
+      const hits = items.filter((m) => String(m.invoiceNumber || "") === nr);
+      regels.push(`${nr}=${hits.length ? hits.map((m) => `${m.date || ""} ${m.amount ?? m.totalAmount ?? ""} ${m.relationId ?? ""}`.trim()).join(";") : "-"}`);
+    } catch (e: any) {
+      regels.push(`${nr}=fout(${String(e?.message || e).slice(0, 80)})`);
+    }
+  }
+  console.log(`[EB-CHECK] e-Boekhouden: ${regels.join(" | ")}`);
+}
