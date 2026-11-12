@@ -404,13 +404,13 @@ export async function controleerNummering(): Promise<void> {
   console.log(`[EB-CHECK] Mooihuus ${lokaal.length}: ${lokaal.join(" | ")}`);
   if (!eboekhoudenEnabled()) { console.log("[EB-CHECK] e-Boekhouden niet actief"); return; }
   const regels: string[] = [];
-  for (let i = 1; i <= 20; i++) {
+  for (let i = 1; i <= 15; i++) {
     const nr = "MH-2026-" + String(i).padStart(4, "0");
     try {
       const r = await ebFetch(`/mutation?invoiceNumber=${encodeURIComponent(nr)}&limit=10`);
       const items: any[] = Array.isArray(r) ? r : r.items || r.data || [];
       const hits = items.filter((m) => String(m.invoiceNumber || "") === nr);
-      regels.push(`${nr}=${hits.length ? hits.map((m) => `${m.date || ""} ${m.amount ?? m.totalAmount ?? ""} ${m.relationId ?? ""}`.trim()).join(";") : "-"}`);
+      regels.push(`${nr}=${hits.length ? hits.map((m) => JSON.stringify({ id: m.id, type: m.type, date: m.date, amount: m.amount ?? m.totalAmount, rel: m.relationId, led: m.ledgerId, desc: String(m.description || "").slice(0, 70) })).join(";") : "-"}`);
     } catch (e: any) {
       regels.push(`${nr}=fout(${String(e?.message || e).slice(0, 80)})`);
     }
