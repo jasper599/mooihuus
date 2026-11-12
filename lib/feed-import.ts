@@ -442,6 +442,7 @@ export async function syncKolibri(): Promise<FeedResultaat> {
   try { await verwerkOpenstaandeBetalingen(); } catch { /* betaalcheck mag de sync niet breken */ }
   try { corrigeerMakelaarPakket(); } catch { /* pakket-correctie mag de sync niet breken */ }
   try { await hernummerDubbeleFactuur0013(); } catch (e) { console.error("[hernummer] mislukt", e); }
+  try { const { herstelBoekhouding20261112 } = await import("./herstel-20261112"); await herstelBoekhouding20261112(); } catch (e) { console.error("[herstel] mislukt", e); }
   if (process.env.FACTURATIE_AUTO === "1") {
     try { await verwerkNieuweKantorenWelkom(); } catch { /* welkom/facturatie mag de sync niet breken */ }
     try { await verwerkVervallenAdvertenties(); } catch { /* verval mag de sync niet breken */ }
