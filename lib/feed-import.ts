@@ -677,27 +677,18 @@ export function adapterVoor(bron: string): FeedAdapter {
 }
 
 
-// Eenmalige correctie (12-11-2026): de factuur van 12 november kreeg nummer
-// MH-2026-0013, dat eerder al voor een creditnota was gebruikt (die creditnota
-// was door een fout uit de database verwijderd). Geeft die factuur een nieuw,
-// uniek nummer en stuurt hem opnieuw, met de nieuwe pdf. Doet daarna niets meer.
+// Eenmalige correctie (12-11-2026): de factuur van 12 november voor Arnhem
+// (MH-2026-0013) staat al zo in e-Boekhouden, dus het nummer blijft. Hij ging
+// de deur uit met een iDEAL-link die na een kwartier verliep. Stuurt de factuur
+// één keer opnieuw, met een link naar de eigen betaalpagina. Doet daarna niets meer.
 async function hernummerDubbeleFactuur0013(): Promise<void> {
-  const oud = "MH-2026-0013";
+  const nr = "MH-2026-0013";
   const p = getPayments().find(
-    (x) => x.factuurnummer === oud && x.soort === "advertentie" && (x.aangemaakt || "").startsWith("2026-11-12") && !(x as any).geboektInEboekhouden
+    (x) => x.factuurnummer === nr && x.soort === "advertentie" && (x.aangemaakt || "").startsWith("2026-11-12") && !(x as any).opnieuwVerstuurd
   );
-  if (!p) return;
-  const prefix = "MH-2026-";
-  const hoogste = getPayments().reduce((max, x) => {
-    const f = x.factuurnummer || "";
-    if (!f.startsWith(prefix)) return max;
-    const n = parseInt(f.slice(prefix.length), 10);
-    return Number.isFinite(n) && n > max ? n : max;
-  }, 0);
-  const nieuw = prefix + String(hoogste + 1).padStart(4, "0");
-  updatePayment(p.id, { factuurnummer: nieuw, mollieId: undefined, omschrijving: p.omschrijving } as any);
-  console.log(`[hernummer] ${oud} -> ${nieuw} (${p.id})`);
-  if (p.status !== "open") return;
+  if (!p || p.status === "paid") return;
+  updatePayment(p.id, { opnieuwVerstuurd: new Date().toISOString(), status: "open" } as any);
+  console.log(`[hernummer] ${nr} opnieuw verstuurd met eigen betaallink (${p.id})`);
 
   const u = getUser(p.userId);
   const l = getListing(p.listingId);
@@ -712,7 +703,7 @@ async function hernummerDubbeleFactuur0013(): Promise<void> {
     const pdf = await genereerFactuurPdfBase64({
       kantoor: u.bedrijfsnaam || u.naam,
       email: u.email,
-      factuurnummer: nieuw,
+      factuurnummer: nr,
       objecten: [{ titel: `${l.titel} (${l.categorie === "woonhuis" ? "Woonhuus.nl" : "Mooihuus.nl"})`, prijs: subtotaal }],
       prijsPerObject: subtotaal,
       subtotaal,
@@ -720,9 +711,9 @@ async function hernummerDubbeleFactuur0013(): Promise<void> {
       totaal,
       betaalUrl,
     });
-    bijlagen.push({ filename: "Factuur " + nieuw + " Huus BV.pdf", content: pdf, contentType: "application/pdf" });
+    bijlagen.push({ filename: "Factuur " + nr + " Huus BV.pdf", content: pdf, contentType: "application/pdf" });
   } catch {
     /* zonder pdf toch de mail met betaallink */
   }
-  await stuurBedanktAanmelding(u, [{ titel: l.titel, betaalUrl, bedrag: totaal, factuurnummer: nieuw, categorie: l.categorie }], bijlagen);
+  await stuurBedanktAanmelding(u, [{ titel: l.titel, betaalUrl, bedrag: totaal, factuurnummer: nr, categorie: l.categorie }], bijlagen);
 }
