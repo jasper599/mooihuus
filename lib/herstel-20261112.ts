@@ -122,3 +122,60 @@ export async function herstelBoekhouding20261112(): Promise<void> {
     console.log(`[herstel] e-Boekhouden: ${res.geboekt} geboekt, fouten: ${JSON.stringify(res.fouten)}`);
   }
 }
+
+// Eenmalig (13-11-2026, op verzoek van Jasper): pdf's van MH-2026-0013, 0014,
+// 0016 en 0017 naar facturen@luytenmakelaardij.nl. Alleen als de klant van die
+// factuur Luyten Makelaardij is; anders alleen een logregel.
+export async function stuurNaarLuytenFacturen(): Promise<void> {
+  const AAN = "facturen@luytenmakelaardij.nl";
+  const { getListing } = await import("./db");
+  for (const nr of ["MH-2026-0013", "MH-2026-0014", "MH-2026-0016", "MH-2026-0017"]) {
+    const p = getPayments().find((x) => x.factuurnummer === nr);
+    if (!p || (p as any).naarLuytenFacturen) continue;
+    const owner = getUsers().find((u) => u.id === p.userId) as any;
+    const kantoor = owner?.bedrijfsnaam || owner?.naam || "";
+    if (!/luyten/i.test(kantoor)) {
+      updatePayment(p.id, { naarLuytenFacturen: "overgeslagen" } as any);
+      console.log(`[luyten-facturen] ${nr} overgeslagen: klant is ${kantoor || "onbekend"}`);
+      continue;
+    }
+    try {
+      const credit = p.soort === "creditnota";
+      const totaal = Math.round(Math.abs(p.bedrag) * 100) / 100;
+      const sub = Math.round((totaal / 1.21) * 100) / 100;
+      const btw = Math.round((totaal - sub) * 100) / 100;
+      const l = getListing(p.listingId);
+      const titel = l?.titel || p.omschrijving || "Mooihuus";
+      const teken = credit ? -1 : 1;
+      const origineel = credit ? ((p.omschrijving || "").match(/MH-\d{4}-\d{4}/)?.[0] || "") : undefined;
+      const pdf = await genereerFactuurPdfBase64({
+        kantoor,
+        email: owner?.email,
+        factuurnummer: nr,
+        credit,
+        origineelFactuurnummer: origineel,
+        objecten: [{ titel, prijs: teken * sub }],
+        prijsPerObject: teken * sub,
+        subtotaal: teken * sub,
+        btw: teken * btw,
+        totaal: teken * totaal,
+        betaalUrl: "",
+        betaald: !credit && p.status === "paid",
+        betaaldOp: p.betaaldOp,
+      } as any);
+      const soortTekst = credit ? `Creditnota ${nr}${origineel ? " bij factuur " + origineel : ""}` : `Factuur ${nr}${p.status === "paid" ? " (betaald)" : ""}`;
+      await sendEmail({
+        aan: AAN,
+        onderwerp: `${soortTekst} · Huus B.V. (Mooihuus)`,
+        soort: "factuur" as any,
+        html: `<p>Beste Luyten Makelaardij,</p><p>In de bijlage ${credit ? "de creditnota" : "de factuur"} ${nr} van Huus B.V. (Mooihuus.nl) voor uw administratie: ${titel}.</p><p>Met vriendelijke groet,<br>Huus B.V.</p>`,
+        van: factuurAfzender(),
+        attachments: [{ filename: `${credit ? "Creditnota" : "Factuur"} ${nr} Huus BV.pdf`, content: pdf, contentType: "application/pdf" }],
+      });
+      updatePayment(p.id, { naarLuytenFacturen: new Date().toISOString() } as any);
+      console.log(`[luyten-facturen] ${nr} verstuurd naar ${AAN}`);
+    } catch (e) {
+      console.error("[luyten-facturen] mislukt", nr, e);
+    }
+  }
+}
