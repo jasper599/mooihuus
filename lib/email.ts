@@ -662,6 +662,13 @@ export async function sendEmail(opts: {
   const aanStr = Array.isArray(opts.aan) ? opts.aan.join(", ") : opts.aan;
   let via: EmailRecord["verzondenVia"] = "preview";
 
+  // Factuurmails met pdf aan bepaalde klanten gaan ook in bcc naar hun
+  // administratie-adres. Nu: Luyten Makelaardij (info@ -> bcc facturen@).
+  const FACTUUR_BCC: Record<string, string> = { "info@luytenmakelaardij.nl": "facturen@luytenmakelaardij.nl" };
+  const bcc = (Array.isArray(opts.aan) ? opts.aan : [opts.aan])
+    .map((a) => FACTUUR_BCC[a.toLowerCase().trim()])
+    .filter((b): b is string => !!b && (opts.attachments || []).some((x) => /\.pdf$/i.test(x.filename)));
+
   // 1) Voorkeur: Resend — verstuurt via een beveiligde HTTPS-API, dus werkt
   //    ook vanaf hosts waar SMTP-poorten geblokkeerd worden (zoals Railway).
   if (resendKey) {
@@ -673,6 +680,7 @@ export async function sendEmail(opts: {
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           from, to: opts.aan, subject: opts.onderwerp, html: opts.html,
+          ...(bcc.length ? { bcc } : {}),
           ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
           ...(opts.attachments?.length ? { attachments: opts.attachments.map((a) => ({ filename: a.filename, content: a.content })) } : {}),
         }),
@@ -707,6 +715,7 @@ export async function sendEmail(opts: {
       await transport.sendMail({
         from,
         to: opts.aan,
+        ...(bcc.length ? { bcc } : {}),
         subject: opts.onderwerp,
         ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
         html: opts.html,
