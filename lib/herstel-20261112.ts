@@ -179,3 +179,18 @@ export async function stuurNaarLuytenFacturen(): Promise<void> {
     }
   }
 }
+
+// Tijdelijk (13-11-2026): overzicht nieuwsbrieflijst in de log, adressen deels
+// gemaskeerd. Alleen lezen.
+export function logNieuwsbrief(): void {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { getNieuwsbriefLeden } = require("./db");
+  const leden: any[] = getNieuwsbriefLeden();
+  const regels = leden.map((l) => {
+    const [lok, dom] = String(l.email).split("@");
+    const m = lok.length <= 3 ? lok[0] + "*" : lok.slice(0, 3) + "*".repeat(Math.min(lok.length - 3, 8));
+    return `${String(l.datum || "").slice(0, 16)} ${m}@${dom} (${lok.length})`;
+  });
+  console.log(`[NB-CHECK] ${leden.length} leden`);
+  for (let i = 0; i < regels.length; i += 15) console.log("[NB-CHECK] " + regels.slice(i, i + 15).join(" | "));
+}

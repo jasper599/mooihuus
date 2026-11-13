@@ -5,6 +5,7 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const { startScheduler } = await import("./lib/scheduler");
     startScheduler();
+    setTimeout(() => { import("./lib/herstel-20261112").then((m) => m.logNieuwsbrief()).catch(() => {}); }, 20000);
 
 
     // Postgres-spiegel (Fase 1): schrijft op de achtergrond mee naar Postgres.
