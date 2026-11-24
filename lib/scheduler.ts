@@ -569,6 +569,7 @@ function tick(): void {
   void draaiGuusOchtendmail(new Date()).catch(() => {});
   void draaiGroeiBellen(new Date()).catch(() => {});
   void draaiBoekhouding().catch(() => {});
+  void import("./lm-kolibri-status").then((m) => m.controleerLmTegenKolibri()).catch(() => {});
 }
 
 let gestart = false;
