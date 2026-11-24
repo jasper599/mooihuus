@@ -6079,32 +6079,6 @@ export const LM_LISTINGS: SeedListing[] = [
     ]
   },
   {
-    "id": "lm-hulshorst-varelseweg-211-zz51",
-    "titel": "Tiny Beachhouse aan water - EuroParcs Bad Hoophuizen",
-    "type": "Vrijstaand vakantiehuis",
-    "doel": "koop",
-    "provincie": "Gelderland",
-    "park": "EuroParcs Bad Hoophuizen",
-    "personen": 4,
-    "m2": 48,
-    "prijs": 85000,
-    "omschrijving": "Charmant beachhouse met beschutte ligging aan een rustige waterpartij. Voorzien van tuin, zijterras en houten steiger. Modern ingericht met twee slaapkamers en badkamer.",
-    "kleur": 0,
-    "pakket": "Basis",
-    "status": "live",
-    "videoUrl": "https://youtu.be/UuVFDxHnG-U",
-    "fotos": [
-      "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211695/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2001.jpg",
-      "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211697/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2002.jpg",
-      "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211699/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2003.jpg",
-      "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211700/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2004.jpg",
-      "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211701/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2005.jpg",
-      "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211702/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2006.jpg",
-      "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211703/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2007.jpg",
-      "https://haywebattachments.blob.core.windows.net/public/2899/3750659/115211704/$xl/bad%20hoophuizen%20-%20kavel%20zz51%20-%2008.jpg"
-    ]
-  },
-  {
     "id": "lm-biddinghuizen-spijkweg-15-568",
     "videoUrl": "https://youtu.be/mkUeJlduvjo",
     "titel": "Sfeervolle 6-persoons vakantiewoning type Cosy Unique op EuroParcs Zuiderzee",
