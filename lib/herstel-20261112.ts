@@ -194,3 +194,18 @@ export function logNieuwsbrief(): void {
   console.log(`[NB-CHECK] ${leden.length} leden`);
   for (let i = 0; i < regels.length; i += 15) console.log("[NB-CHECK] " + regels.slice(i, i + 15).join(" | "));
 }
+
+// Eenmalig (24-11-2026, op verzoek van Jasper): 17 Luyten-woningen die volgens
+// Kolibri verkocht of ingetrokken zijn offline zetten. Nodig omdat de app op
+// Postgres draait en wijzigingen in lm-listings.ts daardoor niet meer doorkomen.
+export function zetVerkochteLmOffline(): void {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { getListings, updateListing } = require("./db");
+  const verkocht = ["cromvoirt-loverensestraat-11-b2", "lichtenvoorde-boschlaan-26-94", "lunteren-immenweg-15-213", "noordwijk-kraaierslaan-7-155", "west-graftdijk-burgemeester-dalenbergstraat-50-406", "kaatsheuvel-van-haestrechtstraat-24-174", "hulshorst-varelseweg-211-zz51"];
+  const ingetrokken = ["biddinghuizen-spijkweg-15-602", "biddinghuizen-spijkweg-15-607", "harderwijk-korhoenlaan-2-393", "velsen-zuid-buitenhuizerweg-2-474", "lunteren-immenweg-15-518", "cromvoirt-loverensestraat-11-d4", "biddinghuizen-spijkweg-15-372", "schin-op-geul-valkenburgerweg-128-553", "maarn-laan-van-laag-kanje-1-1144", "lage-vuursche-koudelaan-25-d18"];
+  const live = new Set(getListings().filter((l: any) => l.status === "live").map((l: any) => l.id));
+  const gedaan: string[] = [];
+  for (const s of verkocht) if (live.has("lm-" + s)) { updateListing("lm-" + s, { status: "verkocht" }); gedaan.push(s); }
+  for (const s of ingetrokken) if (live.has("lm-" + s)) { updateListing("lm-" + s, { status: "offline" }); gedaan.push(s); }
+  console.log(`[lm-opruimen] ${gedaan.length} woningen offline gezet${gedaan.length ? ": " + gedaan.join(", ") : ""}`);
+}
