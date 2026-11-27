@@ -1,5 +1,5 @@
 // Bedrijfsgegevens Huus B.V. (exploitant van Mooihuus.nl).
-const VERHUISDATUM = new Date("2026-12-15T00:00:00+01:00");
+const VERHUISDATUM = new Date("2026-11-27T00:00:00+01:00");
 export function naVerhuizing(nu: Date = new Date()): boolean {
   return nu.getTime() >= VERHUISDATUM.getTime();
 }
@@ -7,7 +7,7 @@ export function naVerhuizing(nu: Date = new Date()): boolean {
 export const COMPANY = {
   bv: "Huus B.V.",
   handelsnaam: "Mooihuus.nl",
-  // Verhuizing per 15 december 2026: Vlietlaan 44 B Bussum -> Gunningweg 3-0003 Nunspeet (automatisch).
+  // Verhuizing per 27 november 2026: Vlietlaan 44 B Bussum -> Gunningweg 3-0003 Nunspeet (automatisch).
   get adres(): string {
     return naVerhuizing() ? "Gunningweg 3-0003" : "Vlietlaan 44 B";
   },
